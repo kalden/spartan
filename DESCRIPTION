@@ -46,3 +46,5 @@ RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: http://www.york.ac.uk/ycil/software/spartan
+BugReports: http://github.com/kalden/spartan/issues
