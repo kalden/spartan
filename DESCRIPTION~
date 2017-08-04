@@ -1,0 +1,29 @@
+Package: spartan
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 3.0
+Authors@R: c(person("Kieran","Alden", email = "kieran.alden@gmail.com", role =c("cre","aut")),
+	     person("Mark","Read",role ="aut"),
+	     person("Paul","Andrews",role ="aut"),
+	     person("Jason","Cosgrove",role ="aut"),
+	     person("Mark","Coles",role ="aut"),
+	     person("Jon","Timmis",role ="aut"))
+Author: Who wrote it
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: lhs,
+    gplots,
+    XML,
+    plotrix,
+    mlegp,
+    ggplot2,
+    neuralnet,
+    psych,
+    mco
+Depends: randomForest,
+    e1071
+RoxygenNote: 6.0.1

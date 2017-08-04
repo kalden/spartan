@@ -1,0 +1,408 @@
+#' Function used to calculate the median results for those run under a set of
+#' parameter samples
+#'
+#' Internal function used to calculate the median set where a simulation has
+#' been run a number of times for a given parameter set. Used in all of
+#' Techniques 1-4 detailed in the R Journal
+#'
+#' @keywords internal
+#'
+#' @param FILEPATH Where the simulation results can be found
+#' @param NUMRUNSPERSAMPLE Number of times the simulation has been run for a
+#' parameter set
+#' @param MEASURES Names of Simulation output responses
+#' @param RESULTFILENAME Name of the simulation result file
+#' @param ALTFILENAME Where necessary, name of the alternative result file
+#' @param outputfilecolstart Number of the column of the CSV file where results
+#' commence
+#' @param outputfilecolend Number of the column of the CSV file where results
+#' end
+#' @return Median Simulation responses under the parameter set in the
+#' result file
+#'
+#'
+getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, MEASURES,
+                             RESULTFILENAME, ALTFILENAME,
+                             outputfilecolstart, outputfilecolend) {
+  # FUNCTION AS PART OF SPARTAN VERSION 2
+  # THIS FUNCTION NO LONGER OUTPUTS A FILE, RETURNS LIST OF MEDIANS
+
+  RESULTS <- NULL
+
+  for (i in 1:NUMRUNSPERSAMPLE) {
+
+    fileaddress <- make_path(c(FILEPATH, toString(i), RESULTFILENAME))
+
+    if (file.exists(fileaddress)) {
+
+      # CHECK WHAT KIND OF INPUT FILE IS BEING DEALT WITH
+      #print(check_file_extension(RESULTFILENAME))
+      if (check_file_extension(RESULTFILENAME) == "csv") {
+
+        # import model result
+        if (outputfilecolstart > 1) {
+          col_diff <- outputfilecolend - outputfilecolstart
+          import <- read.csv(fileaddress,
+                           colClasses = c(rep("NULL", outputfilecolstart - 1),
+                                        rep(NA, col_diff + 1)),
+                            header = TRUE, check.names = FALSE)
+        } else {
+          import <- read.csv(fileaddress,
+                           colClasses = c(rep(NA, outputfilecolend)),
+                           header = TRUE, check.names = FALSE)
+        }
+
+        MODELRESULT <- data.frame(import, check.names = FALSE)
+
+      } else if (check_file_extension(RESULTFILENAME) == "xml") {
+        if (requireNamespace("XML", quietly = TRUE))
+          MODELRESULT <- XML::xmlToDataFrame(fileaddress)
+        else
+          print("The getMediansSubset function requires the XML package")
+      }
+
+      if (nrow(MODELRESULT) > 0) {
+
+        MEDIANSFORALLMEASURES <- NULL
+
+        # NOW GET THE MEDIANS FOR EACH MEASURE
+        for (q in 1:length(MEASURES)) {
+          # STORE JUST THE RESULTS FOR THAT MEASURE (sapply CAN THEN BE USED)
+          MEASURE_RESULT <- as.matrix(MODELRESULT[MEASURES[q]])
+          MEASUREMEDIAN <- median(as.numeric(MEASURE_RESULT))
+          MEDIANSFORALLMEASURES <- cbind(MEDIANSFORALLMEASURES,
+                                         MEASUREMEDIAN[[1]])
+        }
+        RESULTS <- rbind(RESULTS, MEDIANSFORALLMEASURES)
+      } else {
+
+        if (!is.null(ALTFILENAME)) {
+          # USE THE ALTERNATIVE ON THIS OCCASION
+          # ASSUMES IN SAME FORMAT AS ORIGINAL
+          fileaddress <- paste(FILEPATH, toString(i), "/", ALTFILENAME,
+                               sep = "")
+          # import model result - again checking input type
+
+          if (check_file_extension(ALTFILENAME) == "csv") {
+            # DEALING WITH A CSV FILE
+            com <- paste("cut -d, -f", outputfilecolstart, "-",
+                         outputfilecolend, " ", fileaddress, sep = "")
+            import <- read.csv(pipe(com), header = TRUE, check.names = FALSE)
+            MODELRESULT <- data.frame(import, check.names = FALSE)
+
+          } else if (check_file_extension(ALTFILENAME) == "xml") {
+
+            if (requireNamespace("XML", quietly = TRUE))
+              MODELRESULT <- XML::xmlToDataFrame(fileaddress)
+            else
+              print("The getMediansSubset function requires the XML package")
+          }
+
+          if (nrow(MODELRESULT) > 0) {
+
+            MEDIANSFORALLMEASURES <- NULL
+
+            # NOW GET THE MEDIANS FOR EACH MEASURE
+            for (q in 1:length(MEASURES)) {
+              # STORE JUST THE RESULTS FOR THAT MEASURE (AS, INCASE OF XML,
+              # THIS WILL NEED TO BE TRANSFORMED TO A MATRIX. IT WOULD BE
+              # NICE TO SPECIFY THE XML FIELD TYPES BUT THIS IS DIFFICULT
+              # TO DO WHEN INPUT NEEDS TO BE GENERIC
+              MEASURE_RESULT <- as.matrix(MODELRESULT[MEASURES[q]])
+              MEASUREMEDIAN <- median(as.numeric(MEASURE_RESULT), na.rm = TRUE)
+              MEDIANSFORALLMEASURES <- cbind(MEDIANSFORALLMEASURES,
+                                             MEASUREMEDIAN[[1]])
+            }
+            RESULTS <- rbind(RESULTS, MEDIANSFORALLMEASURES)
+          }
+        }
+      }
+    } else {
+      print(paste("File ", fileaddress, " does not exist", sep = ""))
+    }
+  }
+
+  if (!is.null(RESULTS)) {
+    if (nrow(RESULTS) > 0)
+      colnames(RESULTS) <- MEASURES
+  }
+
+  # Now we return this set of medians
+  return (RESULTS)
+}
+
+#' Check the file extension of a file and return it
+#'
+#' @keywords internal
+check_file_extension <- function(filename) {
+  if (substr(filename, (nchar(filename) + 1 ) - 3,
+         nchar(filename)) == "csv")
+    return("csv")
+  else if (substr(filename, (nchar(filename) + 1 ) - 3,
+            nchar(filename)) == "xml")
+    return("xml")
+  else
+    return("NULL")
+}
+
+
+#' Prepares the parameter value list, as either an interval range or specific
+#' values can be supplied
+#'
+#' When iterating through parameter values, we need to do a bit of prep, as
+#' there are two ways these values can be specified (increment and specified
+#' in a list). This returns a list of the values for both specifications, so
+#' these can be iterated through without issue
+#'
+#' @param PMIN Vector of the minimum values for each parameter
+#' @param PMAX Vector of the maximum values for each parameter
+#' @param PINC Vector of the sample increment value for each parameter
+#' @param PARAMVALS Vector of the sampling values specified for each parameter,
+#' rather than an incremental sequence
+#' @param PARAM_OF_INT The current parameter being analysed
+#'
+#' @keywords internal
+prepare_parameter_value_list <- function(PMIN, PMAX, PINC, PARAMVALS,
+                                         PARAM_OF_INT) {
+
+
+  if (is.null(PARAMVALS)) {
+    # MUST HAVE SPECIFIED AS MIN, MAX, AND INC
+    val_list <- seq(PMIN[PARAM_OF_INT], PMAX[PARAM_OF_INT], PINC[PARAM_OF_INT])
+
+    # BUT WE ADDED A CHECK HERE - DUE TO POTENTIAL OF ROUNDING ERRORS IN SEQ,
+    # THE VALUE MAY NOT MATCH THE PARAMETER IN THE OUTPUT, SO ROUND THE VALUE
+    # TO THE NUMBER OF DECIMAL PLACES IN THE INCREMENT
+    for (i in 1:length(val_list)) {
+      dp <- num.decimals(PINC[PARAM_OF_INT])
+      val_list[i] <- round(val_list[i], digits = dp + 2)
+    }
+    # Convert to char - stops any trailing zeros that may lead to results
+    # not being found
+    val_list <- as.character(val_list)
+  } else {
+    # WILL HAVE SPECIFIED A STRING LIST OF VALUES, SPLIT AND CONVERT TO NUMBERS
+    val_list <- strsplit(PARAMVALS[PARAM_OF_INT], ",")[[1]]
+  }
+
+  # NOTE THE RETURN AS CHARACTER - STOPS ANY TRAILING ZEROS WHICH MAY MAKE THE
+  # RESULTS IMPOSSIBLE TO FIND IN THE OUTPUT FILE
+  return(val_list)
+}
+
+subset_results_by_param_value_set <- function(PARAMETERS, RESULT_SET,
+                                              PARAMETER_VALUES_TO_FILTER_BY) {
+  # TAKES A CSV FILE OF MEDIAN RESULTS OR SIMULATION RESULTS AND FILTERS BY A
+  # SPECIFIED SET OF PARAMETER VALUES RETURNING THE FILTERED SET
+
+  # TAKE A COPY OF THE RESULT SET
+  PARAM_RESULT <- RESULT_SET
+
+  # NOW EXTRACT THE DATA FOR THIS PARAM VALUE
+  for (P in 1:length(PARAMETERS))
+    PARAM_RESULT <- subset(PARAM_RESULT, PARAM_RESULT[[PARAMETERS[P]]]
+                           == as.numeric(PARAMETER_VALUES_TO_FILTER_BY[P]))
+
+  return(PARAM_RESULT)
+}
+
+#' Used to diagnose skew in a training dataset before use in emulation
+#'
+#' Useful for determining how useful a simulation dataset is for training
+#' the range of emulators available in this package. This is output as a
+#' PDF.
+#' @param dataset Dataset being visualised
+#' @param measure Simulation response measure to visualise
+#' @param graphname Name of the graph to produce (as a PDF)
+#' @param num_bins Number of bins to use in the histogram
+#' @export
+#'
+visualise_data_distribution <- function(dataset, measure, graphname,
+                                        num_bins=30) {
+  kurt <- psych::describe(dataset[measure])
+  #dataset <- data.frame(dataset[measure])
+  ggplot(dataset[measure],
+         aes(dataset[measure])) + geom_histogram(bins=num_bins) + ggtitle(
+             paste("Diagnostic Plot for ", measure, "\nKurtosis:",
+                    round(kurt$kurtosis, 3), "Skew", round(kurt$skew, 3),
+                    sep = " ")) +  scale_x_continuous(name = "Dataset") +
+    scale_y_continuous(name = "Frequency")
+
+  ggsave(paste(graphname, ".pdf", sep = ""), device = "pdf")
+}
+
+#' Partition latin-hypercube summary file to training, testing, and validation
+#'
+#' Used in the development of emulations of a simulation using a
+#' latin-hypercube summary file
+#'
+#' @param dataset LHC summary file to partition
+#' @param percent_train Percent of the dataset to use as training
+#' @param percent_test Percent of the dataset to use as testing
+#' @param percent_validation Percent of the dataset to use as validation
+#' @param seed For specifying a particular seed when randomly splitting the set
+#' @param normalise Whether the data needs to be normalised (to be between 0
+#' and 1). For emulation creation to be successful, all data must be normalised
+#' prior to use in training and testing
+#' @param parameters Simulation parameters the emulation will be fed as input
+#' @param sample_mins The minimum value used for each parameter in generating
+#' the latin-hypercube sample
+#' @param sample_maxes The maximum value used for each parameter in generating
+#' the latin-hypercube sample
+#' @param timepoint Simulation timepoint for which this summary file was created
+#' @return Partitioned dataset containing training, testing, and validation
+#' sets, in addition to the sample mins and maxes such that any predictions
+#' that are generated using this normalised data can be rescaled correctly
+#'
+#' @export
+partition_dataset <- function(dataset, percent_train = 75, percent_test = 15,
+                              percent_validation = 10, seed = NULL,
+                              normalise = FALSE, parameters,
+                              sample_mins = NULL, sample_maxes = NULL,
+                              timepoint = NULL) {
+
+  if (!is.null(seed)) set.seed(seed)
+
+  # If we normalise, we need to have the mins and maxes for parameters and
+  # measures for denormalisation of results. If we don't normalise then
+  # there will be no denormalisation, but the values being passed will not
+  # be initialised, so we need to cope with both here
+  pre_normed_data_mins <- NULL
+  pre_normed_data_maxes <- NULL
+
+
+  if (normalise == TRUE) {
+    if (is.null(sample_mins) | is.null(sample_maxes) | is.null(parameters))
+      print("You need to specify sampling mins and maxes for each parameter,
+            and parameter names, for correct normalisation. Terminated.")
+    else {
+      normed_data <- normalise_dataset(dataset, sample_mins, sample_maxes,
+                                       parameters)
+      dataset <- normed_data$scaled
+      pre_normed_data_mins <- normed_data$mins
+      pre_normed_data_maxes <- normed_data$maxs
+    }
+  }
+
+  positions <- sample(nrow(dataset), size = floor( (nrow(dataset) / 100)
+                                                  * percent_train))
+  training <- dataset[positions, ]
+  remainder <- dataset[ -positions, ]
+
+  testing_positions <- sample(
+    nrow(remainder), size = floor(
+      (nrow(remainder) / 100) * ( (percent_test / (percent_test +
+                                                   percent_validation))
+                                 * 100)))
+  testing <- remainder[testing_positions, ]
+  validation <- remainder[-testing_positions, ]
+
+  partitioned_data <- list("training" = training, "testing" = testing,
+                          "validation" = validation,
+                          "pre_normed_mins" = pre_normed_data_mins,
+                          "pre_normed_maxes" = pre_normed_data_maxes)
+
+  if (is.null(timepoint))
+    save(partitioned_data, file = "partitioned_data.Rda")
+  else
+    save(partitioned_data, file = paste("partitioned_data_", timepoint, ".Rda",
+                                       sep = ""))
+
+  return(partitioned_data)
+}
+
+#' Normalise a dataset such that all values are between 0 and 1
+#'
+#' @param dataset LHC Summary file being used in emulator creation
+#' @param sample_mins The minimum value used for each parameter in generating
+#' the latin-hypercube sample
+#' @param sample_maxes The maximum value used for each parameter in generating
+#' the latin-hypercube sample
+#' @param parameters Simulation parameters the emulation will be fed as input
+#' @return List of the scaled data and the mimumum/maximum sample values for
+#' each, to aid rescale of the data and any predictions made using it.
+#'
+#' @export
+normalise_dataset <- function(dataset, sample_mins, sample_maxes, parameters) {
+  mins <- apply(dataset, 2, min)
+  maxs <- apply(dataset, 2, max)
+
+  # we want to override the parameter bounds with those used in sampling
+  mins[parameters] <- sample_mins
+  maxs[parameters] <- sample_maxes
+
+  # Normalise data
+  scaled <- as.data.frame(scale(dataset, center = mins, scale = maxs - mins))
+
+  return(list("scaled" = scaled, "mins" = mins, "maxs" = maxs))
+}
+
+#' Rescale normalised data back to it's original scale
+#'
+#' @param normalised_data Dataset that has been normalised
+#' @param scaled_mins The minimum value used for each parameter in generating
+#' the latin-hypercube sample
+#' @param scaled_maxes The maximum value used for each parameter in generating
+#' the latin-hypercube sample
+#'
+#' @keywords internal
+denormalise_dataset <- function(normalised_data, scaled_mins, scaled_maxes) {
+
+  for (c in 1:ncol(normalised_data)) {
+    normalised_data[, c] <- (normalised_data[, c] *
+                              (scaled_maxes[, c] -
+                                 scaled_mins[, c])) + scaled_mins[, c]
+  }
+  return(normalised_data)
+}
+
+
+#' Combines a list of elements into a filepath separated by "/"
+#' @param string_list List of text elements to combine
+#' @return Combined list as string separated by "/"
+#' @keywords internal
+make_path <- function(string_list) {
+  return(paste(string_list, collapse = "/"))
+}
+
+#' Adds an extension to a filename
+#' @param file Name of the file being created
+#' @param extenstion Type of file being created
+#' @return Filename with extension
+#' @keywords internal
+make_extension <- function(file, extension) {
+  return(paste(file, extension, sep = "."))
+}
+
+#' Makes a filename from a list of strings, separated by "_"
+#' @param string_list List of text elements to combine
+#' @return Combined list as a string separated by "_"
+#' @keywords internal
+make_filename <- function(string_list) {
+  return(paste(string_list, collapse = "_"))
+}
+
+#' Join strings and separate by specified character
+#' @param string_list List of text elements to combine
+#' @param sepr Character to separate elements by
+#' @return Combined list as string separated by specified character
+#' @keywords internal
+join_strings <- function(string_list, sepr) {
+  return(paste(string_list, collapse = sepr))
+}
+
+#' Join strings and separate by a space
+#' @param string_list List of text elements to combine
+#' @return Combined list as string separated by a space
+#' @keywords internal
+join_strings_space <- function(string_list) {
+  return(paste(string_list, collapse = " "))
+}
+
+#' Join strings and separate with no space
+#' @param string_list List of text elements to combine
+#' @return Combined list as string separated by no spaces
+#' @keywords internal
+join_strings_nospace <- function(string_list) {
+  return(paste(string_list, collapse = ""))
+}

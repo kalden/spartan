@@ -1,0 +1,329 @@
+---
+title: "Analysing Netlogo Simulations Using Netlogo"
+author: "Kieran Alden"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette focuses on how spartan can provide parameter samples for and analyse Netlogo Simulations. Use of spartan to analyse such simulations was detailed in our paper "Easing "
+
+To ensure our demonstration in this tutorial can be replicated, we will utilise a model that was available in the Model Library, albeit with a small number of modifications. The virus model (Wilensky, 1998) simulates how a virus is transmitted and perpetuated amongst a population, based on a number of factors. The model is fully described with the simulation, so we direct readers to study that detail prior to performing this tutorial. As an overview, there are four parameters: the number of people in the population (people), the ease at which the virus spreads (infectiousness), the probability a person recovers from the virus (chance-of-recover), and the duration (weeks) after which the person either recovers or dies
+(duration). This tutorial will aid researchers understand how a Netlogo model can be better understood using the parameter analysis techniques available within spartan. We recommend that you have read either the tutorials for Techniques 1-4 or through or PLoS Computational Biology paper (Spartan: A Comprehensive Tool for Understanding Uncertainty in Simulations
+of Biological Systems, Alden et al 2013) before commencing this tutorial.
+
+The version of the model in the library has no defined end point, so our first change is to stop the simulation after 100 years. Secondly, judgements concerning each parameter are constructed by varying the value the parameter is assigned and determining the effect on simulation response. The current model states the percentage of people at the current timepoint who are infected and immune. As we want to examine performance across the simulation, we have added four output measures: counts of the number of people who have died through not recovering from the infection (death-thru-sickness), the number who died but were immune (death-but-immune), the number who died through old age and never caught the infection (death-old-age), and the number of people who died while infected but during the time period allowed for recovery (death-old-andsick). We then use spartan to determine how three of the four parameters above (we exclude people for the reasons this is linked to the output responses) impact simulation behaviour. Thirdly, for reasons that will become clearer later, we introduce a new global parameter, dummy, which has no role in the code, and thus no impact on the simulation,
+To ease the reproduction of results in this tutorial, we have made the modified version of the model available from the SPARTAN website (www.ycil.org.uk) 
+
+### Scope
+Do note that the idea of this tutorial is to demonstrate the application of the toolkit, and is not intended to act as a full introduction to using Sensitivity Analysis techniques in the analysis of simulation results. In addition, it is assumed the reader has already worked through the vignette for spartan techniques 1-4.
+
+### Prerequisites
+
+* The R statistical environment, version 2.13.1 or later.
+* The spartan R package, downloaded from the Comprehensive R Archive Network (CRAN) or from the project website.
+* The lhs, gplots, ggplot2, and XML R packages, available for download from CRAN.
+* The Netlogo Virus model, available for download from our website if you want to run the model yourself, or the sample data from our runs.
+* We used the Headless version of Netlogo to run the simulations for all the sets of parameters that were generated for all techniques in this tutorial. To aid the adoption of this approach, the scripts we used to do this are all available on our website (www.ycil.org.uk).
+
+## Parameter Robustness (Technique 2 in SPARTAN)
+
+The robustness of a Netlogo simulation to parameter alteration can be determined through the use of this approach. Following the method described by Read et al (2012), a set of parameters of interest are identified, and a range of potential values each parameter could lie within is assigned. The technique examines the sensitivity to a change in one parameter. Thus, the value of each is perturbed independently, with all other parameters remaining at their calibrated value. This technique works with the Netlogo BehaviourSpace feature. In that feature, you can specify a range to explore for each parameter, and Netlogo will construct an XML file from this information and run the experiments. The results are stored in a CSV table, which the researcher can then analyse. spartan works by producing this XML file without the need to
+be in Netlogo, and then once the researcher has performed runs based on the information in that file, spartan can analyse the resultant data. Note that this tutorial builds on the information in Technique 2 rather than replaces it, so it is recommended that you are aware of the detail in that tutorial.
+
+### Parameter Sampling
+
+Now we are going to declare the variables required by the package to produce the Netlogo experiment file. Firstly, the spartan and XML libraries are imported, the latter to aid production of the Netlogo file. The variables required for this analysis are then declared in capital letters. The line underneath, beginning with a #, is a description of that being declared. Set the FILEPATH variable correctly to match the folder where you would like the Netlogo experiment file to be output to.
+
+```{r,eval=FALSE}
+library(spartan)
+library(XML)
+# Directory where the sample file should be stored
+FILEPATH<-"/home/user/robustness/"
+# Name to give the setup file. No need for file extension
+NETLOGO_SETUPFILE_NAME<-"nl_robustness_setup"
+# Parameters in simulation. List all the parameters that Netlogo is
+# required to know,
+PARAMETERS<-c("people","infectiousness","chance-recover","duration")
+# Now values for each of the parameters above
+# For parameters not being analysed, simply list the value
+# For parameters being analysed, put the min, max and increment values
+# of the parameter in square brackets, in double quotes, e.g.
+# "[0.1,0.5,0.1]"
+# Encapsulate strings, i.e.: "\"/home/user/Experiment/\""
+PARAMVALS<-c(150,"[10,90]","[10,90]","[5,40]")
+# Name of the setup simulation function in Netlogo simulation
+# Usually setup
+NETLOGO_SETUP_FUNCTION<-"setup"
+# Name of the function that starts the simulation. Usually go
+NETLOGO_RUN_FUNCTION<-"go"
+# Simulation output measures
+MEASURES<-c("death-thru-sickness","death-but-immune",
+"death-old-age","death-old-and-sick")
+# Number of times Netlogo should repeat the experiment for each
+# parameter set
+EXPERIMENT_REPETITIONS<-1
+# Whether Netlogo should collect metrics at each timestep
+RUNMETRICS_EVERYSTEP<-"true"
+```
+
+To get the value sets for each parameter:
+
+```{r,eval=FALSE}
+oat_generate_netlogo_behaviour_space_XML(FILEPATH, NETLOGO_SETUPFILE_NAME, PARAMETERS, 
+                                         PARAMVALS, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, 
+                                         MEASURES, EXPERIMENT_REPETITIONS, RUNMETRICS_EVERYSTEP)
+```
+
+This will produce one XML file, in the directory specified, containing a set-up for a Netlogo BehaviourSpace run. Run the experiment using Netlogo (we did this in the terminal in Linux using the headless version of Netlogo, code for this available on our website, but running this in Netlogo is fine too). This will in turn produce one CSV file, saved in the directory of your choosing when you run the experiment.
+
+### Analysing The Simulation Data
+
+This section shows an analysis using the example data from our lab website, but the steps are just as applicable if you ran the experiments yourself. Here, all the results, for all parameters and values, are in one file. The technique below processes this file, recovering the results for each parameter and value pair for the specified timepoint, extracting these into one CSV file. This CSV file can then be processed using the analysis methods detailed in Technique 2, reducing the need for specific Netlogo techniques.
+ 
+
+```{r,eval=FALSE}
+# Import the package
+library(spartan)
+library(XML)
+# Folder containing the Netlogo Behaviour Space table, AND where the
+# processed results will be written to
+FILEPATH<-"/home/user/robustness/"
+# Name of the Netlogo Behaviour Space Table file
+NETLOGO_BEHAVIOURSPACEFILE<-"virus_oat.csv"
+# Array of the parameters to be analysed, but ONLY those perturbed
+PARAMETERS<-c("infectiousness","chance-recover","duration")
+# Value assigned to each parameter at calibration (the baseline value)
+BASELINE<-c(60,50,20)
+# The maximum value for each parameter
+PMAX<-c(90,90,40)
+# The minimum value explored for each parameter
+PMIN<-c(10,10,5)
+# Amount the parameter value was incremened during sampling
+PINC<-c(10,10,5)
+# Timestep of interest. The behaviour space table is likely to contain
+# all timesteps - this narrows the analysis
+TIMESTEP<-5200
+# The simulation output measures being examined. Should be specified
+# as they are in the Netlogo file
+MEASURES<-c("death-thru-sickness","death-but-immune","death-old-age",
+"death-old-and-sick")
+# For each parameter value being analysed, a file is created
+# containing the median of each output measure, of each simulation run
+# for that value. This sets the name of this file. 
+RESULTFILENAME<-"ParamValResponses.csv"
+# The results of the A-Test comparisons of each parameter value
+# against that of the parameters baseline value are output as a file.
+# This sets the name of this file. 
+ATESTRESULTSFILENAME<-"VirusOAT_ATests.csv"
+# A-Test result value either side of 0.5 at which the difference
+# between two sets of results is significant
+ATESTSIGLEVEL<-0.21
+# What each measure represents. Used in graphing results
+MEASURE_SCALE<-c("Number of People","Number of People",
+"Number of People","Number of People")
+# Not used in this case, but when a simulation is analysed at multiple
+# timepoints (see tutorials 1-4)
+TIMEPOINTS<-NULL; TIMEPOINTSCALE<-NULL
+
+oat_process_netlogo_result(FILEPATH,NETLOGO_BEHAVIOURSPACEFILE, PARAMETERS, 
+                           BASELINE, PMIN, PMAX, PINC, MEASURES, RESULTFILENAME, 
+                           ATESTRESULTSFILENAME, TIMESTEP)
+
+# Note that PARAMVALS is set to NULL - we don't use that for Netlogo
+oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL, 
+                             ATESTRESULTSFILENAME, BASELINE, PMIN, PMAX, PINC, NULL, 
+                             TIMEPOINTS, TIMEPOINTSCALE)
+```
+
+## Latin-Hypercube Sampling and Analysis (Technique 3 in SPARTAN)
+
+Though Technique 2 of this toolkit elucidates the effects of perturbations of one parameter, it cannot show any non-linear effects which occur when two or more are adjusted simultaneously. This can be achieved using Technique 3, a Global Sensitivity Analysis technique. A number of parameter value sets are created through a latin-hypercube sampling approach, which selects values for each parameter from the parameter space, while aiming to reduce any possible correlations
+when the sample is produced. spartan then constructs a Netlogo experiment file for each parameter value set. The researcher then runs these in Netlogo. With there being a number of experiment files constructed with this technique, we would recommend that the reader uses a scripting language to perform these experiments, using the headless version of Netlogo. The script we have used to do this can be found on our lab website as an example. Once the runs are complete, spartan then analyses the resultant data, revealing any correlations between parameter and value, and thus indicating the paramters of greatest influence on the simulation.
+
+### Parameter Sampling
+
+Parameter samples for Netlogo simulations can be generated using the code below, detailed fully in the vignette for Technique 2. The last variable, ALGORITHM, controls whether a fully optimised latin-hypercube algorithm is used, or parameter values chosen from each section of the hypercube randomly. Both these algorithms are taken from the lhs package. Note that although an optimised sample may be preferable, the generation of parameter values using an optimal algorithm
+may take a long time (in our experience, over 24 hours for just 7 parameters). The ALGORITHM variable can be set to either ”normal” or ”optimal”
+
+```{r,eval=FALSE}
+library(spartan)
+library(lhs)
+library(XML)
+# Directory where the samples should be stored
+FILEPATH<-"/home/user/LHC/"
+# Parameters in simulation. List all the parameters that Netlogo is
+# required to know,
+PARAMETERS<-c("people","infectiousness","chance-recover","duration")
+# Now values for each of the parameters above
+# For parameters not being analysed, simply list the value
+# For parameters being analysed, put the min and max values of the
+# parameter in square brackets, in double quotes, e.g. "[0.1,0.5]"
+# Encapsulate strings, i.e.: "\"/home/user/Experiment/\""
+PARAMVALS<-c(150,"[10,90]","[10,90]","[5,40]")
+# Number of parameter samples to take from hypercube
+NUMSAMPLES<-500
+# Name of function that sets up Netlogo simulation. Usually setup
+NETLOGO_SETUP_FUNCTION<-"setup"
+# Name of function that starts Netlogo simulation. Usually go
+NETLOGO_RUN_FUNCTION<-"go"
+# Simulation output measures
+MEASURES<-c("death-thru-sickness","death-but-immune","death-old-age",
+"death-old-and-sick")
+# Number of times the Netlogo experiment is repeated for each parameter
+# set
+EXPERIMENT_REPETITIONS<-1
+# Whether Netlogo metrics should be collected at each timestep
+RUNMETRICS_EVERYSTEP<-"true"
+# Algorithm to use to generate the hypercube (normal or optimal)
+ALGORITHM<-"normal"
+
+lhc_generate_lhc_sample_netlogo(FILEPATH,PARAMETERS,PARAMVALS,NUMSAMPLES,ALGORITHM,
+                              EXPERIMENT_REPETITIONS,RUNMETRICS_EVERYSTEP,NETLOGO_SETUP_FUNCTION,
+                              NETLOGO_RUN_FUNCTION,MEASURES)
+```
+
+### Analysing the Results
+
+Again the example shown here is for the example data from our lab website. Note for space reasons that the Netlogo parameter files themselves are not included in the download. This method iterates through all the Netlogo results for all parameter sets and collapses these into one CSV file, which can then be analysed using the techniques detailed in Technique 3.
+
+```{r,eval=FALSE}
+# Import the package
+library(spartan)
+library(XML)
+# Folder containing the Netlogo Behaviour Space table,
+# and where the processed results will be written to
+FILEPATH<-"/home/user/LHC/"
+# Name of the result file generated by Netlogo.
+LHCSAMPLE_RESULTFILENAME<-"lhcResult.csv"
+# Location of a file containing the parameter value sets
+# generated by the hypercube sampling (i.e. the file generated
+# in the previous method of this tutorial. Unlike above, an
+# extension should be specified.
+SPARTAN_PARAMETER_FILE<-"/home/user/LHC_Parameters_for_Runs.csv"
+# Number of parameter samples generated from the hypercube
+NUMSAMPLES<-500
+# The simulation output measures being examined. Should be specified
+# as they are in the Netlogo file
+MEASURES<-c("death-thru-sickness","death-but-immune","death-old-age",
+"death-old-and-sick")
+# File name to give to the summary file that is produced showing
+# the parameter value sets alongside the median results for each
+# simulation output measure. 
+LHC_ALL_SIM_RESULTS_FILE<-"Virus_LHCSummary.csv"
+# Timestep of interest. The behaviour space table is likely to contain
+# all timesteps - this narrows the analysis
+TIMESTEP<-5200
+# Parameters of interest in this analysis
+PARAMETERS<-c("infectiousness","chance-recover","duration")
+# What each measure represents. Used in graphing results
+MEASURE_SCALE<-c("Number of People","Number of People",
+"Number of People","Number of People")
+# File name to give to the file showing the Partial Rank Correlation
+# Coefficients for each parameter. Again note no file extension
+CORCOEFFSOUTPUTFILE<-"EgSet_corCoeffs"
+# Not used in this case, but when a simulation is analysed at
+# multiple timepoints (see Tutorials 1-4)
+TIMEPOINTS<-NULL; TIMEPOINTSCALE<-NULL
+
+lhc_process_netlogo_result(FILEPATH, LHCSAMPLE_RESULTFILENAME, SPARTAN_PARAMETER_FILE, NUMSAMPLES, MEASURES, LHC_ALL_SIM_RESULTS_FILE, TIMESTEP)
+
+lhc_generatePRCoEffs(FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE, CORCOEFFSOUTPUTFILE, TIMEPOINTS, TIMEPOINTSCALE)
+
+lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHC_ALL_SIM_RESULTS_FILE, TIMEPOINTS, TIMEPOINTSCALE)
+
+```
+
+## Technique 4: eFAST Sampling and Analysis (Technique 4)
+
+This technique analyses simulation results generated through parametering using the eFAST approach (extended Fourier Amplitude Sampling Test). This perturbs the value of all parameters at the same time, with the aim of partitioning the
+variance in simulation output between input parameters. Values for each parameter are chosen using fourier frequency curves through a parameters potential range of values. A selected number of values are selected from points along the curve. Though all parameters are perturbed simultaneously, the method does focus on one parameter of interest in turn, by giving this a very different sampling frequency to that assigned to the other parameters. Thus for each parameter
+of interest in turn, a sampling frequency is assigned to each parameter and values chosen at points along the curve. So a set of simulation parameters then exists for each parameter of interest. As this is the case, this method can be computationally expensive, especially if a large number of samples is taken on the parameter search curve, or there are a large number of parameters. On top of this, to ensure adequate sampling each curve is also resampled with a small adjustment to the frequency, creating more parameter sets on which the simulation should be run. This attempts to limit any correlations and limit the effect of repeated parameter value sets being chosen. Thus, for a system where 8 parameters are being analysed, and 3 different sample curves used, 24 different sets of parameter value sets will be produced. Each of these 24 sets then contains the parameter values chosen from the frequency curves. This number of samples should be no lower than 65 (see the Marino paper for an explanation of how to select sample size). Once the sampling has been performed, simulation runs should be performed for each set generated. The eFAST algorithm then examines the simulation results for each parameter value set and, taking into account the sampling frequency used to produce those parameter values, partitions the variance in output between the input parameters.
+
+SPARTAN has the ability to sample the space using the technique, produce Netlogo experiment files for these samples, through which the simulations can be run, and then analyse the resultant simulations.
+
+### Parameter Sampling
+
+The method below constructs parameter sets using the eFAST approach, detailed fully in the vignette for Technique 4. Note here the additional parameter: Dummy. Statistical inference in eFAST is generated though comparing the variance of each parameter to that of a parameter known to have no influence on the simulation. The dummy parameter sample fulfils this role.
+
+```{r,eval=FALSE}
+library(spartan)
+library(lhs)
+library(XML)
+# The directory where the samples should be stored
+FILEPATH<-"/home/user/eFAST/"
+# Parameters for this simulation. List ALL the parameters that Netlogo needs to know, even those not being perturbed. Make # sure you include the dummy
+PARAMETERS<-c("people","infectiousness","chance-recover","duration", "dummy")
+# Now values for each of the parameters above. For parameters not being analysed, simply list the value
+# For parameters being analysed, put the min and max values of the parameter in square brackets, in double quotes, e.g. 
+# "[0.1,0.5]" Encapsulate strings, i.e.: "\"/home/user/Experiment/\""
+PARAMVALS<-c(150,"[10,90]","[10,90]","[5,40]","[1,10]")
+# Number of resampling curves to use
+NUMCURVES<-3
+# Number of value samples to take from each parameter curve
+NUMSAMPLES<-65
+# The name of the function in Netlogo that sets up the simulation (Usually setup)
+NETLOGO_SETUP_FUNCTION<-"setup"
+# Name of the function in Netlogo that starts the simulation (Usually go)
+NETLOGO_RUN_FUNCTION<-"go"
+MEASURES<-c("death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick")
+# Number of times the Netlogo run should be repeated for each parameter set
+EXPERIMENT_REPETITIONS<-1
+# Whether Netlogo should collect metrics at all timesteps
+RUNMETRICS_EVERYSTEP<-"true"
+
+efast_generate_sample_netlogo(FILEPATH,NUMCURVES,NUMSAMPLES,MEASURES,PARAMETERS,PARAMVALS,EXPERIMENT_REPETITIONS,RUNMETRICS_EVERYSTEP,NETLOGO_SETUP_FUNCTION,NETLOGO_RUN_FUNCTION)
+```
+
+
+### Analysing Simulation Data
+
+The below example analyses the Netlogo virus model results obtained for an eFAST sample, available from the project website. The objective is to get the Netlogo results into one file, one that is then compatible with the analysis methods detailed in the vignette for Technique 4.
+
+```{r,eval=FALSE}
+library(spartan)
+library(XML)
+library(gplots)
+# The directory where the netlogo experiment file should be stored
+FILEPATH<-"/home/kieran/Documents/Tutorial/eFAST/"
+# Name of the result file generated by Netlogo. The sample number and
+# .csv are added to this
+EFASTSAMPLE_RESULTFILENAME<-"efast_result_set"
+# The parameters being examined in this analysis. Include the dummy
+PARAMETERS<-c("infectiousness","chance-recover","duration","dummy")
+# Number of resampling curves to use
+NUMCURVES<-3
+# Number of value samples to take from each curve
+NUMSAMPLES<-65
+# The output measures by which you are analysing the results.
+MEASURES<-c("death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick")
+# File created containing the median of each output measure, of each
+# simulation for this parameter set. Note no file extension
+RESULTFILENAME<-"ParamValResponses"
+# Timestep of interest. The behaviour space table is likely to contain
+# all timesteps. This narrows the analysis
+TIMESTEP<-5200
+# Output measures to t-test to gain statistical significance
+OUTPUTMEASURES_TO_TTEST<-1:4
+# T-Test confidence interval
+TTEST_CONF_INT<-0.95
+# Boolean noting whether graphs should be produced
+GRAPH_FLAG<-TRUE
+# Name of the final result file summarising the analysis, showing the
+# partitioning of the variance between parameters. Note no file
+# extension
+EFASTRESULTFILENAME<-"Virus_eFAST_Analysis"
+# Not used in this case, but when a simulation is analysed at
+# multiple timepoints (see Tutorials 1-4)
+TIMEPOINTS<-NULL; TIMEPOINTSCALE<-NULL
+
+efast_process_netlogo_result(FILEPATH, EFASTSAMPLE_RESULTFILENAME, PARAMETERS, NUMCURVES,
+           NUMSAMPLES, MEASURES, RESULTFILENAME, TIMESTEP)
+
+efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, 
+            GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
+
+```
