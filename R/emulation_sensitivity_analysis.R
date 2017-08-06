@@ -52,11 +52,11 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
         {
           prediction  <-  use_ensemble_to_generate_predictions(
             surrogateModel, param_sample[, parameters_minus_dummy],
-            parameters_minus_dummy, measures, normalise,normalise_result = TRUE) #added the normalise_result = need to tell Kieran
+            parameters_minus_dummy, measures, normalise) 
         } else {
           prediction <- emulator_predictions(
             surrogateModel, parameters_minus_dummy, measures,
-            param_sample[,parameters_minus_dummy], normalise,normalise_result = TRUE)
+            param_sample[,parameters_minus_dummy], normalise,normalise_result = TRUE) #added the normalise_result = need to tell Kieran
         }
 
 
