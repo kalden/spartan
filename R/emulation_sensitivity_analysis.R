@@ -52,11 +52,11 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
         {
           prediction  <-  use_ensemble_to_generate_predictions(
             surrogateModel, param_sample[, parameters_minus_dummy],
-            parameters_minus_dummy, measures, normalise)
+            parameters_minus_dummy, measures, normalise,normalise_result = TRUE) #added the normalise_result = need to tell Kieran
         } else {
           prediction <- emulator_predictions(
             surrogateModel, parameters_minus_dummy, measures,
-            param_sample[,parameters_minus_dummy], normalise)
+            param_sample[,parameters_minus_dummy], normalise,normalise_result = TRUE)
         }
 
 
@@ -139,7 +139,7 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
       # using an ensemble or emulator
       if(ensemble == FALSE) {
         prediction <- emulator_predictions(surrogateModel, parameters, measures,
-                                           params, normalise)
+                                           params, normalise,normalise_result = TRUE) #added the normalise_result, need to tell Kieran
       } else {
         prediction <- use_ensemble_to_generate_predictions(surrogateModel,
                                                            params, parameters,
