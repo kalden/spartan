@@ -255,9 +255,9 @@ visualise_data_distribution <- function(dataset, measure, graphname,
 #' that are generated using this normalised data can be rescaled correctly
 #'
 #' @export
-partition_dataset <- function(dataset, percent_train = 75, percent_test = 15,
+partition_dataset <- function(dataset, parameters, percent_train = 75, percent_test = 15,
                               percent_validation = 10, seed = NULL,
-                              normalise = FALSE, parameters,
+                              normalise = FALSE,
                               sample_mins = NULL, sample_maxes = NULL,
                               timepoint = NULL) {
 

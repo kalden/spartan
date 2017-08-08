@@ -29,7 +29,8 @@ ensemble_abc_wrapper <- function(x) {
     # Format the parameter input
     prediction <- use_ensemble_to_generate_predictions(
       abc_set$built_ensemble, params, abc_set$parameters, abc_set$measures,
-      abc_set$normalise)
+      normalise_values = abc_set$normalise_values,
+      normalise_result = abc_set$normalise_result)
 
     return(prediction)
   } else {
@@ -61,10 +62,13 @@ ensemble_abc_wrapper <- function(x) {
 #'
 #' @export
 create_abc_settings_object <- function(parameters, measures, built_ensemble,
-                                       normalise=FALSE){
+                                       normalise_values = FALSE,
+                                       normalise_result = FALSE){
 
   abc_set <- list("parameters" = parameters, "measures" = measures,
-                  "built_ensemble" = built_ensemble, "normalise" = normalise)
+                  "built_ensemble" = built_ensemble,
+                  "normalise_values" = normalise_values,
+                  "normalise_result" = normalise_result)
 
   save(abc_set, file = paste(getwd(), "/abc_settings.Rda", sep = ""))
 }

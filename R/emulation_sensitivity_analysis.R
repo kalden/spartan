@@ -24,7 +24,7 @@
 emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
                                                parameters,  measures,
                                                num_curves,
-                                               ensemble = TRUE,
+                                               ensemble_set = TRUE,
                                                normalise = FALSE,
                                                timepoint = NULL) {
   setwd(filepath)
@@ -48,7 +48,7 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
 
         # Now we can make a prediction for this set of parameters
         # generate the prediction
-        if(ensemble == TRUE)
+        if(ensemble_set == TRUE)
         {
           prediction  <-  use_ensemble_to_generate_predictions(
             surrogateModel, param_sample[, parameters_minus_dummy],
@@ -114,12 +114,14 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
 emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                                              parameters, measures,
                                              measure_scale, param_file = NULL,
-                                             dataset = NULL, ensemble = TRUE,
+                                             dataset = NULL, ensemble_set = TRUE,
                                              normalise = FALSE,
                                              timepoint = NULL,
                                              timepointscale = NULL) {
 
   setwd(filepath)
+
+  #emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values)
 
   if(!is.null(param_file) | !is.null(dataset)) {
     if(!is.null(param_file)) {
@@ -137,14 +139,15 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
 
       # generate the prediction - need to be careful here whether we are
       # using an ensemble or emulator
-      if(ensemble == FALSE) {
+      if(ensemble_set == FALSE) {
         prediction <- emulator_predictions(surrogateModel, parameters, measures,
                                            params, normalise)
       } else {
         prediction <- use_ensemble_to_generate_predictions(surrogateModel,
                                                            params, parameters,
                                                            measures,
-                                                           normalise)
+                                                           normalise_values = normalise,
+                                                           normalise_result = normalise)
       }
 
       # Bind to the list of parameters

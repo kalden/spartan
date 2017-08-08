@@ -33,17 +33,19 @@ To create an intial dataset for emulator development, use the Latin-Hypercube sa
 # Read in the dataset. For ease of this tutorial, an exemplar set has been provided in the package,
 data("sim_data_for_emulation")
 # Simulation parameters
-parameters<-c("stableBindProbability","chemokineExpressionThreshold","initialChemokineExpressionValue","maxChemokineExpressionValue","maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
+parameters<-c("stableBindProbability","chemokineExpressionThreshold","initialChemokineExpressionValue",
+              "maxChemokineExpressionValue","maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
 # Output measures
 measures<-c("Velocity","Displacement","PatchArea")
 # Mins and max values used in sampling
-sampleMaxes <- cbind(0,0.9,0.5,0.08,1,5)
-sampleMins <-cbind(100,0.1,0.1,0.015,0.1,0.25)
+sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
+sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
 
 ## Partition the dataset, in this case normalising the data
-partitionedData <- partition_dataset(sim_data_for_emulation,percent_train=75, percent_test=15, 
-	percent_validation=10, seed=NULL, normalise=TRUE, parameters, sampleMins, 
-	sampleMaxes)
+partitionedData <- partition_dataset(sim_data_for_emulation, parameters, percent_train=75, percent_test=15, 
+	percent_validation=10, normalise=TRUE, sample_mins = sampleMins, sample_maxes = sampleMaxes)
+# If you want to specify a seed to use when randomly paritioning the data, add seed=[desired seed],
+# eg seed=10
 ```
 
 The visualise_data_distribution method can be used to provide diagnostic information for the dataset on which the emulators are being trained. A plot is produced that shows any skew in the data, with kurtosis statistics, to indicate any issues this could cause in emulation training. For example a positive skewed dataset may mean that simulation measures on the upper end of the scale may be less well predicted by the emulation techniques included in spartan. The method takes a dataset of a single simulation response as input and produces a graph in the working directory.
@@ -82,7 +84,7 @@ The generate_predictions_from_emulator method generates predictions on unseen da
 ```{r,eval=FALSE}
 # Generate some predictions for unseen data, let's use the validation set
 # This has already been normalised:
-predictions <- emulator_predictions(rf_fit, parameters, measures,	partitionedData$validation, normalise=FALSE, normalise_result= TRUE)
+predictions <- emulator_predictions(rf_fit, parameters, measures,	partitionedData$validation, normalise=FALSE, normalise_result=TRUE)
 ```
 
 With these emulators generated, Technique 7 can be used to generate combinations of these machine learning algorithms, to generate what is more commonly known as an ensemble model.
@@ -109,22 +111,25 @@ The method generate_emulators_and_ensemble generates all emulators then combines
 
 ```{r,eval=FALSE}
 # List of model types to include:
-modelList <- c("SVM","RF","GLM")
+modelList <- c("SVM","RF","GLM","NNET","GP")
 # Simulation dataset, again using the provided data
 data("sim_data_for_emulation")
 # Partition the dataset (mins, maxes as declared in Technique 6)
-partitionedData <- partition_dataset(sim_data_for_emulation,percent_train=75,	percent_test=15, percent_validation=10, seed=10, normalise=TRUE, parameters, sampleMins=sampleMins, sampleMaxes=sampleMaxes)
+partitionedData <- partition_dataset(sim_data_for_emulation, parameters, percent_train=75, percent_test=15, 
+	percent_validation=10, normalise=TRUE, sample_mins = sampleMins, sample_maxes = sampleMaxes)
 # Make the ensemble, specifying that the data above has been normalised. Parameters and measures as declared in Technique 6
-generated_ensemble<-generate_emulators_and_ensemble(modelList, parameters, measures, partitionedData, normalised=TRUE)
+# Recall you must have created an algorithmSettings object with the neural network structures to examine
+generated_ensemble<-generate_emulators_and_ensemble(modelList, parameters, measures, partitionedData, 
+                                                    algorithm_settings = algorithmSettings, normalised=TRUE)
 ```
 
-With the ensemble generated, a final method is provided to make predictions using the new tool, use_ensemble_to_generate_predictions. Provide this method with the ensemble object, a set of unseen data (parameter values as rows), the simulation parameter and output response labels, and the predicted outputs for that parameter set will be generated. A flag is also set as to whether the unseen data needs to be normalised, and thus whether the generated prediction needs to be rescaled. Note that any unseen data must be scaled between 0 and 1 for the ensemble to generate a reliable prediction. Rescaling of predictions is performed automatically if the data was normalised.
+With the ensemble generated, a final method is provided to make predictions using the new tool, use_ensemble_to_generate_predictions. Provide this method with the ensemble object, a set of unseen data (parameter values as rows), the simulation parameter and output response labels, and the predicted outputs for that parameter set will be generated. A flag is also set as to whether the unseen data needs to be normalised. Note that any unseen data must be scaled between 0 and 1 for the ensemble to generate a reliable prediction. If using the data partitioning method and using the validation data to make predictions, as below, the data will have already been normalised (so normalise_values is FALSE), yet the predictions should be translated back into their original scale (so normalise_result is TRUE).
 
 ```{r,eval=FALSE}
 # params is a vector of unseen parameter values for which a prediction is being sought.
 params<-partitionedData$validation
 predictions <- use_ensemble_to_generate_predictions(generated_ensemble,params,
-	parameters,measures,normalise=TRUE)
+	parameters,measures,normalise_values = FALSE, normalise_result = TRUE)
 ```
 
 ## Spartan Technique 8: Spartan Analysis with Ensemble
@@ -147,14 +152,18 @@ parameters <- c("stableBindProbability","chemokineExpressionThreshold",
 		"initialChemokineExpressionValue",
 		"maxChemokineExpressionValue","maxProbabilityOfAdhesion",
 		"adhesionFactorExpressionSlope")
-numSamples <- 500
+num_samples <- 500
 # Mins and Maxes
-pmaxes <- cbind(0,0.9,0.5,0.08,1,5)
-pmins <-cbind(100,0.1,0.1,0.015,0.1,0.25)
+pmaxes <- cbind(100,0.9,0.5,0.08,1,5)
+pmins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
+# Normal or optimal sampling. Recall from Technique 3 that optimal is
+# time intensive
+algorithm <- "normal"
 
 # Sampling call
-lhc_generate_lhc_sample(FILEPATH,PARAMETERS,NUMSAMPLES,PMIN,PMAX,
-	ALGORITHM)
+lhc_generate_lhc_sample(filepath,parameters,num_samples,pmins,pmaxes,
+	algorithm)
+
 # However, for the below we do provide an example set of parameters 
 # as an object that can be loaded in
 
@@ -167,6 +176,9 @@ data("emulated_lhc_values")
 # "built_ensemble"
 # We haven't put an exemplar ensemble in the package due to the file size 
 # of the object, but this can be downloaded from the package website
+# However if you're following along from the code above, you could 
+# instantiate built_ensemble to be generated_ensemble from the previous
+# technique
 load("built_ensemble.Rda")
 
 # Declare responses:
@@ -177,18 +189,17 @@ measure_scale <- c("microns","microns/min")
 # You can do this two ways:
 # 1: Provide an object containing all the parameter value sets (i.e. emulated_lhc_values), as below:
 # If you have loaded the data from within the package in, use the line below and ignore method 2
-emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values)
+emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values, normalise = TRUE)
 # 2: Or, if you have generated a CSV file with all the values, give the name of that file (should be in the specified filepath)
 parameterFileName <- "LHC_Parameters_for_Runs.csv"
 emulate_lhc_sampled_parameters(filepath, ensemble, parameters, measures, measure_scale, param_file = parameterFileName)
 
-# With the above done either way, run the methods from Spartan Technique 3 to calculate the partial rank correlation coefficients
-lhc_generatePRCoEffs(filepath, parameters, measures, lhcsummaryfilename, corcoeffsOutputFile, timepoints, timepointScale)
-# Graph the results
-lhc_graphMeasuresForParameterChange(filepath, parameters, measures, measure_scale,corcoeffsOutputFile, lhcsummaryfilename, timepoints, timepointScale)
+# The above will calculate all partial rank correlation coefficiejnts and graph the results into the present working directory
 
-# If you wanted, you could do an lhc for a single emulation object, not just an ensemble. If you wanted to do that, say for the neural network object nn_fit created in previous steps in this vignette, you would do:
-emulate_lhc_sampled_parameters(filepath, nn_fit, parameters, measures, measure_scale, dataset = emulated_lhc_values, ensemble = FALSE)
+# If you wanted, you could do an lhc for a single emulation object, not just an ensemble. 
+# If you wanted to do that, say for the neural network object nn_fit created in previous steps in this vignette, you would do:
+emulate_lhc_sampled_parameters(filepath, nn_fit, parameters, measures, measure_scale, dataset = emulated_lhc_values, 
+                               ensemble_set = FALSE, normalise = TRUE)
 ```
 
 emulate_efast_sampled_parameters provides a wrapper to run the ensemble for parameter sets generated for performing the extended fourier amplitude sampling test, spartan Technique 4.
@@ -196,20 +207,34 @@ emulate_efast_sampled_parameters provides a wrapper to run the ensemble for para
 ```{r,eval=FALSE}
 # Number of curves for eFAST
 numCurves <- 3
+# Number of samples to take from each curve
 numSamples <- 65
+# Where samples are stored
 filepath <- getwd()
-pmin <- sampleMins
-pmax <- sampleMaxes
+# Recall we need to add a dummy parameter for statistical comparison
+parameters <- c("stableBindProbability","chemokineExpressionThreshold",
+		"initialChemokineExpressionValue",
+		"maxChemokineExpressionValue","maxProbabilityOfAdhesion",
+		"adhesionFactorExpressionSlope", "dummy")
+# Max of all parameters. Include a max value for dummy (1 here)
+pmax <- cbind(100,0.9,0.5,0.08,1,5,1)
+# Min of all parameters. Include a min value for dummy (0 here)
+pmin <-cbind(0,0.1,0.1,0.015,0.1,0.25,0)
 
-#### Step 1: Use Spartan Technique 4 to generate samples, i.e:
+#### Step 1: Use Spartan Technique 4 to generate samples
 efast_generate_sample(filepath, numCurves,numSamples,parameters, pmin, pmax)
-# As this method produces several CSV files (one per parameter/curve), and it is these files which are read in to make the predictions, these have not been included as an object that can be loaded in. However an example set is available on the project website. Extract that into the working folder and then run the below.
+# As this method produces several CSV files (one per parameter/curve), and it is these files which are 
+# read in to make the predictions, these have not been included as an object that can be loaded in. 
+# However an example set is available on the project website. Extract that into the working folder and then run the below.
 
-# Make predictions
-emulate_efast_sampled_parameters(filepath, built_ensemble, parameters, measures, numCurves)
+# Make predictions and plot the results
+emulate_efast_sampled_parameters(filepath, built_ensemble, parameters, measures, numCurves, normalise = TRUE)
 
 # Analyse:
-efast_run_Analysis(filepath,measures,parameters,numCurves, numSamples,1:2,0.95,TRUE,"eFAST_Analysis.csv",NULL,NULL)
+efast_run_Analysis(filepath,measures,parameters,numCurves, numSamples,1:2,0.95,TRUE,"eFAST_Analysis.csv")
+
+# If you wanted to use a single emulator rather than the ensemble, say nn_fit created earlier, you would do:
+emulate_efast_sampled_parameters(filepath, nn_fit, parameters, measures, numCurves, normalise = TRUE, ensemble_set = FALSE)
 ```
 
 
@@ -228,20 +253,23 @@ parameters <- c("stableBindProbability","chemokineExpressionThreshold",
 measures<-c("Velocity","Displacement")
 # Load in an ensemble generated in Technique 7, this loads in as built_ensemble
 load("built_ensemble_12.Rda")
-# Whether data should be normalised for input into the ensemble
-normalise=TRUE
+# Whether the parameter sets generated by the ABC algorithm should be normalised 
+# for input into the ensemble
+normalise_values = TRUE
+# Whether the predictions for the parameter set should be normalised
+normalise_result = TRUE
 
 # Establish the priors for each parameter
 prior=list(c("unif",0,100),c("unif",0.1,0.9),c("unif",0.1,0.5),
 	c("unif",0.015,0.08),c("unif",0.1,1.0),c("unif",0.25,5.0))
-sampleMins <- c(0,0.1,0.1,0.015,0.1,0.25)
-sampleMaxes<- c(100,0.9,0.5,0.015,0.08,1.0,5.0)
+
 
 # Summary statistics to be targetted
-sum_stat_obs=cbind(4.4677342593,28.5051144444)
+sum_stat_obs=c(4.4677342593,28.5051144444)
 
 # Create the file that will be read in by the wrapper:
-create_abc_settings_object(parameters, measures, built_ensemble, normalise)
+create_abc_settings_object(parameters, measures, built_ensemble, normalise_values, 
+                           normalise_result)
 ```
 
 The ensemble_abc_wrapper then provides a means of running the ensemble within the EasyABC methods. This method should be stated as the "model" argument of EasyABC methods such as ABC_sequential. Should the method above not have been run first, an error message will be produced. Here are a variety of examples of performing ABC analysis using the wrapper.
@@ -250,6 +278,7 @@ Finally, graph_Posteriors_All_Parameters provides a means of plotting the produc
 
 ```{r,eval=FALSE}
 # Beaumont method using spartan ensemble wrapper
+library(EasyABC)
 numRunsUnderThreshold=100
 tolerance=c(20,15,10.00,7,5.00)
 abc_resultSet<-ABC_sequential(method="Beaumont",
@@ -259,6 +288,9 @@ abc_resultSet<-ABC_sequential(method="Beaumont",
 	tolerance_tab=tolerance, verbose=TRUE)
 
 # Graph the result
+# Ranges:
+sampleMins <- c(0,0.1,0.1,0.015,0.1,0.25)
+sampleMaxes<- c(100,0.9,0.5,0.015,0.08,1.0,5.0)
 graph_Posteriors_All_Parameters(abc_resultSet,
 	parameters, sampleMins, sampleMaxes)
 

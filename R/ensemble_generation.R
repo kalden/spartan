@@ -238,10 +238,12 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
       all_model_predictions <- emulators_with_test_preds$prediction_set
       emulators <- emulators_with_test_preds$emulators
 
-      generated_ensemble <- create_ensemble(emulators, all_model_predictions,
-                                            partitioned_data$testing, measures,
-                                            model_list, algorithm_settings,
-                                            timepoint)
+      generated_ensemble <- create_ensemble(
+        emulators, all_model_predictions, partitionedData$testing, measures,
+        model_list, emulators_with_test_preds$pre_normed_mins,
+        emulators_with_test_preds$pre_normed_maxes, algorithm_settings = NULL,
+        normalise = normalised, timepoint = NULL)
+
 
       # Calculate time taken, only want the elapsed value (3rd one)
       time.taken <- as.numeric(proc.time() - start.time)[3]
@@ -250,7 +252,6 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
       # Add in the mins and maxes from the emulator creation,
       # as we'll need these to denormalise the predictions if the original
       # data was normalised
-      # KA removed AS from data.frame
       built_ensemble <- list(
         "ensemble" = generated_ensemble, "timetaken" = time.taken,
         "pre_normed_maxes" = t(data.frame(
