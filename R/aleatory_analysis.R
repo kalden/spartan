@@ -127,8 +127,10 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
 #'
 #' @importFrom utils read.csv write.csv
 aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
-                               MEASURES, AA_SIM_RESULTS, ATESTRESULTSFILENAME,
-                               LARGEDIFFINDICATOR, TIMEPOINTS = NULL,
+                               MEASURES, ATESTRESULTSFILENAME,
+                               LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = NULL,
+                               AA_SIM_RESULTS_OBJECT = NULL,
+                               TIMEPOINTS = NULL,
                                TIMEPOINTSCALE = NULL, GRAPHNAME = NULL) {
 
   if (is.null(TIMEPOINTS)) {
@@ -138,92 +140,111 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
     # ATEST SCORES FOR JUST A SAMPLE SIZE - COMPILED FOR GRAPHING
     SIZE_RESULTS <- NULL
 
-    # READ IN THE SUMMARY FILE
-    RESULT <- read.csv(make_path(c(FILEPATH, AA_SIM_RESULTS)),
-                       sep = ",", header = TRUE, check.names = FALSE)
-    print("Generating A-Test Scores for Consistency Analysis")
+    # GET THE DATA FROM THE FILE OR OBJECT
+    if(!is.null(AA_SIM_RESULTS_FILE) | !is.null(AA_SIM_RESULTS_OBJECT)) {
 
-    # GENERATE COLUMN HEADINGS - WE USE THIS TWICE LATER
-    ATESTRESULTSHEADER <- cbind("Sample Size", "Sample")
-
-    for (l in 1:length(MEASURES)) {
-      ATESTRESULTSHEADER <- cbind(ATESTRESULTSHEADER,
-                                  paste("ATest", MEASURES[l], sep = ""),
-                                  paste("ATest", MEASURES[l], "Norm",
-                                        sep = ""))
-    }
-
-    for (s in 1:length(SAMPLESIZES)) {
-      print(join_strings_space(c("Processing Sample Size:", SAMPLESIZES[s])))
-
-      ## GET THE FIRST SET, SO THIS CAN BE COMPARED WITH ALL THE OTHERS
-      ## SO SUBSET THE RESULTS
-      SUBSET_CRITERIA <- c("SampleSize", "Set")
-      SET1 <- subset_results_by_param_value_set(SUBSET_CRITERIA, RESULT,
-                                                c(SAMPLESIZES[s], 1))
-
-      # RESET THE SCORES FOR EACH SAMPLE SIZE
-      SIZE_RESULTS <- NULL
-
-      for (m in 2:NUMSUBSETSPERSAMPLESIZE) {
-
-        ALLATESTRESULTS <- cbind(SAMPLESIZES[s], m)
-
-        COMPAREDSET <- subset_results_by_param_value_set(SUBSET_CRITERIA,
-                                                         RESULT,
-                                                         c(SAMPLESIZES[s], m))
-
-        if (nrow(COMPAREDSET) > 0) {
-          # Now perform the analysis for each measure
-          # THEN NORMALISE (PUT ABOVE 0.5) AS DIRECTION DOES NOT MATTER
-          for (l in 1:length(MEASURES)) {
-            ATESTMEASURERESULT <- atest(as.numeric
-                                        (as.matrix(SET1[MEASURES[l]][, 1])),
-                                      as.numeric(
-                                        as.matrix(COMPAREDSET[MEASURES[l]][, 1]
-                                                  )))
-            # the [,1] is added so the data is extracted
-            ATESTMEASURENORM <- normaliseATest(ATESTMEASURERESULT)
-            ALLATESTRESULTS <- cbind(ALLATESTRESULTS, ATESTMEASURERESULT,
-                                     ATESTMEASURENORM)
-
-          }
-        } else {
-          for (l in 1:length(MEASURES)) {
-            ALLATESTRESULTS <- cbind(ALLATESTRESULTS, 1, 1)
-          }
-        }
-        # ADD THESE TESTS TO THE RESULTS
-        RESULTS <- rbind(RESULTS, ALLATESTRESULTS)
-
-        SIZE_RESULTS <- rbind(SIZE_RESULTS, ALLATESTRESULTS)
+      if(!is.null(AA_SIM_RESULTS_FILE)) {
+        # READ IN THE SUMMARY FILE
+        RESULT <- read.csv(make_path(c(FILEPATH, AA_SIM_RESULTS)),
+                           sep = ",", header = TRUE, check.names = FALSE)
+      } else {
+        RESULT <- AA_SIM_RESULTS_OBJECT
       }
 
-      colnames(SIZE_RESULTS) <- ATESTRESULTSHEADER
 
-      # NOW GRAPH THIS SAMPLE SIZE
-      if (is.null(GRAPHNAME))
-        GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZES[s],
-                                                  "Samples.pdf"))
-      else
-        GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZES[s],
-                                                  "Samples_", GRAPHNAME,
-                                                  ".pdf"))
+      print("Generating A-Test Scores for Consistency Analysis")
 
-      aa_graphATestsForSampleSize(FILEPATH, SIZE_RESULTS, MEASURES,
-                                  LARGEDIFFINDICATOR,
-                                  GRAPHOUTPUTNAME, NULL, NULL)
+      # GENERATE COLUMN HEADINGS - WE USE THIS TWICE LATER
+      ATESTRESULTSHEADER <- cbind("Sample Size", "Sample")
 
-      print(join_strings_space(c("Summary Graph for Sample Size of",
-                                 SAMPLESIZES[s], "Saved to", FILEPATH, "/",
-                                 GRAPHOUTPUTNAME)))
+      for (l in 1:length(MEASURES)) {
+        ATESTRESULTSHEADER <- cbind(ATESTRESULTSHEADER,
+                                    paste("ATest", MEASURES[l], sep = ""),
+                                    paste("ATest", MEASURES[l], "Norm",
+                                          sep = ""))
+      }
+
+      for (s in 1:length(SAMPLESIZES)) {
+        print(join_strings_space(c("Processing Sample Size:", SAMPLESIZES[s])))
+
+        ## GET THE FIRST SET, SO THIS CAN BE COMPARED WITH ALL THE OTHERS
+        ## SO SUBSET THE RESULTS
+        SUBSET_CRITERIA <- c("SampleSize", "Set")
+        SET1 <- subset_results_by_param_value_set(SUBSET_CRITERIA, RESULT,
+                                                  c(SAMPLESIZES[s], 1))
+
+        # RESET THE SCORES FOR EACH SAMPLE SIZE
+        SIZE_RESULTS <- NULL
+
+        for (m in 2:NUMSUBSETSPERSAMPLESIZE) {
+
+          ALLATESTRESULTS <- cbind(SAMPLESIZES[s], m)
+
+          COMPAREDSET <- subset_results_by_param_value_set(SUBSET_CRITERIA,
+                                                           RESULT,
+                                                           c(SAMPLESIZES[s], m))
+
+          if (nrow(COMPAREDSET) > 0) {
+            # Now perform the analysis for each measure
+            # THEN NORMALISE (PUT ABOVE 0.5) AS DIRECTION DOES NOT MATTER
+            for (l in 1:length(MEASURES)) {
+              ATESTMEASURERESULT <- atest(as.numeric
+                                          (as.matrix(SET1[MEASURES[l]][, 1])),
+                                        as.numeric(
+                                          as.matrix(COMPAREDSET[MEASURES[l]][, 1]
+                                                    )))
+              # the [,1] is added so the data is extracted
+              ATESTMEASURENORM <- normaliseATest(ATESTMEASURERESULT)
+              ALLATESTRESULTS <- cbind(ALLATESTRESULTS, ATESTMEASURERESULT,
+                                       ATESTMEASURENORM)
+
+            }
+          } else {
+            for (l in 1:length(MEASURES)) {
+              ALLATESTRESULTS <- cbind(ALLATESTRESULTS, 1, 1)
+            }
+          }
+          # ADD THESE TESTS TO THE RESULTS
+          RESULTS <- rbind(RESULTS, ALLATESTRESULTS)
+
+          SIZE_RESULTS <- rbind(SIZE_RESULTS, ALLATESTRESULTS)
+        }
+
+        colnames(SIZE_RESULTS) <- ATESTRESULTSHEADER
+
+        # NOW GRAPH THIS SAMPLE SIZE
+        if (is.null(GRAPHNAME))
+          GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZES[s],
+                                                    "Samples.pdf"))
+        else
+          GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZES[s],
+                                                    "Samples_", GRAPHNAME,
+                                                    ".pdf"))
+
+        aa_graphATestsForSampleSize(FILEPATH, SIZE_RESULTS, MEASURES,
+                                    LARGEDIFFINDICATOR,
+                                    GRAPHOUTPUTNAME, NULL, NULL)
+
+        print(join_strings_space(c("Summary Graph for Sample Size of",
+                                   SAMPLESIZES[s], "Saved to", FILEPATH, "/",
+                                   GRAPHOUTPUTNAME)))
+      }
+
+      colnames(RESULTS) <- c(ATESTRESULTSHEADER)
+
+      # NOW WRITE THE FILE OUT
+      write.csv(RESULTS, make_path(c(FILEPATH, ATESTRESULTSFILENAME)),
+                quote = FALSE, row.names = FALSE)
+
+      # From 3.0 we're going to return the results too.
+      # Future additions may remove the CSV writing altogether
+      return(RESULTS)
+
+    } else {
+      print(paste("You must specify either an R object containing simulation ",
+                  "results, or the name of a CSV file in the filepath",
+                  "containing those results",sep=""))
     }
-
-    colnames(RESULTS) <- c(ATESTRESULTSHEADER)
-
-    # NOW WRITE THE FILE OUT
-    write.csv(RESULTS, make_path(c(FILEPATH, ATESTRESULTSFILENAME)),
-              quote = FALSE, row.names = FALSE)
 
   } else {
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
@@ -270,28 +291,57 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
 #'
 #' @export
 aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
-                                 ATESTRESULTSFILENAME, SUMMARYFILENAME,
+                                 SUMMARYFILENAME, ATESTRESULTS_FILE = NULL,
+                                 ATESTRESULTS_OBJECT = NULL,
                                  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+
   if (is.null(TIMEPOINTS)) {
-    ATESTMAXES <- NULL
+    errorLog <-1
 
-    print("Producing Analysis Summary (aa_sampleSizeSummary)")
+    if(!is.null(ATESTRESULTS_FILE) | !is.null(ATESTRESULTS_OBJECT)) {
 
-    if (file.exists(make_path(c(FILEPATH, ATESTRESULTSFILENAME)))) {
+      if(!is.null(ATESTRESULTS_FILE)) {
+        # READ IN THE SUMMARY FILE
+        if (file.exists(make_path(c(FILEPATH, ATESTRESULTSFILENAME)))) {
 
-      ALLSUBSET_ATEST_SCORES <- read.csv(make_path(c(FILEPATH,
-                                                     ATESTRESULTSFILENAME)),
-                                         header = TRUE, check.names = FALSE)
+          ALLSUBSET_ATEST_SCORES <- read.csv(make_path(c(FILEPATH,
+                                                         ATESTRESULTSFILENAME)),
+                                             header = TRUE, check.names = FALSE)
+        } else {
+          print("Specified A-Test File does not exist")
+          errorLog <- 0
+        }
+
+      } else {
+        ALLSUBSET_ATEST_SCORES <- ATESTRESULTS_OBJECT
+      }
+
+      # Bit of a bodge here to make sure this does not preceed if file did not
+      # exist, long term this needs refactoring
+      if(errorLog > 0) {
+
+      ATESTMAXES <- NULL
+
+      print("Producing Analysis Summary (aa_sampleSizeSummary)")
+
+      #if (file.exists(make_path(c(FILEPATH, ATESTRESULTSFILENAME)))) {
+
+      #ALLSUBSET_ATEST_SCORES <- read.csv(make_path(c(FILEPATH,
+       #                                              ATESTRESULTSFILENAME)),
+        #                                 header = TRUE, check.names = FALSE)
 
       for (k in 1:length(SAMPLESIZES)) {
         SAMPLEPROCESSING <- SAMPLESIZES[k]
         print(join_strings_space(c("Processing Sample Size:",
                                    SAMPLEPROCESSING)))
 
-        # SUBSET THE RESULTS ON THE SAMPLE SIZE
-        SAMPLE_SIZE_RESULT <- subset(ALLSUBSET_ATEST_SCORES,
-                                     ALLSUBSET_ATEST_SCORES[["Sample Size"]] ==
-                                       as.numeric(SAMPLEPROCESSING))
+        # Subset by column 1, Sample Size
+        # KA 3.0 Issue with processing by label "Sample Size" when handling
+        # files and objects, so changed to reference column 1. Could do with
+        # looking at again
+        SAMPLE_SIZE_RESULT <- as.data.frame(subset(ALLSUBSET_ATEST_SCORES,
+                                     ALLSUBSET_ATEST_SCORES[,1] ==
+                                       as.numeric(SAMPLEPROCESSING)))
 
         # NOW WORK OUT MAX AND MEDIAN A-TEST RESULTS FOR EACH SAMPLE SIZE
         SAMPLE_SIZE_SUMMARY <- c(SAMPLEPROCESSING)
@@ -328,12 +378,18 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
       write.csv(ATESTMAXES, RESULTFILE, quote = FALSE, row.names = FALSE)
 
       print(join_strings(c("Summary file of all A-Test results output to ",
-                           FILEPATH, SUMMARYFILENAME), ""))
+                           FILEPATH, "/", SUMMARYFILENAME), ""))
 
+      # From 3.0 we're returning the results too:
+      return(ATESTMAXES)
+
+      }
     } else {
-      print("Error: Cannot find the A-Test Results file. Check your FILEPATH
-            and SAMPLESIZES parameters")
+      print(paste("You must specify either an R object containing simulation ",
+                  "a test results, or the name of a CSV file in the filepath",
+                  "containing those results",sep=""))
     }
+
   } else {
 
     for (n in 1:length(TIMEPOINTS)) {

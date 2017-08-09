@@ -84,28 +84,55 @@ aa_graphATestsForSampleSize <- function(FILEPATH, ATESTS, MEASURES,
 #' @param SMALL The figure (>0.5) which is deemed a "small difference" between two sets being compared.  Vargha-Delaney set this value to 0.56 - but this can be altered here
 #' @param MEDIUM The figure (>0.5) which is deemed a "medium difference" between two sets being compared.  Vargha-Delaney set this value to 0.66 - but this can be altered here
 #' @param LARGE The figure (>0.5) which is deemed a "large difference" between two sets being compared.  Vargha-Delaney set this value to 0.73 - but this can be altered here
-#' @param SUMMARYFILENAME The name of the CSV containing the summary A-Test scores for this sample size
+#' @param SAMPLESUMMARY_OBJECT The name of an R object in the environment containing the summary A-Test scores for this sample size
+#' @param SAMPLESUMMARY_FILE The name of the CSV containing the summary A-Test scores for this sample size
 #' @param GRAPHOUTPUTFILE Filename that should be given to the generated summary graph. This must have a PDF file extension
 #' @param TIMEPOINTS Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)
 #' @param TIMEPOINTSCALE Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"
 #' @param GRAPHLABEL Used internally by the \code{getATestResults} method when producing graphs for multiple timepoints. Should not be set in function call
 aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
-                                     MEDIUM, LARGE, SUMMARYFILENAME,
-                                     GRAPHOUTPUTFILE, TIMEPOINTS = NULL,
-                                     TIMEPOINTSCALE = NULL, GRAPHLABEL = NULL) {
+                                     MEDIUM, LARGE, GRAPHOUTPUTFILE,
+                                     SAMPLESUMMARY_OBJECT = NULL,
+                                     SAMPLESUMMARY_FILE = NULL,
+                                     TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+                                     GRAPHLABEL = NULL) {
   if (is.null(TIMEPOINTS)) {
+
+    errorLog <-1
+
+    if(!is.null(SAMPLESUMMARY_OBJECT) | !is.null(SAMPLESUMMARY_FILE)) {
+
+      if(!is.null(SAMPLESUMMARY_FILE)) {
+        # READ IN THE SUMMARY FILE
+        if (file.exists(make_path(c(FILEPATH, SUMMARYFILENAME)))) {
+
+          atest_results <- read.csv(make_path(c(FILEPATH, SUMMARYFILENAME)),
+                                    header = TRUE, check.names = FALSE)
+        } else {
+          print("Specified A-Test Summary File does not exist")
+          errorLog <- 0
+        }
+      } else {
+        atest_results <- SAMPLESUMMARY_OBJECT
+      }
+
+      if(errorLog > 0) {
+
     # NOW DRAW THE GRAPH
     print("Creating Summary Graph")
 
-    if (file.exists(make_path(c(FILEPATH, SUMMARYFILENAME)))) {
 
-      atest_results <- read.csv(make_path(c(FILEPATH, SUMMARYFILENAME)),
-                               header = TRUE, check.names = FALSE)
+
+    #if (file.exists(make_path(c(FILEPATH, SUMMARYFILENAME)))) {
+
+      #atest_results <- read.csv(make_path(c(FILEPATH, SUMMARYFILENAME)),
+       #                        header = TRUE, check.names = FALSE)
 
       # Where the resulting graph should go
       graph_file <- make_path(c(FILEPATH, GRAPHOUTPUTFILE))
       pdf(graph_file, width = 12, height = 7)
       par(xpd = NA, mar = c(4, 4, 2, 17))
+      atest_results <- as.data.frame(atest_results)
 
       # NOW PLOT FOR EACH MEASURE
       # THE PLOT BEGINS WITH THE FIRST MEASURE
@@ -152,10 +179,11 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
       print(paste("Summary Graph output to ", make_path(c(FILEPATH,
                                                           GRAPHOUTPUTFILE)),
                   sep = ""))
+      }
     } else {
-      print("Cannot find the summary file specified in parameter
-            SUMMARYFILENAME. Check you have run the analysis to
-            generate this file")
+      print(paste("You must specify either an R object containing simulation ",
+                  "a test summary results, or the name of a CSV file in the ",
+                  "filepath containing those results",sep=""))
     }
   } else {
     for (n in 1:length(TIMEPOINTS)) {
