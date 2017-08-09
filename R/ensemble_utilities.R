@@ -216,9 +216,9 @@ weight_emulator_predictions_by_ensemble <- function(model_weights,
 #' @export
 use_ensemble_to_generate_predictions <- function(generated_ensemble,
                                                  data_to_predict, parameters,
-                                                 measures, normalise = FALSE) {
+                                                 measures, normalise_values = FALSE,normalise_result=FALSE) {
   # Normalise unseen data if required
-  if (normalise) {
+  if (normalise_values) {
     data_to_predict <- normalise_dataset(
       data_to_predict, generated_ensemble$pre_normed_mins[, parameters],
       generated_ensemble$pre_normed_maxes[, parameters], parameters)$scaled
@@ -244,7 +244,7 @@ use_ensemble_to_generate_predictions <- function(generated_ensemble,
     num_generations = 800000)
 
   # Rescale the predictions if data was normalised
-  if (normalise) {
+  if (normalise_result) {
     # rbind used to get the mins and maxes into the correct format
     # (compatible with all other calls to this function)
     novel_predictions <- denormalise_dataset(
