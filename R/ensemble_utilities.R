@@ -80,7 +80,8 @@ create_ensemble <- function(ensemble_emulations, all_emulator_predictions,
         ensemble_predictions, rbind(pre_normed_mins[measures]),
         rbind(pre_normed_maxes[measures]))
       unscaled_simulations <- denormalise_dataset(
-        emulator_test_data[, measures], rbind(pre_normed_mins[measures]),
+        emulator_test_data[, measures, drop = FALSE],
+        rbind(pre_normed_mins[measures]),
         rbind(pre_normed_maxes[measures]))
 
       for (m in 1:length(measures)) {
