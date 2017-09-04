@@ -145,7 +145,7 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
 
       if(!is.null(AA_SIM_RESULTS_FILE)) {
         # READ IN THE SUMMARY FILE
-        RESULT <- read.csv(make_path(c(FILEPATH, AA_SIM_RESULTS)),
+        RESULT <- read.csv(make_path(c(FILEPATH, AA_SIM_RESULTS_FILE)),
                            sep = ",", header = TRUE, check.names = FALSE)
       } else {
         RESULT <- AA_SIM_RESULTS_OBJECT
