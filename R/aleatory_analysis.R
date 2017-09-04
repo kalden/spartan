@@ -226,8 +226,9 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
                                     GRAPHOUTPUTNAME, NULL, NULL)
 
         print(join_strings_space(c("Summary Graph for Sample Size of",
-                                   SAMPLESIZES[s], "Saved to", FILEPATH, "/",
-                                   GRAPHOUTPUTNAME)))
+                                   SAMPLESIZES[s], "Saved to",
+                                   join_strings_nospace(c(FILEPATH,"/",
+                                   GRAPHOUTPUTNAME)))))
       }
 
       colnames(RESULTS) <- c(ATESTRESULTSHEADER)

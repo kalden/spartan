@@ -4,12 +4,15 @@
 \alias{partition_dataset}
 \title{Partition latin-hypercube summary file to training, testing, and validation}
 \usage{
-partition_dataset(dataset, percent_train = 75, percent_test = 15,
-  percent_validation = 10, seed = NULL, normalise = FALSE, parameters,
-  sample_mins = NULL, sample_maxes = NULL, timepoint = NULL)
+partition_dataset(dataset, parameters, percent_train = 75,
+  percent_test = 15, percent_validation = 10, seed = NULL,
+  normalise = FALSE, sample_mins = NULL, sample_maxes = NULL,
+  timepoint = NULL)
 }
 \arguments{
 \item{dataset}{LHC summary file to partition}
+
+\item{parameters}{Simulation parameters the emulation will be fed as input}
 
 \item{percent_train}{Percent of the dataset to use as training}
 
@@ -22,8 +25,6 @@ partition_dataset(dataset, percent_train = 75, percent_test = 15,
 \item{normalise}{Whether the data needs to be normalised (to be between 0
 and 1). For emulation creation to be successful, all data must be normalised
 prior to use in training and testing}
-
-\item{parameters}{Simulation parameters the emulation will be fed as input}
 
 \item{sample_mins}{The minimum value used for each parameter in generating
 the latin-hypercube sample}

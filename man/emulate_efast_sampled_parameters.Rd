@@ -5,7 +5,7 @@
 \title{Emulate simulations for a set of eFAST generated parameter values}
 \usage{
 emulate_efast_sampled_parameters(filepath, surrogateModel, parameters, measures,
-  num_curves, ensemble = TRUE, normalise = FALSE, timepoint = NULL)
+  num_curves, ensemble_set = TRUE, normalise = FALSE, timepoint = NULL)
 }
 \arguments{
 \item{filepath}{Path to the folder containing the set of CSV files for eFAST
@@ -20,15 +20,15 @@ responses for those sets}
 
 \item{num_curves}{Number of resample curves used in eFAST sampling}
 
-\item{ensemble}{Boolean stating whether this analysis is being run using
-an ensemble of machine learning methods (TRUE), or a single emulator (FALSE)}
-
 \item{normalise}{Whether the parameters in the sampling CSV files need to be
 normalised before input to the emulator (which must take values between 0
 and 1)}
 
 \item{timepoint}{Simulation timepoint being analysed, if more than one. See
 the vignette for analysing more than one timepoint}
+
+\item{ensemble}{Boolean stating whether this analysis is being run using
+an ensemble of machine learning methods (TRUE), or a single emulator (FALSE)}
 }
 \description{
 This method runs an ensemble for all parameter value sets specified in a CSV

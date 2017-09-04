@@ -5,7 +5,7 @@
 \title{Creates ensemble-specific parameters for ABC analysis}
 \usage{
 create_abc_settings_object(parameters, measures, built_ensemble,
-  normalise = FALSE)
+  normalise_values = FALSE, normalise_result = FALSE)
 }
 \arguments{
 \item{parameters}{Array containing the names of the parameters for which

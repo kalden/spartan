@@ -4,8 +4,9 @@
 \alias{aa_sampleSizeSummary}
 \title{Determines the median and maximum A-Test score observed for each sample size}
 \usage{
-aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, ATESTRESULTSFILENAME,
-  SUMMARYFILENAME, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME,
+  ATESTRESULTS_FILE = NULL, ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -13,8 +14,6 @@ aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, ATESTRESULTSFILENAME,
 \item{SAMPLESIZES}{The sample sizes chosen (i.e. in our case, this would be an array containing 1,5,50,100,300,800}
 
 \item{MEASURES}{An array containing the names of the simulation output measures to be analysed.}
-
-\item{ATESTRESULTSFILENAME}{Name of the file that will contain the A-Test scores for each sample size}
 
 \item{SUMMARYFILENAME}{Name of the file generated that lists the maximum and median A-Test results for each sample size.}
 

@@ -2,6 +2,7 @@
 
 export(aa_getATestResults)
 export(aa_graphATestsForSampleSize)
+export(aa_graphSampleSizeSummary)
 export(aa_sampleSizeSummary)
 export(aa_summariseReplicateRuns)
 export(create_abc_settings_object)

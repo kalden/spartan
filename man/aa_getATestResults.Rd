@@ -5,8 +5,9 @@
 \title{Calculates the A-Test scores observed for all sets, for each sample size}
 \usage{
 aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
-  AA_SIM_RESULTS, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL, GRAPHNAME = NULL)
+  ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = NULL,
+  AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+  GRAPHNAME = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -17,8 +18,6 @@ aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
 
 \item{MEASURES}{An array containing the names of the simulation output measures to be analysed.}
 
-\item{AA_SIM_RESULTS}{Either - A: The name of the summary CSV file to be created by aa_summariseReplicateRuns or B: The name of the provided CSV file that summarises the results of all runs for this analysis.}
-
 \item{ATESTRESULTSFILENAME}{Name of the file that will contain the A-Test scores for each sample size}
 
 \item{LARGEDIFFINDICATOR}{The A-Test determines there is a large difference between two sets if the result is greater than 0.2 either side of the 0.5 line.  Should this not be suitable, this can be changed here}
@@ -28,6 +27,8 @@ aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}
 
 \item{GRAPHNAME}{Used internally by the getATestResults method when producing graphs for multiple timepoints. Should not be set in function call.}
+
+\item{AA_SIM_RESULTS}{Either - A: The name of the summary CSV file to be created by aa_summariseReplicateRuns or B: The name of the provided CSV file that summarises the results of all runs for this analysis.}
 }
 \description{
 Examines the summary CSV file produced either by the method

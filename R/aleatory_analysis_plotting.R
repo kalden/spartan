@@ -90,6 +90,8 @@ aa_graphATestsForSampleSize <- function(FILEPATH, ATESTS, MEASURES,
 #' @param TIMEPOINTS Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)
 #' @param TIMEPOINTSCALE Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"
 #' @param GRAPHLABEL Used internally by the \code{getATestResults} method when producing graphs for multiple timepoints. Should not be set in function call
+#'
+#' @export
 aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
                                      MEDIUM, LARGE, GRAPHOUTPUTFILE,
                                      SAMPLESUMMARY_OBJECT = NULL,

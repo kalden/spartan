@@ -5,8 +5,9 @@
 \title{Plots a comparison of the maximum A-Test score for each sample size}
 \usage{
 aa_graphSampleSizeSummary(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL, MEDIUM,
-  LARGE, SUMMARYFILENAME, GRAPHOUTPUTFILE, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL, GRAPHLABEL = NULL)
+  LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_OBJECT = NULL,
+  SAMPLESUMMARY_FILE = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+  GRAPHLABEL = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -21,9 +22,11 @@ aa_graphSampleSizeSummary(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL, MEDIUM,
 
 \item{LARGE}{The figure (>0.5) which is deemed a "large difference" between two sets being compared.  Vargha-Delaney set this value to 0.73 - but this can be altered here}
 
-\item{SUMMARYFILENAME}{The name of the CSV containing the summary A-Test scores for this sample size}
-
 \item{GRAPHOUTPUTFILE}{Filename that should be given to the generated summary graph. This must have a PDF file extension}
+
+\item{SAMPLESUMMARY_OBJECT}{The name of an R object in the environment containing the summary A-Test scores for this sample size}
+
+\item{SAMPLESUMMARY_FILE}{The name of the CSV containing the summary A-Test scores for this sample size}
 
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 
