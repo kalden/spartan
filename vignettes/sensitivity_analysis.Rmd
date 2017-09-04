@@ -97,11 +97,6 @@ LARGE <- 0.73
 # Name of the graph which summarises the analysis results for all sample sizes.
 # Current versions of spartan output to pdf.
 GRAPHOUTPUTFILE <- "AA_ATestMaxes.pdf"
-# Timepoints being analysed. Must be NULL if no timepoints being analysed, or else
-# be an array of timepoints. Scale sets the measure of these timepoints
-TIMEPOINTS <- NULL; TIMEPOINTSCALE <- NULL
-# Example Timepoints, if being used:
-#TIMEPOINTS <- c(12, 36, 48, 60); TIMEPOINTSCALE <- "Hours"
 ```
 
   In this example, we are determining whether 1,5,50,100 and 300 replicates (stated in SAMPLESIZES) of a simulation run are sufficient to produce a result that is representative of the parameter set upon which the simulation was run. Similar to the original description of this technique in Read et al. (2012), we utilise 20 distributions for each sample size (i.e. 20 distributions each containing 1 run, 20 more distributions each containing 5 runs, and so on up to 300). spartan (from Version 2.0) can process simulation output provided in two formats, both of which we describe next.
@@ -114,7 +109,10 @@ website (www.ycil.org.uk).
   For example, consider distribution 1 for a sample size of 50 runs. Each run contains the results for a set of cells that were tracked over the course of one simulated hour. For each run, spartan calculates the median of each simulation response (cell velocity and displacement in our case), storing these as a row in a CSV file that summarises cell behaviour across all the runs, named as stated in MEDIANS_SUMMARY_FILE_NAME. The appropriate set of medians is then generated for distributions 2-20, with these calculates repeated for all sample sizes being analysed. The declared arguments above will perform this analysis for the data downloaded from the spartan/YCIL website:
   
 ```{r, eval = FALSE}
-aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME, ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND, MEDIANS_SUMMARY_FILE_NAME, TIMEPOINTS, TIMEPOINTSCALE)
+aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME, ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND, MEDIANS_SUMMARY_FILE_NAME)
+# For timepoints:
+aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME, ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND, MEDIANS_SUMMARY_FILE_NAME,
+                          TIMEPOINTS=c(12,36,48,60),TIMEPOINTSCALE="Hours")
 ```
 
 Whether providing results in the organised folder structure or as a single CSV file, the researcher will now have their results in a format that can be processed by the methods contained in spartan. Where providing a single CSV file as input of simulation results, the name of this file should be stated in parameter MEDIANS_SUMMARY_FILE_NAME.
@@ -127,11 +125,13 @@ Statistical difference between the 20 distributions of each sample size is calcu
 ```{r, eval = FALSE}
 # To read from an R object
 data("tutorial_consistency_set")
-a_test_results <- aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_OBJECT = tutorial_consistency_set, 
-                   TIMEPOINTS, TIMEPOINTSCALE)
+a_test_results <- aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_OBJECT = tutorial_consistency_set)
 # Or to read from a file (an example can be downloaded from the website)
-a_test_results <- aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = MEDIANS_SUMMARY_FILE_NAME, 
-                   TIMEPOINTS, TIMEPOINTSCALE)
+a_test_results <- aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = MEDIANS_SUMMARY_FILE_NAME)
+
+# For a number of timepoints:
+a_test_results <- aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = MEDIANS_SUMMARY_FILE_NAME,
+                                     TIMEPOINTS=c(12,36,48,60),TIMEPOINTSCALE="Hours")
 ```
 
 
@@ -142,17 +142,20 @@ However, what is of real interest is the difference between distributions agains
 ```{r, eval = FALSE}
 # Similarly to the previous function, from 3.0 you can supply the name of the CSV file containing the a test results (produced by above),
 # or the name of the object. For the latter:
-sample_summary <- aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME, ATESTRESULTS_OBJECT = a_test_results, 
-                                       TIMEPOINTS, TIMEPOINTSCALE)
+sample_summary <- aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME, ATESTRESULTS_OBJECT = a_test_results)
 # Or by file name (make sure ATESTRESULTSFILENAME is declared)
-sample_summary <- aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME, ATESTRESULTS_FILE = ATESTRESULTSFILENAME, 
-                                       TIMEPOINTS, TIMEPOINTSCALE)
+sample_summary <- aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME, ATESTRESULTS_FILE = ATESTRESULTSFILENAME)
+# For timepoints:
+sample_summary <- aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME, ATESTRESULTS_FILE = ATESTRESULTSFILENAME,
+                                       TIMEPOINTS=c(12,36,48,60),TIMEPOINTSCALE="Hours")
 
 # Graphs, by the sample_summary object:
-aa_graphSampleSizeSummary(FILEPATH, MEASURES, 300, SMALL, MEDIUM, LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_OBJECT = sample_summary, TIMEPOINTS, TIMEPOINTSCALE)
-
+aa_graphSampleSizeSummary(FILEPATH, MEASURES, 300, SMALL, MEDIUM, LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_OBJECT = sample_summary)
 # By the CSV file that method produces:
-aa_graphSampleSizeSummary(FILEPATH, MEASURES, 300, SMALL, MEDIUM, LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_FILE = SUMMARYFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
+aa_graphSampleSizeSummary(FILEPATH, MEASURES, 300, SMALL, MEDIUM, LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_FILE = SUMMARYFILENAME)
+# For multiple timepoints:
+aa_graphSampleSizeSummary(FILEPATH, MEASURES, 300, SMALL, MEDIUM, LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_FILE = SUMMARYFILENAME,
+                          TIMEPOINTS=c(12,36,48,60),TIMEPOINTSCALE="Hours")
 ```
 
 The first creates a CSV file, in the folder specified in the FILEPATH variable, stating the maximum ATest score across the distributions for each simulation output response, for each number of simulation replicates examined. The second produces a plot of this result (Figure 1(C)), saved in the same folder. The objective is to find a sample size which minimises the A-Test value for all measures. As argued previously (Alden et al., 2013b), based on these results we did not deem 300 runs to be sufficiently close enough to the ’no difference’ line for both Velocity and Displacement measures, and as such ran all our analyses with 500 runs (not included in data set due to download size). With this result taken into account, we are confident that the hypotheses we generate from simulation-based experimentation are derived from parameter values, and not inherent stochasticity caused by simulation implementation. This is an important consideration for agent-based models such as ours, and understanding the origin of changes in simulation behaviour is vital when interpreting results.
@@ -259,20 +262,18 @@ ATESTRESULTSFILENAME <- "EgSet_ATests.csv"
 # A-Test result value either side of 0.5 at which the difference between two sets of
 # results is significant
 ATESTSIGLEVEL <- 0.23
-# Timepoints being analysed. Must be NULL if no timepoints being analysed, or else
-# be an array of timepoints. Scale sets the measure of these timepoints
-TIMEPOINTS <- NULL; TIMEPOINTSCALE <- NULL
-# Example Timepoints, if being used:
-#TIMEPOINTS <- c(12, 36, 48, 60); TIMEPOINTSCALE <- "Hours"
 ```
 
-In this example, we are analysing the robustness of two parameters, perturbed between 0.015-0.08 and 0.10-0.50 accordingly. Similar to Technique 1, the researcher can provide their simulation results in two formats: the organised folder structure detailed in Figure 2(A) or a single CSV file. The folder structure is comprised of three levels: the parameter being analysed, the value assigned to that parameter, and results for each run under those parameter conditions. If providing a summary of results in a single CSV file, each row should contain the value of each parameter being analysed
-(matching the parameters stated in PARAMETERS) and the median of each simulation response for simulation runs under those conditions. For stochastic simulations where a number of runs are required to produce a consistent result (see Technique 1), a number of results for each parameter set should be provided in the CSV file. For example, in our case study we have repeated each simulation 300 times, thus 300 lines exist in the CSV file for each parameter value set. Examples of both formats of input have been provided in the exemplar data available from our website (www.ycil.org.uk).
+In this example, we are analysing the robustness of two parameters, perturbed between 0.015-0.08 and 0.10-0.50 accordingly. Similar to Technique 1, the researcher can provide their simulation results in two formats: the organised folder structure detailed in Figure 2(A) or a single CSV file. The folder structure is comprised of three levels: the parameter being analysed, the value assigned to that parameter, and results for each run under those parameter conditions. If providing a summary of results in a single CSV file, each row should contain the value of each parameter being analysed (matching the parameters stated in PARAMETERS) and the median of each simulation response for simulation runs under those conditions. For stochastic simulations where a number of runs are required to produce a consistent result (see Technique 1), a number of results for each parameter set should be provided in the CSV file. For example, in our case study we have repeated each simulation 300 times, thus 300 lines exist in the CSV file for each parameter value set. Examples of both formats of input have been provided in the exemplar data available from our website (www.ycil.org.uk).
 
 The first function that comprises this technique should only be run where the researcher is providing results in the organised folder structure in Figure 2(A). Similarly to Technique 1, this method iterates through the simulation results in each folder, producing the CSV file that summarises all simulation results. For our case study, this function calculates the median of each cell behaviour response for each of the 300 runs, storing this in the CSV file. Once each parameter-value pair has been processed, this CSV file is saved within the folder specified in FILEPATH, with the filename as stated by CSV_FILE_NAME. PMIN, PMAX, PINC, and PARAMVALS should be set appropriately as described in the comments of the object specifications above.
 
 ```{r, eval = FALSE}
-oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,CSV_FILE_NAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS,TIMEPOINTS, TIMEPOINTSCALE)
+oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,CSV_FILE_NAME, 
+                        BASELINE, PMIN, PMAX, PINC, PARAMVALS)
+# For multiple timepoints:
+oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,CSV_FILE_NAME, 
+                        BASELINE, PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 Whether providing results in the organised folder structure or as a single CSV file, the researcher will now have their results in a format that can be processed by the methods contained in spartan.Where providing a single CSV file as input of simulation results, the name of this file should be stated in parameter CSV_FILE_NAME.
@@ -281,20 +282,29 @@ To gain statistical information concerning the impact that a change in a single 
 all parameter values examined, spartan produces a CSV file stating the A-Test values for each value assigned to that parameter (named as stated in object ATESTRESULTSFILENAME.
 
 ```{r, eval = FALSE}
-oat_csv_result_file_analysis(FILEPATH, CSV_FILE_NAME, PARAMETERS, BASELINE, MEASURES, ATESTRESULTFILENAME, PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS, TIMEPOINTSCALE)
+oat_csv_result_file_analysis(FILEPATH, CSV_FILE_NAME, PARAMETERS, BASELINE, MEASURES, ATESTRESULTSFILENAME, PMIN, PMAX, PINC, PARAMVALS)
+# For multiple timepoints
+oat_csv_result_file_analysis(FILEPATH, CSV_FILE_NAME, PARAMETERS, BASELINE, MEASURES, ATESTRESULTSFILENAME, PMIN, PMAX, PINC, PARAMVALS, 
+                             TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 To ease assessment of these results, spartan can then produce a plot for each parameter, showing the difference in simulation behaviour across the parameter value space. An example of such a plot can be seen in Figure 2(B).
 
 ```{r, eval = FALSE}
-oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL, ATESTRESULTSFILENAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS, TIMEPOINTSCALE)
+oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL, ATESTRESULTSFILENAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS)
+# For multiple timepoints:
+oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL, ATESTRESULTSFILENAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS, 
+                             TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 
 Finally, it may be interesting, especially for stochastic simulations, to see the distribution of simulation responses for each parameter value. A boxplot of these results can be produced for each parameter using the method below. Note that as this is produced directly from simulation responses, this plot can currently only be produced for simulation input provided in the first method, the organised folder structure.
 
 ```{r, eval = FALSE}
-oat_plotResultDistribution(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CSV_FILE_NAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS, TIMEPOINTSCALE)
+oat_plotResultDistribution(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CSV_FILE_NAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS)
+# For multiple timepoints:
+oat_plotResultDistribution(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CSV_FILE_NAME, BASELINE, PMIN, PMAX, PINC, PARAMVALS,
+                           TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 
@@ -328,7 +338,6 @@ not deterministic. In our case study, each of the 500 samples was run 300 times,
 ```{r,eval=FALSE
 # Import the packages
 library(spartan)
-library(lhs)
 # The folder where the parameter samples should be output to
 FILEPATH <- "/home/user/LHC/Sampling"
 # Names of the parameters to generate values for.
@@ -384,11 +393,6 @@ LHCSUMMARYFILENAME <- "LHC_Summary.csv"
 # File name to give to the file showing the Partial Rank Correlation Coefficients
 # for each parameter.
 CORCOEFFSOUTPUTFILE <- "LHC_corCoeffs.csv"
-# Timepoints being analysed. Must be NULL if no timepoints being analysed, or else
-# be an array of timepoints. Scale sets the measure of these timepoints
-TIMEPOINTS<-NULL; TIMEPOINTSCALE<-NULL
-# Example Timepoints, if being used:
-#TIMEPOINTS <- c(12, 36, 48, 60); TIMEPOINTSCALE <- "Hours"
 ```
 
 
@@ -399,14 +403,20 @@ It is this CSV file that the exemplar data from our website contains: the origin
 results have been included for each parameter set, to mitigate the impact of any aleatory uncertainty (Technique 1). With all parameter value sets processed, the CSV file is output with the filename stated in LHC_ALL_SIM_RESULTS_FILE.
 
 ```{r, eval = FALSE}
-lhc_process_sample_run_subsets(FILEPATH, LHC_PARAM_CSV_LOCATION, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND, LHC_ALL_SIM_RESULTS_FILE)
+lhc_process_sample_run_subsets(FILEPATH, LHC_PARAM_CSV_LOCATION, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, 
+                               OUTPUTCOLSTART, OUTPUTCOLEND, LHC_ALL_SIM_RESULTS_FILE)
+# For multiple timepoints:
+lhc_process_sample_run_subsets(FILEPATH, LHC_PARAM_CSV_LOCATION, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, 
+                               OUTPUTCOLSTART, OUTPUTCOLEND, LHC_ALL_SIM_RESULTS_FILE, TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 
 With the CSV file in place (either constructed using the method above or provided), the next spartan function (below) summarises this further, generating the median of each simulation response for all runs under each hypercube parameter condition. The summary file is saved in the directory specified in FILEPATH, named as stated in LHCSUMMARYFILENAME.
 
 ```{r, eval=FALSE}
-lhc_generateLHCSummary(FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME, LHC_PARAM_CSV_LOCATION, TIMEPOINTS, TIMEPOINTSCALE)
+lhc_generateLHCSummary(FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME, LHC_PARAM_CSV_LOCATION)
+# For multiple timepoints:
+lhc_generateLHCSummary(FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME, LHC_PARAM_CSV_LOCATION, TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 
@@ -415,7 +425,13 @@ Partial Rank Correlation Coefficients (PRCC) for each parameter. This statistica
 
 ```{r, eval=FALSE}
 lhc_generatePRCoEffs(FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE, TIMEPOINTS, TIMEPOINTSCALE)
-lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
+lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME)
+
+# Note that from Spartan 3 you can choose the output format of this graph, by:
+lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME, 
+                                    OUTPUT_TYPE = c("PDF","PNG","BMP","TIFF"))
+
+# For multiple timepoints, add them onto end of call as done previously, i.e. TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours"
 ```
 
 Two of the plots produced for the example data can be seen in Figure 3(B) and 3(C). In Figure 3(B), no clear trend emerges for this parameter. In contrast, there is a strong correlation between the value of the parameter in Figure 3(C) and the simulation response (cell velocity). This suggests that, although a number of other parameters are also being perturbed, the value of this parameter has a significant impact on simulation response. Through this analysis, we identified that cell adhesion may be a key pathway at this point in lymphoid organ development, and thus is a pathway to be explored
@@ -494,7 +510,6 @@ TTEST_CONF_INT <- 0.95
 EFASTRESULTFILENAME <- "EgSet_eFAST_Analysis.csv"
 # Boolean to note whether summary graphs should be produced
 GRAPH_FLAG <- TRUE
-TIMEPOINTS <- NULL; TIMEPOINTSCALE <- NULL
 ```
 
 In this example, we are utilising Fourier frequency analysis to examine the results of perturbing six parameters simultaneously (7 including the dummy). Similarly to all the previous techniques described in this paper, the researcher can specify their simulation result input in two formats. The first consists of the organised folder structure described in Figure 4(A). The structure is comprised of four levels: the sample curve number, then parameter of interest for that curve, containing the number of the set of simulator values generated for that parameter, that in turn holds the responses
@@ -504,22 +519,30 @@ The exemplar simulation data contains the latter: the summary CSV files for each
 function can be used to produce these files:
 
 ```{r, eval = FALSE}
-efast_generate_medians_for_all_parameter_subsets(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND, TIMEPOINTS, TIMEPOINTSCALE)
+efast_generate_medians_for_all_parameter_subsets(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, 
+                                                 ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND)
+# For multiple timepoints:
+efast_generate_medians_for_all_parameter_subsets(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, 
+                                                 ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND, TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 With the CSV file summaries in place (either provided by the researcher or generated using the function above), the variance in simulation response can be partitioned between the parameters. To do this, the algorithm needs to generate a further summary of all simulation responses: one for each parameter resampling curve employed. This is generated by the following function. A CSV summary file is produced that shows, for each parameter of interest, the median of each simulation output response under the generated parameter value set conditions. As an example, consider we are examining curve 1, parameter 1. For this parameter of interest, 65 different parameter value sets were generated from the frequency curves, thus we have 65 different sets of simulation results. 
 
-The previous method produced a summary of the responses for each simulation run under those conditions: this method now takes the median of each response and stores this in the summary alongside the parameter values that generated these medians. Thus, for each parameter of interest, median responses for each of the 65 sets of results are stored. The next parameter is then examined, until all have been analysed. This produces a snapshot showing the median simulation output for all parameter value sets generated for the first resample curve. This is stored in the directory specified by
-the FILEPATH object, with the name Curve[Curve Number]_Summary.csv.
+The previous method produced a summary of the responses for each simulation run under those conditions: this method now takes the median of each response and stores this in the summary alongside the parameter values that generated these medians. Thus, for each parameter of interest, median responses for each of the 65 sets of results are stored. The next parameter is then examined, until all have been analysed. This produces a snapshot showing the median simulation output for all parameter value sets generated for the first resample curve. This is stored in the directory specified by the FILEPATH object, with the name Curve[Curve Number]_Summary.csv.
 
 ```{r, eval=FALSE}
-efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES, TIMEPOINTS, TIMEPOINTSCALE)
+efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES)
+# For timepoints:
+efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES, TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 It is this summary that can then be processed by the eFAST algorithm, producing statistical measures that partition the variance in simulation response between the parameters of interest: 
 
 ```{r,eval=FALSE}
-efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
+efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME)
+# For multiple timepoints:
+efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, GRAPH_FLAG, 
+                   EFASTRESULTFILENAME, TIMEPOINTS=c(12,36,48,60), TIMEPOINTSCALE="Hours")
 ```
 
 In the folder specified in FILEPATH, an overall summary of the analysis will have been produced, named as stated in EFASTRESULTFILENAME. The summary file contains a row showing the name of each parameter being examined, followed by a number of statistical measures generated for each simulation response: the fraction of output variance explained by a variation of that parameter (Si); the fraction of variance accounted for by that parameter and any higher-order or non-linear effects between the parameter and others (STi); the variance caused by all parameters excluding that of

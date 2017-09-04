@@ -1,8 +1,6 @@
 library(spartan)
-library(lhs)
-library(XML)
 # Directory where the samples should be stored
-FILEPATH<-"C:/Users/kja505/Documents/NetlogoTest"
+FILEPATH<-"/home/kja505/Documents/Spartan3_Test_Data/Netlogo/LHC/Sampling/"
 # Parameters in simulation. List all the parameters that Netlogo is
 # required to know,
 PARAMETERS<-c("people","infectiousness","chance-recover","duration")

@@ -218,8 +218,8 @@ lhc_generateLHCSummary <- function(FILEPATH, PARAMETERS, MEASURES,
       # LHCSUMMARYFILENAME IS LHCSummary.csv for 1 timepoint
       # READ IN THE LHC DESIGN TABLE - NEED TO REFER TO THIS LATER AS
       # PARAMETERS ARE LISTED WITH THE MEDIAN RESULT SET
-      print("Generating LHC result summary file from median
-            simulation results (lhc_generateLHCSummary)")
+      print(join_strings_space(c("Generating LHC summary file from median",
+            "simulation results (lhc_generateLHCSummary)")))
 
       # SUMMARY TABLE WILL STORE THE PARAMETERS USED IN THE RUN SET,
       # AND THE MEDIAN OUTPUT MEASURES, FOR EACH SET

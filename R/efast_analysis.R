@@ -182,8 +182,9 @@ efast_get_overall_medians  <-  function(FILEPATH, NUMCURVES, PARAMETERS,
 
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
     if (file.exists(FILEPATH)) {
-      print("Calculating overall medians responses for each parameter set
-            (efast_get_overall_medians)")
+      print(join_strings_space(c("Calculating overall medians responses for ",
+                                 "each parameter set ",
+                                 "(efast_get_overall_medians)")))
 
       for (CURVE in 1:NUMCURVES) {
 

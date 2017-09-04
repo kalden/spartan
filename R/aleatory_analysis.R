@@ -253,9 +253,9 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
       current_time <- TIMEPOINTS[n]
       print(join_strings_space(c("PROCESSING TIMEPOINT:", current_time)))
 
-      aa_sim_results_format <- check_file_extension(AA_SIM_RESULTS)
-      AA_SIM_RESULTS_FULL <- paste(substr(AA_SIM_RESULTS, 0,
-                                          nchar(AA_SIM_RESULTS) - 4),
+      aa_sim_results_format <- check_file_extension(AA_SIM_RESULTS_FILE)
+      AA_SIM_RESULTS_FULL <- paste(substr(AA_SIM_RESULTS_FILE, 0,
+                                          nchar(AA_SIM_RESULTS_FILE) - 4),
                                    "_", current_time, ".",
                                    aa_sim_results_format, sep = "")
 
@@ -266,13 +266,15 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
                                          "_", current_time, ".",
                                          atest_results_format, sep = "")
 
-      GRAPHOUTPUTNAME < -current_time
+      GRAPHOUTPUTNAME <- current_time
 
       aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
-                         MEASURES, AA_SIM_RESULTS_FULL,
-                         ATESTRESULTSFILENAME_FULL, LARGEDIFFINDICATOR,
-                         TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-                         GRAPHOUTPUTNAME)
+                        MEASURES, ATESTRESULTSFILENAME_FULL,
+                        LARGEDIFFINDICATOR,
+                        AA_SIM_RESULTS_FILE = AA_SIM_RESULTS_FULL,
+                        AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
+                        TIMEPOINTSCALE = NULL, GRAPHNAME = GRAPHOUTPUTNAME)
+
     }
   }
 }

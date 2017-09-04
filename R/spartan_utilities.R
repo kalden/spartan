@@ -141,6 +141,9 @@ check_file_extension <- function(filename) {
   else if (substr(filename, (nchar(filename) + 1 ) - 3,
             nchar(filename)) == "xml")
     return("xml")
+  else if (substr(filename, (nchar(filename) + 1 ) - 3,
+                  nchar(filename)) == "pdf")
+    return("pdf")
   else
     return("NULL")
 }

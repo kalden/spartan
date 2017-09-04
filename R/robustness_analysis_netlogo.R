@@ -84,6 +84,8 @@ oat_generate_netlogo_behaviour_space_XML <-
     # CLOSE THE EXPERIMENTS TAG
     xml$closeTag()
 
+    print("Netlogo Robustness Setup file generated:")
+
     XML::saveXML(xml, file = paste(FILEPATH, "/", NETLOGO_SETUPFILE_NAME,
                                    ".xml", sep = ""), indent = TRUE,
                  prefix = '<?xml version="1.0" encoding="us-ascii"?>\n',
@@ -137,8 +139,8 @@ oat_process_netlogo_result <-
   write.csv(TIMESTEP_RESULTS, paste(FILEPATH, "/", RESULTFILENAME, sep = ""),
             quote = FALSE, row.names = FALSE)
 
-  print("Analysing Netlogo Robustness Analysis File,
-        and Generating A-Test Scores")
+  print(join_strings_space(c("Analysing Netlogo Robustness Analysis File",
+        "and Generating A-Test Scores")))
   oat_csv_result_file_analysis(FILEPATH, RESULTFILENAME, PARAMETERS,
                                BASELINE, MEASURES, ATESTRESULTSFILENAME,
                                PMIN = PMIN, PMAX = PMAX,

@@ -157,8 +157,8 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
       if (is.null(GRAPHLABEL))
         title("Maximum A-Test Scores for each Sample Size")
       else
-        title(paste("Maximum A-Test Scores for each Sample Size \n
-                    Timepoint: ", GRAPHLABEL, sep = ""))
+        title(paste("Maximum A-Test Scores for each Sample Size ",
+                    "(Timepoint: ", GRAPHLABEL, ")",sep = ""))
 
       axis(1, at = seq(0, MAXSAMPLESIZE, by = 100))
       axis(2, at = seq(0.5, 1.0, by = 0.05))
@@ -205,12 +205,14 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
                                 "_", current_time, ".", graphfilename_format,
                                 sep = "")
 
-      GRAPHLABEL <- paste(current_time, " (", TIMEPOINTSCALE, ")", sep = "")
+      GRAPHLABEL <- paste(current_time, TIMEPOINTSCALE, sep = " ")
 
       aa_graphSampleSizeSummary(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
-                                MEDIUM, LARGE, SUMMARYFILENAME_FULL,
-                                GRAPHFILENAME_FULL, TIMEPOINTS = NULL,
-                                TIMEPOINTSCALE = NULL, GRAPHLABEL)
+                                MEDIUM, LARGE, GRAPHFILENAME_FULL,
+                                SAMPLESUMMARY_OBJECT = NULL,
+                                SAMPLESUMMARY_FILE = SUMMARYFILENAME_FULL,
+                                TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+                                GRAPHLABEL)
     }
   }
 }

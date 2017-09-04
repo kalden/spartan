@@ -26,13 +26,13 @@ efast_graph_Results <- function(RESULTS_FILE_PATH, PARAMETERS, si, sti,
         GRAPHFILE <- paste(RESULTS_FILE_PATH, "/", MEASURES[MEASURE], ".pdf",
                            sep = "")
         GRAPHTITLE <- paste("Partitioning of Variance in Simulation Results
-                            using eFAST \n Measure: ", MEASURES[MEASURE],
+                            Measure: ", MEASURES[MEASURE],
                             sep = "")
       } else {
         GRAPHFILE <- paste(RESULTS_FILE_PATH, "/", MEASURES[MEASURE], "_",
                            TIMEPOINT, ".pdf", sep = "")
         GRAPHTITLE <- paste("Partitioning of Variance in Simulation Results
-                            using eFAST \n Measure: ", MEASURES[MEASURE],
+                            Measure: ", MEASURES[MEASURE],
                             ". Timepoint: ", TIMEPOINT, " ",
                             TIMEPOINTSCALE, sep = "")
       }

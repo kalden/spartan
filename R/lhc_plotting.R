@@ -87,18 +87,19 @@ lhc_graphMeasuresForParameterChange <-
 
               for (file_type in 1:length(OUTPUT_TYPE)) {
                 # Save the graphs in the requested format
-                if (OUTPUT_TYPE[file_type] == "PDF")
+                if (OUTPUT_TYPE[file_type] == "PDF") {
                   ggsave(paste(GRAPHFILE, ".pdf", sep = ""),
                          plot = output_graph, width = 4, height = 4)
-                else if (OUTPUT_TYPE[file_type] == "PNG")
+                } else if (OUTPUT_TYPE[file_type] == "PNG") {
                   ggsave(paste(GRAPHFILE, ".png", sep = ""),
                          plot = output_graph, width = 4, height = 4)
-                else if (OUTPUT_TYPE[file_type] == "TIFF")
+                } else if (OUTPUT_TYPE[file_type] == "TIFF") {
                   ggsave(paste(GRAPHFILE, ".tiff", sep = ""),
                          plot = output_graph, width = 4, height = 4)
-                else if (OUTPUT_TYPE[file_type] == "BMP")
+                } else if (OUTPUT_TYPE[file_type] == "BMP") {
                   ggsave(paste(GRAPHFILE, ".bmp", sep = ""),
                          plot = output_graph, width = 4, height = 4)
+                }
               }
             }
           }
