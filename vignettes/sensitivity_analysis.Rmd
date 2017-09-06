@@ -4,7 +4,7 @@ author: "Kieran Alden, Mark Read, Paul S Andrews, Jon Timmis and Mark Coles"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Applying spartan to Understand Parameter Uncertainty in Simulations: Sensitivity Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

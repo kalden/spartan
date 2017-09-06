@@ -4,7 +4,7 @@ author: "Kieran Alden, Jason Cosgrove"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Spartan: Expedited and Enriched Analyses Using Emulations & Ensembles}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
