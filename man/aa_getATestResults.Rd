@@ -22,13 +22,15 @@ aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
 
 \item{LARGEDIFFINDICATOR}{The A-Test determines there is a large difference between two sets if the result is greater than 0.2 either side of the 0.5 line.  Should this not be suitable, this can be changed here}
 
+\item{AA_SIM_RESULTS_FILE}{The name of the CSV file containing the simulation responses, if reading from a CSV file}
+
+\item{AA_SIM_RESULTS_OBJECT}{The name of the R object containing the simulation responses, if not reading from a CSV file}
+
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}
 
 \item{GRAPHNAME}{Used internally by the getATestResults method when producing graphs for multiple timepoints. Should not be set in function call.}
-
-\item{AA_SIM_RESULTS}{Either - A: The name of the summary CSV file to be created by aa_summariseReplicateRuns or B: The name of the provided CSV file that summarises the results of all runs for this analysis.}
 }
 \description{
 Examines the summary CSV file produced either by the method

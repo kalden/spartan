@@ -31,6 +31,9 @@ creation, whether or not the ensemble should be saved to file, and to
 specify the number of generations for which the neural network that is
 generating the algorithm weightings should run.}
 
+\item{normalise}{Whether the predictions generated when testing the
+ensemble should be normalised for presenting test results}
+
 \item{timepoint}{If using multiple timepoints, the timepoint for which
 this ensemble is being created}
 }

@@ -17,6 +17,12 @@ aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME,
 
 \item{SUMMARYFILENAME}{Name of the file generated that lists the maximum and median A-Test results for each sample size.}
 
+\item{ATESTRESULTS_FILE}{The name of a CSV file containing the A-Test
+results calculated by aa_getATestResults, if reading from a CSV file.}
+
+\item{ATESTRESULTS_OBJECT}{The name of an R object containing the A-Test
+results calculated by aa_getATestResults, if not reading from a CSV file}
+
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}

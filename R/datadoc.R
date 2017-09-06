@@ -46,3 +46,26 @@ NULL
 #' @usage data(sim_data_for_emulation)
 #' @format A list with 500 rows (one per parameter set) and nine columns
 NULL
+
+#' Example dataset showing the structure for consistency analysis data
+#'
+#' This dataset contains exemplar results from a consistency analysis, that
+#' shown in the tutorial. This data can be read in and processed using the
+#' functions detailed in the vignette. The important thing to obtain from this
+#' object is the structure the data is expected to be in
+#'
+#' \itemize{
+#'   \item SampleSize. Number of simulation executions in each subset
+#'   \item Set. The number of the subset this result belongs to
+#'   \item Velocity. The median velocity observed in simulation executions in
+#'   this set
+#'   \item Displacement. The median displacement observed in simulation
+#'   executions in this set
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name tutorial_consistency_set
+#' @usage data(tutorial_consistency_set)
+#' @format A list with 9060 rows and four columns
+NULL

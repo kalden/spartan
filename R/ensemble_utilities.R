@@ -36,13 +36,17 @@ generate_ensemble_training_set <- function(emulator, parameters, measures,
 #' assessed
 #' @param measures Simulation responses the model should predict
 #' @param emulator_types Machine learning techniques being employed
+#' @param pre_normed_mins The minimum values of each parameter prior to data
+#' normalisation. Used to rescale the results
+#' @param pre_normed_maxes The maximum values of each parameter prior to data
+#' normalisation. Used to rescale the results
 #' @param algorithm_settings Object output from the function
 #' emulation_algorithm_settings, containing the settings of the machine
 #' learning algorithms to use in emulation creation. Used here to obtain
 #' settings relevant to ensemble creation - namely number of generations and
 #' whether the ensemble should be saved to file, as well as whether plots
 #' should be produced showing ensemble performance.
-#' @param normalised Whether the predictions generated when testing the
+#' @param normalise Whether the predictions generated when testing the
 #' ensemble should be normalised for presenting test results
 #' @param timepoint Simulation timepoint for which an ensemble is being created
 #' @return Generated ensemble object

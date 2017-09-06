@@ -13,8 +13,7 @@ __This vignette is based on our R Journal publication "Applying spartan to Under
 
 
 ## Abstract
-In attempts to further understand the dynamics of complex systems, the application of computer simulation is becoming increasingly prevalent. Whereas a great deal of focus has been placed in the development of software tools that aid researchers develop simulations, similar focus has not been applied in the creation of tools that perform a rigorous statistical analysis of results generated through simulation: vital in understanding how these results offer an insight into the captured system. This encouraged us to develop spartan, a package of statistical techniques designed to assist
-researchers in understanding the relationship between their simulation and the real system. Previously we have described each technique within spartan in detail, with an accompanying immunology case study examining the development of lymphoid tissue. Here we provide a practical introduction to the package, demonstrating how each technique is run in R, to assist researchers in integrating this package alongside their chosen simulation platform.
+In attempts to further understand the dynamics of complex systems, the application of computer simulation is becoming increasingly prevalent. Whereas a great deal of focus has been placed in the development of software tools that aid researchers develop simulations, similar focus has not been applied in the creation of tools that perform a rigorous statistical analysis of results generated through simulation: vital in understanding how these results offer an insight into the captured system. This encouraged us to develop spartan, a package of statistical techniques designed to assist researchers in understanding the relationship between their simulation and the real system. Previously we have described each technique within spartan in detail, with an accompanying immunology case study examining the development of lymphoid tissue. Here we provide a practical introduction to the package, demonstrating how each technique is run in R, to assist researchers in integrating this package alongside their chosen simulation platform.
 
 
 ## Introduction
@@ -166,7 +165,7 @@ You will have noticed that each function call contains the two parameters TIMEPO
 * Simulation results (if provided in the folder structure input method), or the CSV files summarising simulation results, should have the timepoint at which these were produced appended to the filename. For example, in the exemplar data, there are CSV files named AA_SimResponses_12.csv, AA_SimReponses_36.csv, etc, containing cell behaviour characteristics at hours 12 and 36 respectively. The same exists in the simulation result folders, where the simulation results are named trackedCells_Close_12.csv, trackedCells_Close_36.csv, etc. It is important that the result files are named in this manner to aid spartan finding these result files. As this is the case, you can only analyse timepoint files by giving the names of the CSV files, not the R objects that contain that data.
 
 
-![Figure 1: Use of spartan to mitigate aleatory uncertainty. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: A-Test scores for 20 distributions of simulation runs, with each distribution containing 5 runs. Note the substantial differences between distributions, although the same parameter values have generated these results. This suggests that 5 runs is insufficient to achieve a representative result. C: The maximum A-Test score across 20 distributions of simulation runs for sample sizes of 1,5,50,100,and 300. As direction is of no concern, the A-Test scores are normalised such that scores below 0.5 are assigned corresponding values above 0.5. B and C are reproduced from Alden et al.(2013b)](/home/kja505/Dropbox/spartan_3.0/spartan/vignettes/Figure1.png)
+![Figure 1: Use of spartan to mitigate aleatory uncertainty. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: A-Test scores for 20 distributions of simulation runs, with each distribution containing 5 runs. Note the substantial differences between distributions, although the same parameter values have generated these results. This suggests that 5 runs is insufficient to achieve a representative result. C: The maximum A-Test score across 20 distributions of simulation runs for sample sizes of 1,5,50,100,and 300. As direction is of no concern, the A-Test scores are normalised such that scores below 0.5 are assigned corresponding values above 0.5. B and C are reproduced from Alden et al.(2013b)](Figure1.png)
 
 
 
@@ -317,7 +316,7 @@ This technique provides researchers with the ability to understand if the parame
 it can point to the need to further investigate the real world system.
 
 
-![Figure 2: Use of spartan to determine how robust a simulation is to parameter perturbation. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: A-Test scores generated when the parameter controlling initial expression of a chemoattractant is perturbed. C: A-Test scores generated when the parameter controlling saturation of a chemoattractant is perturbed. B and C are reproduced from Alden et al. (2013b)](/home/kja505/Dropbox/spartan_3.0/spartan/vignettes/Figure2.png)
+![Figure 2: Use of spartan to determine how robust a simulation is to parameter perturbation. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: A-Test scores generated when the parameter controlling initial expression of a chemoattractant is perturbed. C: A-Test scores generated when the parameter controlling saturation of a chemoattractant is perturbed. B and C are reproduced from Alden et al. (2013b)](Figure2.png)
 
 
 ## Technique 3: Latin-hypercube analysis
@@ -440,7 +439,7 @@ further in the laboratory. This demonstrates the impact that running a global se
 Similarly to the techniques above, it is possible to perform this technique for multiple simulation timepoints. To do this, the researcher needs to follow the same requirements detailed at the end of the description of Technique 1.
 
 
-![Figure 3: Use of spartan to identify compound effects between parameters using latin-hypercube sampling. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: Simulation responses sorted by the parameter that captures chemoattractant expression level required to influence cell motility, showing no trend between parameter value and result. C: Responses sorted by the parameter capturing the level of cell adhesion required to restrict cell motility, where a clear trend is apparent. B and C are reproduced from Alden et al. (2013b)](/home/kja505/Dropbox/spartan_3.0/spartan/vignettes/Figure3.png)
+![Figure 3: Use of spartan to identify compound effects between parameters using latin-hypercube sampling. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: Simulation responses sorted by the parameter that captures chemoattractant expression level required to influence cell motility, showing no trend between parameter value and result. C: Responses sorted by the parameter capturing the level of cell adhesion required to restrict cell motility, where a clear trend is apparent. B and C are reproduced from Alden et al. (2013b)](Figure3.png)
 
 
 ## Technique 4: Extended fourier amplitude sampling test
@@ -553,7 +552,7 @@ Again it is possible to perform this technique for multiple simulation timepoint
 
 Although this is a complex statistical technique, gaining a statistical measure of the impact of each parameter on simulation variance is useful in fully understanding simulator behaviour, especially if this conclusion is supported by other techniques above. Unless the reader has significant computational resources, this technique is more powerful for analyses containing just a few parameters.
 
-![Figure 4: Use of eFAST in partitioning variance in response between parameters. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: Sensitivity measures for the cell velocity response. Black bars: Si - variance explained by the value assigned to that parameter. Grey bars: STi: Variance caused by this parameter and non-linear effects between this parameter and others. B is reproduced from Alden et al. (2013b).](/home/kja505/Dropbox/spartan_3.0/spartan/vignettes/Figure4.png)
+![Figure 4: Use of eFAST in partitioning variance in response between parameters. A: The folder structure that should be utilised if providing all simulation result files rather than a CSV file summarising all results. B: Sensitivity measures for the cell velocity response. Black bars: Si - variance explained by the value assigned to that parameter. Grey bars: STi: Variance caused by this parameter and non-linear effects between this parameter and others. B is reproduced from Alden et al. (2013b).](Figure4.png)
 
 
 ## Conclusion
@@ -574,28 +573,28 @@ This work was part-funded by theWellcome Trust [ref:097829] through the Centre f
 ## Bibliography
 
 * K. Alden, J. Timmis, P. S. Andrews, H. Veiga-Fernandes, and M. C. Coles. Pairing experimentation and computational modelling to understand the role of tissue inducer cells in the development of lymphoid organs. Frontiers in Immunology, 3:1–20, 2012. [p63, 64, 69]
-* K. Alden, M. Read, P. Andrews, J. Timmis, H. Veiga-Fernandes, and M. Coles. spartan: Spartan (Simulation Parameter Analysis R Toolkit ApplicatioN), 2013a. URL http://CRAN.R-project.org/package=spartan. R package version 2.1. [p64]
+* K. Alden, M. Read, P. Andrews, J. Timmis, H. Veiga-Fernandes, and M. Coles. spartan: Spartan (Simulation Parameter Analysis R Toolkit ApplicatioN), 2013a. R package version 2.1. [p64]
 * K. Alden, M. Read, J. Timmis, P. S. Andrews, H. Veiga-Fernandes, and M. C. Coles. Spartan: A comprehensive tool for understanding uncertainty in simulations of biological systems. PLoS Computational Biology, 9(2), 2013b. [p63, 64, 67, 71, 74, 75, 78]
-* R. Carnell. lhs: Latin hypercube samples, 2012. URL http://CRAN.R-project.org/package=lhs. R package version 0.10. [p64]
-G. M. Dancik. mlegp: Maximum likelihood estimates of gaussian processes, 2013. URL http://CRAN.Rproject.org/package=mlegp. R package version 3.1.4. [p63]
+* R. Carnell. lhs: Latin hypercube samples, 2012. R package version 0.10. [p64]
+G. M. Dancik. mlegp: Maximum likelihood estimates of gaussian processes, 2013. R package version 3.1.4. [p63]
 * J. C. Helton. Uncertainty and sensitivity analysis for models of complex systems. In T. J. Barth, M. Griebel, D. E. Keyes, R. M. Nieminen, D. Roose, and T. Schlick, editors, Computational Methods in Transport: Verification and Validation, pages 207–228. Springer, 2008. [p64]
 * M. Ivanyi, R. Bocsi, L. Gulyas, V. Kozma, and R. Legendi. The multi-agent simulation suite. In AAAI Fall Symposium Series, pages 56–63, 2007. [p63]
-* M. Lamboni, H. Monod, and C. Bidot. multisensi: Multivariate sensitivity analysis, 2013. URL http://CRAN.R-project.org/package=multisensi. R package version 1.0.7. [p63]
-* D. T. Lang. XML: Tools for parsing and generating XML within R and S-Plus., 2013. URL http://CRAN.Rproject.org/package=XML. R package version 3.98-1.1. [p64]
+* M. Lamboni, H. Monod, and C. Bidot. multisensi: Multivariate sensitivity analysis, 2013. R package version 1.0.7. [p63]
+* D. T. Lang. XML: Tools for parsing and generating XML within R and S-Plus., 2013. R package version 3.98-1.1. [p64]
 * Lemon, J. Plotrix: a package in the red light district of R. R-News, 6(4): 8-12. 2006
 * S. Luke. Mason: A multiagent simulation environment. Simulation, 81(7):517–527, 2005. [p63]
 * S. Marino, I. B. Hogue, C. J. Ray, and D. E. Kirschner. A methodology for performing global uncertainty and sensitivity analysis in systems biology. Journal of Theoretical Biology, 254(1):178–96, 2008. [p63, 71, 75]
 * M. Meier-Schellersheim, X. Xu, B. Angermann, E. J. Kunkel, T. Jin, and R. N. Germain. Key role of local regulation in chemosensing revealed by a new molecular interaction-based modeling method. PLoS Computational Biology, 2(7):710–724, 2006. [p63]
 * A. Patel, N. Harker, L. Moreira-Santos, M. Ferreira, K. Alden, J. Timmis, K. E. Foster, A. Garefalaki,P. Pachnis, P. S. Andrews, H. Enomoto, J. Milbrandt, V. Pachnis, M. C. Coles, D. Kioussis, and H. Veiga-Fernandes. Differential RET responses orchestrate lymphoid and nervous enteric system development. Science Signalling, 5(235), 2012. [p63, 64]
-* G. Pujol, B. Iooss, A. Janon, P. Lemaitre, L. Gilquin, L. L. Gratiet, T. Touati, B. Ramos, J. Fruth, and S. D. Veiga. sensitivity: Sensitivity Analysis, 2014. URL http://CRAN.R-project.org/package=sensitivity. R package version 1.9. [p63]
+* G. Pujol, B. Iooss, A. Janon, P. Lemaitre, L. Gilquin, L. L. Gratiet, T. Touati, B. Ramos, J. Fruth, and S. D. Veiga. sensitivity: Sensitivity Analysis, 2014. R package version 1.9. [p63]
 * M. Read, P. S. Andrews, J. Timmis, and V. Kumar. Techniques for grounding agent-based simulations in the real domain : a case study in Experimental Autoimmune Encephalomyelitis. Mathematical and Computer Modelling of Dynamical Systems, 18(1):67–86, 2012. [p63, 64, 66, 68, 71, 72]
 * A. Saltelli and R. Bollardo. An alternative way to compute Fourier amplitude sensitivity test (FAST). Comput. Stat. Data Anal., 26(4):445–460, 1998. [p63, 75]
 * A. Saltelli, K. Chan, and E. M. Scott. Sensitivity analysis. Wiley series in probability and statistics Wiley, 2000. [p71]
 * S. Tarantola, D. Gatelli, and T. Mara. Random balance designs for the estimation of first order global sensitivity indices. Reliability Engineering & System Safety, 91(6):717–727, 2006. [p75]
 * A. Vargha and H. D. Delaney. A critique and improvement of the cl common language effect size statistics of McGraw and Wong. Journal of Educational and Behavioural Statistics, 25:101–132, 2000. [p64, 68]
-* G. R. Warnes, B. Bolker, L. Bonebakker, R. Gentleman, W. H. A. Liaw, T. Lumley, M. Maechler, A. Magnusson, S. Moeller, M. Schwartz, and B. Venables. gplots: Various R programming tools for plotting data, 2013. URL http://CRAN.R-project.org/package=gplots. R package version 2.12.1. [p64]
+* G. R. Warnes, B. Bolker, L. Bonebakker, R. Gentleman, W. H. A. Liaw, T. Lumley, M. Maechler, A. Magnusson, S. Moeller, M. Schwartz, and B. Venables. gplots: Various R programming tools for plotting data, 2013. R package version 2.12.1. [p64]
 * H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2009.
-* U.Wilensky. NetLogo itself. Center for Connected Learning and Computer-Based Modeling, Northwestern University. Evanston, IL., 1999. URL http://ccl.northwestern.edu/netlogo/. [p63]
+* U.Wilensky. NetLogo itself. Center for Connected Learning and Computer-Based Modeling, Northwestern University. Evanston, IL., 1999. [p63]
 
 
 

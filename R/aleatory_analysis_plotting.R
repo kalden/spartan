@@ -106,9 +106,9 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
 
       if(!is.null(SAMPLESUMMARY_FILE)) {
         # READ IN THE SUMMARY FILE
-        if (file.exists(make_path(c(FILEPATH, SUMMARYFILENAME)))) {
+        if (file.exists(make_path(c(FILEPATH, SAMPLESUMMARY_FILE)))) {
 
-          atest_results <- read.csv(make_path(c(FILEPATH, SUMMARYFILENAME)),
+          atest_results <- read.csv(make_path(c(FILEPATH, SAMPLESUMMARY_FILE)),
                                     header = TRUE, check.names = FALSE)
         } else {
           print("Specified A-Test Summary File does not exist")
@@ -193,9 +193,9 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
       current_time <- TIMEPOINTS[n]
       print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
 
-      summaryfilename_format <- check_file_extension(SUMMARYFILENAME)
-      SUMMARYFILENAME_FULL <- paste(substr(SUMMARYFILENAME, 0,
-                                         nchar(SUMMARYFILENAME) - 4),
+      summaryfilename_format <- check_file_extension(SAMPLESUMMARY_FILE)
+      SUMMARYFILENAME_FULL <- paste(substr(SAMPLESUMMARY_FILE, 0,
+                                         nchar(SAMPLESUMMARY_FILE) - 4),
                                   "_", current_time, ".",
                                   summaryfilename_format, sep = "")
 

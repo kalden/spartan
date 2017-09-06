@@ -55,10 +55,12 @@ ensemble_abc_wrapper <- function(x) {
 #' @param measures Names of the simulation output responses which the ensemble
 #' predicts
 #' @param built_ensemble An ensemble object created by spartan
-#' @param normalise Whether the data provided by the EasyABC algorithm should
-#' be normalised (as the ensemble must take data between 0 and 1). More than
-#' likley this is TRUE, to ensure the posterior distributions are presented
-#' in their correct scale
+#' @param normalise_values Whether the data provided by the EasyABC algorithm
+#' should be normalised (as the ensemble must take data between 0 and 1).
+#' More than likley this is TRUE, to ensure the posterior distributions are
+#' presented in their correct scale
+#' @param normalise_result Whether the results produced in running abc
+#' generated parameter sets using the ensemble should be rescaled.
 #'
 #' @export
 create_abc_settings_object <- function(parameters, measures, built_ensemble,

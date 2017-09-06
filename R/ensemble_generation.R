@@ -26,6 +26,8 @@
 #' creation, whether or not the ensemble should be saved to file, and to
 #' specify the number of generations for which the neural network that is
 #' generating the algorithm weightings should run.
+#' @param normalise Whether the predictions generated when testing the
+#' ensemble should be normalised for presenting test results
 #' @param timepoint If using multiple timepoints, the timepoint for which
 #' this ensemble is being created
 #' @return A list containing the ensemble, the time taken to generate it,
@@ -239,7 +241,7 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
       emulators <- emulators_with_test_preds$emulators
 
       generated_ensemble <- create_ensemble(
-        emulators, all_model_predictions, partitionedData$testing, measures,
+        emulators, all_model_predictions, partitioned_data$testing, measures,
         model_list, emulators_with_test_preds$pre_normed_mins,
         emulators_with_test_preds$pre_normed_maxes, algorithm_settings = NULL,
         normalise = normalised, timepoint = NULL)
@@ -272,63 +274,3 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
     return(NULL)
   }
 }
-
-#' Use an ensemble to generate predictions for an unseen data set
-#'
-#' This method takes a set of parameters and generates a prediction of the
-#' simulation responses under those conditions. It should be specified as to
-#' whether the unseen data should be normalied, as this needs to be in the
-#' scale 0-1 to be acceptable to the ensemble.
-#' @param generated_ensemble Ensemble object to use to make predictions
-#' @param data_to_predict Unseen parameter set for which values are to be
-#' generated
-#' @param parameters Names of the simulation parameters
-#' @param measures Names of the simulation output responses being predicted
-#' @param normalise Boolean stating whether or not unseen parameter set needs
-#' to be normalised
-#' @return Predictions for all simulation output measures
-#'
-#' @export
-use_ensemble_to_generate_predictions <-
-  function(generated_ensemble, data_to_predict, parameters, measures,
-           normalise=FALSE) {
-  # Normalise unseen data if required
-  if (normalise) {
-    data_to_predict <- normalise_dataset(
-      data_to_predict, generated_ensemble$preNormedMins[, parameters],
-      generated_ensemble$preNormedMaxes[, parameters], parameters)$scaled
-  }
-
-  all_model_predictions <- NULL
-
-  for(model in 1:length(generated_ensemble$ensemble$emulators)) {
-
-    emulator <- generated_ensemble$ensemble$emulators[[model]]
-    #emulator_types <-c(emulator_types,emulator$type)
-
-    emulator_predictions <- generate_predictions_from_emulator(
-      emulator, parameters, measures, data_to_predict)
-
-    all_model_predictions <- cbind(
-      all_model_predictions,
-      extract_predictions_from_result_list(emulator_predictions,emulator$type,
-                                           measures))
-  }
-
-  novel_predictions <- weight_emulator_predictions_by_ensemble(
-    generated_ensemble$ensemble$weights, all_model_predictions, measures,
-    numOfGenerations=800000)
-
-  # Rescale the predictions if data was normalised
-  if(normalise) {
-    # rbind used to get the mins and maxes into the correct format
-    # (compatible with all other calls to this function)
-    novel_predictions <- denormalise_dataset(
-      novel_predictions, rbind(generated_ensemble$preNormedMins[,measures]),
-      rbind(generated_ensemble$preNormedMaxes[,measures] ))
-  }
-
-  return(novel_predictions)
-
-}
-

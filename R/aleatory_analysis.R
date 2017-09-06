@@ -118,10 +118,11 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
 #'
 #' @inheritParams aa_summariseReplicateRuns
 #' @param NUMSUBSETSPERSAMPLESIZE The number of subsets for each sample size (i.e in the tutorial case, 20)
-#' @param AA_SIM_RESULTS Either - A: The name of the summary CSV file to be created by aa_summariseReplicateRuns or B: The name of the provided CSV file that summarises the results of all runs for this analysis.
 #' @param ATESTRESULTSFILENAME Name of the file that will contain the A-Test scores for each sample size
 #' @param LARGEDIFFINDICATOR The A-Test determines there is a large difference between two sets if the result is greater than 0.2 either side of the 0.5 line.  Should this not be suitable, this can be changed here
 #' @param GRAPHNAME Used internally by the getATestResults method when producing graphs for multiple timepoints. Should not be set in function call.
+#' @param AA_SIM_RESULTS_FILE The name of the CSV file containing the simulation responses, if reading from a CSV file
+#' @param AA_SIM_RESULTS_OBJECT The name of the R object containing the simulation responses, if not reading from a CSV file
 #'
 #' @export
 #'
@@ -289,6 +290,10 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
 #' SUMMARYFILENAME. If doing this analysis over multiple timepoints, the
 #' timepoint will be appended to the filename given in SUMMARYFILENAME.
 #'
+#' @param ATESTRESULTS_FILE The name of a CSV file containing the A-Test
+#' results calculated by aa_getATestResults, if reading from a CSV file.
+#' @param ATESTRESULTS_OBJECT The name of an R object containing the A-Test
+#' results calculated by aa_getATestResults, if not reading from a CSV file
 #' @inheritParams aa_summariseReplicateRuns
 #' @inheritParams aa_getATestResults
 #'
@@ -305,10 +310,10 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
 
       if(!is.null(ATESTRESULTS_FILE)) {
         # READ IN THE SUMMARY FILE
-        if (file.exists(make_path(c(FILEPATH, ATESTRESULTSFILENAME)))) {
+        if (file.exists(make_path(c(FILEPATH, ATESTRESULTS_FILE)))) {
 
           ALLSUBSET_ATEST_SCORES <- read.csv(make_path(c(FILEPATH,
-                                                         ATESTRESULTSFILENAME)),
+                                                         ATESTRESULTS_FILE)),
                                              header = TRUE, check.names = FALSE)
         } else {
           print("Specified A-Test File does not exist")
@@ -400,9 +405,9 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
       current_time <- TIMEPOINTS[n]
       print(join_strings(c("PROCESSING TIMEPOINT:", current_time), " "))
 
-      atest_results_format <- check_file_extension(ATESTRESULTSFILENAME)
-      ATESTRESULTSFILENAME_FULL <- paste(substr(ATESTRESULTSFILENAME, 0,
-                                              nchar(ATESTRESULTSFILENAME) - 4),
+      atest_results_format <- check_file_extension(ATESTRESULTS_FILE)
+      ATESTRESULTSFILENAME_FULL <- paste(substr(ATESTRESULTS_FILE, 0,
+                                              nchar(ATESTRESULTS_FILE) - 4),
                                        "_", current_time, ".",
                                        atest_results_format, sep = "")
 
