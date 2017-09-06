@@ -2,4 +2,5 @@
 ^\.Rproj\.user$
 ^\.git$
 ^\test_scripts$
+^cran-comments.md
 
