@@ -409,3 +409,11 @@ join_strings_space <- function(string_list) {
 join_strings_nospace <- function(string_list) {
   return(paste(string_list, collapse = ""))
 }
+
+#' Shortcut function for writing data to CSV file
+#' @param outputData Data to write to CSV file
+#' @param outputFile Name of the output file
+write_data_to_csv <- function(outputData, outputFile)
+{
+  write.csv(outputData, outputFile, row.names = FALSE, quote = FALSE)
+}

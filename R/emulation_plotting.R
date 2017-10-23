@@ -68,10 +68,10 @@ plot_compare_sim_observed_to_model_prediction <- function(observed, predicted,
   plot_data <- data.frame(predicted, observed)
 
   if (is.null(timepoint))
-    graph_title <- paste(technique, ",", measure, "\n MSE: ", round(mse, 3),
+    graph_title <- paste(technique, ",", measure, "\n RMSE: ", round(mse, 3),
                         sep = "")
   else
-    graph_title <- paste(technique, ",", measure, "\n MSE: ", round(mse, 3),
+    graph_title <- paste(technique, ",", measure, "\n RMSE: ", round(mse, 3),
                         "\n Timepoint: ", timepoint, sep = "")
 
   # Important that x and y are on the same scale - take the max of the

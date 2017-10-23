@@ -31,57 +31,74 @@
 #' @export
 lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
                                     PMAX, ALGORITHM) {
-  if (requireNamespace("lhs", quietly = TRUE)) {
-    if (file.exists(FILEPATH)) {
-      NUMPARAMS <- length(PARAMETERS)
+  # Version 3.1 adds pre-execution check functions as part of refactoring:
+  # Get the provided function arguments
+  input_arguments <- as.list(match.call())
+  # Run if all checks pass:
 
-      ALGORITHM <- tolower(ALGORITHM)
+  if(method_argument_check(input_arguments)) {
 
       # PERFORM THE SAMPLING - JUDGING ON USERS CHOICE OF ALGORITHM
-      if (ALGORITHM == "optimum") {
+      if (tolower(ALGORITHM) == "optimum") {
         # MAY TAKE A WHILE FOR A LARGE NUMBER OF SAMPLES
         # (THIS BEING TWO DAYS WHERE NUMSAMPLES=500)
-        design <- lhs::optimumLHS(NUMSAMPLES, NUMPARAMS, maxSweeps = 2,
+        design <- lhs::optimumLHS(NUMSAMPLES, length(PARAMETERS), maxSweeps = 2,
                                   eps = .1)
       } else {
-        design <- lhs::randomLHS(NUMSAMPLES, NUMPARAMS)
+        design <- lhs::randomLHS(NUMSAMPLES, length(PARAMETERS))
       }
 
-      # NOW LOOK AT THE VALUE CHOSEN FOR EACH SAMPLE, AS THESE WILL
-      # CURRENTLY BE BETWEEN 0 AND 1
-      for (k in 1:NUMSAMPLES) {
-        # NOW LOOK AT EACH PARAMETER IN TURN
-        # THE LHC WILL HAVE GIVEN EACH A VALUE BETWEEN 0 AND 1
-        # NOW USE THE MAX AND MIN VALUES FOR EACH PARAMETER TO
-        # GIVE IT A PROPER VALUE
-        for (l in 1:NUMPARAMS) {
-          # GET THE MAX AND MIN VALUES FOR THIS PARAMETER FROM THE ARRAY
-          lhc_max <- PMAX[l]
-          lhc_min <- PMIN[l]
+      # Now scale this design, as currently all values are between 0 and 1
+      design <- scale_lhc_sample(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
 
-          # NOW CALCULATE THE VALUE TO USE FOR THIS PARAMETER
-          value <- (design[k, l] * (lhc_max - lhc_min)) + lhc_min
-
-          # NOW REPLACE THE VALUE IN THE TABLE (BETWEEN 0 AND 1) WITH
-          # THE PARAMETER VALUE
-          design[k, l] <- value
-        }
-      }
-
-      # LABEL THE RESULTS
-      colnames(design) <- c(PARAMETERS)
-
-      # OUTPUT THE LHC DESIGN AS A CSV FILE
-      write.csv(design, paste(FILEPATH, "/LHC_Parameters_for_Runs.csv",
-                              sep = ""), row.names = FALSE, quote = FALSE)
+      # Output the scaled design to csv file
+      write_data_to_csv(design, make_path(c(FILEPATH,"LHC_Parameters_for_Runs.csv")))
 
       print(paste("Parameter Set Generated and Output to ", FILEPATH,
                   "/LHC_Parameters_for_Runs.csv", sep = ""))
-    } else {
-      print("The directory specified in FILEPATH does not exist.
-            No parameter samples generated")
-    }
-  } else {
-    print("The lhc_generate_lhc_sample function requires package lhs")
   }
+}
+
+#' Scale the LHC design to be the range explored for each parameter
+#'
+#' As the lhc design is scaled between 0 and 1, this method rescales the
+#' sample, putting the sampled value within the range specified for that
+#' parameter
+#' @param PARAMETERS Array containing the names of the parameters of which
+#' parameter samples will be generated
+#' @param NUMSAMPLES The number of parameter subsets to generate
+#' @param PMIN Array containing the minimum value that should be used for
+#' each parameter. Sets a lower bound on sampling space
+#' @param PMAX Array containing the maximum value that should be used for
+#' each parameter. Sets an upper bound on sampling space
+#' @param design The generated lhc design, all values between 0 and 1
+#' @return Rescaled design in the required ranges
+#'
+scale_lhc_sample <- function(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
+{
+  # NOW LOOK AT THE VALUE CHOSEN FOR EACH SAMPLE, AS THESE WILL
+  # CURRENTLY BE BETWEEN 0 AND 1
+  for (k in 1:NUMSAMPLES) {
+    # NOW LOOK AT EACH PARAMETER IN TURN
+    # THE LHC WILL HAVE GIVEN EACH A VALUE BETWEEN 0 AND 1
+    # NOW USE THE MAX AND MIN VALUES FOR EACH PARAMETER TO
+    # GIVE IT A PROPER VALUE
+    for (l in 1:length(PARAMETERS)) {
+      # GET THE MAX AND MIN VALUES FOR THIS PARAMETER FROM THE ARRAY
+      lhc_max <- PMAX[l]
+      lhc_min <- PMIN[l]
+
+      # NOW CALCULATE THE VALUE TO USE FOR THIS PARAMETER
+      value <- (design[k, l] * (lhc_max - lhc_min)) + lhc_min
+
+      # NOW REPLACE THE VALUE IN THE TABLE (BETWEEN 0 AND 1) WITH
+      # THE PARAMETER VALUE
+      design[k, l] <- value
+    }
+  }
+
+  # LABEL THE RESULTS
+  colnames(design) <- c(PARAMETERS)
+
+  return(design)
 }
