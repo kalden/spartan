@@ -24,10 +24,14 @@
 #' @export
 oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
                                    PMAX = NULL, PINC = NULL, PARAMVALS = NULL) {
-  # SPARTAN 2.0 - CHANGES SUCH THAT SAMPLING CAN BE PERFORMED USING SPECIFIED
-  # PARAMETER VALUES AS WELL AS INCREMENTS
 
-  if (file.exists(FILEPATH)) {
+  # Version 3.1 adds pre-execution check functions as part of refactoring:
+  # Get the provided function arguments
+  input_arguments <- as.list(match.call())
+  # Run if all checks pass:
+
+  if(check_robustness_sampling_args(input_arguments)) {
+
     # CONSIDER EACH PARAMETER IN TURN
     for (PARAMOFINT in 1:length(PARAMETERS)) {
       # NOW GET THE LIST OF PARAMETER VALUES BEING EXPLORED FOR THIS PARAMETER
@@ -46,7 +50,6 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
                                         dim = c(length(val_list))))
       }
 
-
       # FORMAT THEN OUTPUT THE PARAMETER TABLE FOR THIS PARAMETER OF INTEREST
       colnames(PARAMETERTABLE) <- PARAMETERS
 
@@ -54,16 +57,11 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
       results_file <- make_path(c(FILEPATH,
                                   make_filename(c(PARAMETERS[PARAMOFINT],
                                                   "OAT_Values.csv"))))
-
-      write.csv(PARAMETERTABLE, results_file, quote = FALSE, row.names = FALSE)
+      write_data_to_csv(PARAMETERTABLE, results_file)
 
       print(paste("Sample File Generated for parameter ",
                   PARAMETERS[PARAMOFINT], " and output to ",
                   results_file, sep = ""))
     }
-  } else {
-    print("The directory specified in FILEPATH does not exist.
-          No parameter samples generated")
   }
-
 }

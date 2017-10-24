@@ -169,7 +169,3 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
     }
   }
 }
-
-
-
-#efast_generate_sample("/home/kja505/Desktop/", 3, 65,c("A","B","C"), c(1,2,3), c(11,12,13))

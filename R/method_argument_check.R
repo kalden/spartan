@@ -30,6 +30,156 @@ check_efast_sampling_args <- function(arguments)
   return(preCheckSuccess)
 }
 
+#' Pre-execution checks to perform before the spartan robustness samplng
+#' technique is executed. Checks all parameter input
+#' @param arguments List of the arguments provided to the called function
+#' @return Boolean stating the status of the pre-execution checks
+check_robustness_sampling_args <- function(arguments)
+{
+  preCheckSuccess = TRUE
+  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  preCheckSuccess = check_robustness_range_or_values(arguments,preCheckSuccess)
+
+  # From the above test we know that the user has either specified PARAMVALS
+  # or PMIN,PMAX,INC choice - now we test dependent on that
+  if(is.null(eval(arguments$PARAMVALS)))
+  {
+    preCheckSuccess = check_robustness_parameter_and_ranges_lengths(arguments, preCheckSuccess)
+    preCheckSuccess = check_numeric_list_values(arguments$PMIN, arguments$PMAX, "PMIN", "PMAX", preCheckSuccess)
+    preCheckSuccess = check_numeric_list_values(arguments$PINC, arguments$PMAX, "PINC", "PMAX", preCheckSuccess)
+    preCheckSuccess = check_robustness_range_contains_baseline(arguments, preCheckSuccess)
+  }
+  else
+  {
+    preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
+    preCheckSuccess = check_robustness_paramvals_contains_baseline(arguments, preCheckSuccess)
+  }
+
+  return(preCheckSuccess)
+}
+
+#' For robustness, check whether using PMIN/PMAX/PINC entry or PARAMVALS
+#' @param arguments List of the arguments provided to the called function
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_robustness_range_or_values <- function(arguments,preCheckSuccess)
+{
+  if((!is.null(eval(arguments$PMIN)) | !is.null(eval(arguments$PMAX)) | !is.null(eval(arguments$PINC))) & !is.null(eval(arguments$PARAMVALS)))
+  {
+    message("You need to specify either PMIN,PMAX,and PINC, or the values to sample in PARAMVALS")
+    return(FALSE)
+  }
+  else
+    return(preCheckSuccess)
+}
+
+# Where used in robustness analysis, check that the length of PARAMVALS equals
+# the number of PARAMETERS
+#' @param arguments List of the arguments provided to the called function
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_paramvals_length_equals_parameter_length <- function(arguments, preCheckSuccess)
+{
+  if(length(eval(arguments$PARAMETERS)) == length(eval(arguments$PARAMVALS)))
+    return(preCheckSuccess)
+  else
+  {
+    message("Number of entries in PARAMVALS should match the number of parameters")
+    message("Spartan Terminated")
+    return(FALSE)
+  }
+}
+
+#' Checks that the parameter values specified in PARAMVALS contain the BASELINE
+#'
+#' The paramvals need to contain the BASELINE value else no behaviours can be
+#' compared using the robustness analysis approach in Technique 2
+#'
+#' @param arguments List of the arguments provided to the called function
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_robustness_paramvals_contains_baseline <- function(arguments, preCheckSuccess)
+{
+  paramvalsCheck <- eval(arguments$PARAMVALS)
+
+  for(PARAM in 1:length(paramvalsCheck))
+  {
+    # PARAMVALS is a string separated list, so need to convert to numeric
+    numeric_paramVals <- lapply(strsplit(paramvalsCheck[PARAM], ','), as.numeric)[[1]]
+
+    if(!eval(arguments$BASELINE)[PARAM] %in% numeric_paramVals)
+    {
+      message("PARAMVALS should contain the BASELINE value, else behaviours cannot be compared")
+      message("Spartan Terminated")
+      return(FALSE)
+    }
+  }
+  return(preCheckSuccess)
+}
+
+#' Checks that the range specified by PMIN and PMAX contains the BASELINE
+#'
+#' The paramvals need to contain the BASELINE value else no behaviours can be
+#' compared using the robustness analysis approach in Technique 2
+#'
+#' @param arguments List of the arguments provided to the called function
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_robustness_range_contains_baseline <- function(arguments, preCheckSuccess)
+{
+  minCheck <- eval(arguments$PMIN)
+  baselineCheck <- eval(arguments$BASELINE)
+  incCheck <- eval(arguments$PINC)
+  maxCheck <- eval(arguments$PMAX)
+
+  for(PARAM in 1:length(baselineCheck))
+  {
+    # Generate the sequence
+    sample <- seq(minCheck[PARAM],maxCheck[PARAM],by=incCheck[PARAM])
+    # Trouble here as due to precision of doubles, we may not locate the baseline
+    # i.e. if 0.3 is there, and baseline is 0.3, the %in% check may still fail
+    # So convert to string using paste
+
+    # Does this contain the baseline:
+    if(!toString(baselineCheck[PARAM]) %in% paste(sample))
+    {
+      message("Range specified by PMIN and PMAX should contain the BASELINE value, else behaviours cannot be compared")
+      message("Spartan Terminated")
+      return(FALSE)
+    }
+  }
+  return(preCheckSuccess)
+}
+
+#' Where used, checks that PARAMETERS, PMIN, PMAX, PINC, and BASELINE are all
+#' the same length
+#'
+#' @param arguments List of the arguments provided to the called function
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_robustness_parameter_and_ranges_lengths <- function(arguments, preCheckSuccess)
+{
+  inputLengths <- c(length(eval(arguments$PARAMETERS)),
+                    length(eval(arguments$BASELINE)),
+                    length(eval(arguments$PMIN)),length(eval(arguments$PMAX)),
+                    length(eval(arguments$PINC)))
+
+  # These should be all the same
+  if(all(inputLengths[1] == inputLengths))
+    return(preCheckSuccess)
+  else
+  {
+    message("Number of entries in PARAMETERS, BASELINE, PMIN, PMAX, and PINC should be equal")
+    message("Spartan Terminated")
+    return(FALSE)
+  }
+}
+
 #' Pre-Check of the parameters and ranges specified for sampling parameter
 #' space
 #' @param arguments List of the arguments provided to the called function
@@ -151,6 +301,42 @@ check_min_and_max_values <- function(arguments,preCheckSuccess)
     # Choose a return value in case of error
     return(FALSE)
   })
+}
+
+
+#' Check that two lists are numeric, and the values of one are less than the other
+#' @param smallList List of values that should be smaller
+#' @param largeList List of values that should be larger
+#' @param nameSmall Parameter name of the smaller list, for error reporting
+#' @param nameLarge Parameter name of the larger list, for error reporting
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_numeric_list_values <- function(smallList, largerList, nameSmall, nameLarge, preCheckSuccess)
+{
+  tryCatch(
+    {
+      smallCheck <- eval(smallList)
+      largeCheck <- eval(largerList)
+
+      if(all(smallCheck < maxCheck) & is.numeric(smallCheck) & is.numeric(largeCheck))
+        return(preCheckSuccess)
+      else {
+        message(paste(nameSmall, " must be less than ",nameLarge, "for all parameters, and must be numeric",sep=""))
+        return(FALSE)
+      }
+    },
+    error=function(cond) {
+      message(paste("Value error in ",nameSmall, " or ", nameLarge, ". Check these are numeric",sep=""))
+      message("Spartan Function Terminated")
+      # Choose a return value in case of error
+      return(FALSE)
+    },
+    warning=function(cond) {
+      message(paste("Value error in ",nameSmall, " or ", nameLarge, ". Check these are numeric",sep=""))
+      message("Spartan Function Terminated")
+      # Choose a return value in case of error
+      return(FALSE)
+    })
 }
 
 #' Check that an argument that should be a positive integer has been specified correctly
