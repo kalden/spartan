@@ -65,13 +65,26 @@ check_robustness_sampling_args <- function(arguments)
 #' or FALSE if this check fails
 check_robustness_range_or_values <- function(arguments,preCheckSuccess)
 {
-  if((!is.null(eval(arguments$PMIN)) | !is.null(eval(arguments$PMAX)) | !is.null(eval(arguments$PINC))) & !is.null(eval(arguments$PARAMVALS)))
+  if(is.null(eval(arguments$PARAMVALS)))
   {
-    message("You need to specify either PMIN,PMAX,and PINC, or the values to sample in PARAMVALS")
-    return(FALSE)
+    if(is.null(eval(arguments$PMIN)) | is.null(eval(arguments$PMAX)) | is.null(eval(arguments$PINC)))
+    {
+      message("You need to specify either PMIN,PMAX,and PINC, or the values to sample in PARAMVALS")
+      return(FALSE)
+    }
+    else
+      return(preCheckSuccess)
   }
   else
-    return(preCheckSuccess)
+  {
+    if(!is.null(eval(arguments$PMIN)) | !is.null(eval(arguments$PMAX)) | !is.null(eval(arguments$PINC)))
+    {
+      message("You need to specify either PMIN,PMAX,and PINC, or the values to sample in PARAMVALS")
+      return(FALSE)
+    }
+    else
+      return(preCheckSuccess)
+  }
 }
 
 # Where used in robustness analysis, check that the length of PARAMVALS equals
@@ -82,14 +95,24 @@ check_robustness_range_or_values <- function(arguments,preCheckSuccess)
 #' or FALSE if this check fails
 check_paramvals_length_equals_parameter_length <- function(arguments, preCheckSuccess)
 {
-  if(length(eval(arguments$PARAMETERS)) == length(eval(arguments$PARAMVALS)))
-    return(preCheckSuccess)
-  else
+  tryCatch(
   {
-    message("Number of entries in PARAMVALS should match the number of parameters")
-    message("Spartan Terminated")
+    if(length(eval(arguments$PARAMETERS)) == length(eval(arguments$PARAMVALS)))
+      return(preCheckSuccess)
+    else
+    {
+      message("Number of entries in PARAMVALS should match the number of parameters")
+      message("Spartan Terminated")
+      return(FALSE)
+    }
+  },
+  error=function(cond) {
+    message("PARAMVALS or PARAMETERS has been declared incorrectly")
+    message("Spartan Function Terminated")
+    # Choose a return value in case of error
     return(FALSE)
-  }
+  })
+
 }
 
 #' Checks that the parameter values specified in PARAMVALS contain the BASELINE

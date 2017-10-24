@@ -34,6 +34,7 @@ lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
   input_arguments <- as.list(match.call())
+  print(input_arguments)
   # Run if all checks pass:
 
   if(check_lhc_sampling_args(input_arguments)) {
