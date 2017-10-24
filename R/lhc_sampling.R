@@ -36,7 +36,7 @@ lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
   input_arguments <- as.list(match.call())
   # Run if all checks pass:
 
-  if(method_argument_check(input_arguments)) {
+  if(check_lhc_sampling_args(input_arguments)) {
 
       # PERFORM THE SAMPLING - JUDGING ON USERS CHOICE OF ALGORITHM
       if (tolower(ALGORITHM) == "optimum") {

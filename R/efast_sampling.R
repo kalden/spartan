@@ -38,9 +38,15 @@
 #' @export
 efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
                                   PARAMETERS, PMIN, PMAX) {
-  if (file.exists(FILEPATH)) {
-    NUMPARAMS <- length(PARAMETERS)
-    wanted_n <- NUMSAMPLES * NUMPARAMS * NUMCURVES # wanted no. of sample points
+
+  # Version 3.1 adds pre-execution check functions as part of refactoring:
+  # Get the provided function arguments
+  input_arguments <- as.list(match.call())
+  # Run if all checks pass:
+
+  if(check_efast_sampling_args(input_arguments)) {
+
+    wanted_n <- NUMSAMPLES * length(PARAMETERS) * NUMCURVES # wanted no. of sample points
 
     # OUTPUT
     # SI[] : first order sensitivity indices
@@ -67,29 +73,29 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
 
     # Computation of the frequency for the group
     # of interest omi and the # of sample points NUMSAMPLES (here N=NUMSAMPLES)
-    omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / NUMPARAMS)
+    omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
     NUMSAMPLES <- 2 * MI * omi + 1
     if (NUMSAMPLES * NUMCURVES < 65)
       print("Error: sample size must be >= 65 per factor")
 
-    PARAMETERVALS <- array(0, dim = c(NUMSAMPLES, NUMPARAMS,
-                                      NUMPARAMS, NUMCURVES))
+    PARAMETERVALS <- array(0, dim = c(NUMSAMPLES, length(PARAMETERS),
+                                      length(PARAMETERS), NUMCURVES))
 
-    for (PARAMNUM in 1:NUMPARAMS) {
+    for (PARAMNUM in 1:length(PARAMETERS)) {
 
       # Algorithm for selecting the set of frequencies.
       # omci(i), i=1:k-1, contains the set of frequencies
       # to be used by the complementary group.
 
-      omci <- efast_setfreq(NUMPARAMS, omi / 2 / MI, PARAMNUM)
-      OM <- array(0, dim = c(1, NUMPARAMS, 1))
+      omci <- efast_setfreq(length(PARAMETERS), omi / 2 / MI, PARAMNUM)
+      OM <- array(0, dim = c(1, length(PARAMETERS), 1))
 
       # Loop over the NUMCURVES search curves.
       for (CURVENUM in 1:NUMCURVES) {
         # Setting the vector of frequencies OM
         # for the k parameters
         cj <- 1
-        for (j in 1:NUMPARAMS) {
+        for (j in 1:length(PARAMETERS)) {
           if (j == PARAMNUM) {
             # For the parameter (factor) of interest
             # RECODE WHEN WORKED OUT OM ARRAY
@@ -105,14 +111,14 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
         # Setting the relation between the scalar
         # variable S and the coordinates
         # {X(1),X(2),...X(k)} of each sample point.
-        FI <- array(runif(NUMPARAMS, min = 0, max = 1),
-                    dim = c(NUMPARAMS, 1, 1))
+        FI <- array(runif(length(PARAMETERS), min = 0, max = 1),
+                    dim = c(length(PARAMETERS), 1, 1))
         FI <- FI * 2 * pi
 
         S_VEC <- pi * (2 * (1:NUMSAMPLES) - NUMSAMPLES - 1) / NUMSAMPLES
-        OM_VEC <- OM[1:NUMPARAMS]
+        OM_VEC <- OM[1:length(PARAMETERS)]
 
-        FI_MAT <- array(0, dim = c(NUMPARAMS, NUMSAMPLES, 1))
+        FI_MAT <- array(0, dim = c(length(PARAMETERS), NUMSAMPLES, 1))
 
         for (i in 1:NUMSAMPLES) {
           FI_MAT[, i, 1] <- FI
@@ -122,11 +128,11 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
         #ANGLE = OM_VEC'*S_VEC+FI_MAT;
         # CONVERSION TO R:
         om_vec_svec <- array(OM_VEC %*% t(S_VEC),
-                           dim = c(NUMPARAMS, NUMSAMPLES, 1))
+                           dim = c(length(PARAMETERS), NUMSAMPLES, 1))
         ANGLE <- om_vec_svec + FI_MAT
 
         # TRANSPOSE ARRAY
-        ANGLET <- array(0, dim = c(NUMSAMPLES, NUMPARAMS, 1))
+        ANGLET <- array(0, dim = c(NUMSAMPLES, length(PARAMETERS), 1))
         for (i in 1:NUMSAMPLES) {
           ANGLET[i, , 1] <- ANGLE[, i, 1]
         }
@@ -147,7 +153,7 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
     # NOW OUTPUT THE RESULTS - SPLIT BY CURVE FILE
     # SO, WILL HAVE ONE FILE FOR EACH PARAMETER OF INTEREST, FOR EACH CURVE
     for (CURVENUM in 1:NUMCURVES) {
-      for (PARAMNUM in 1:NUMPARAMS) {
+      for (PARAMNUM in 1:length(PARAMETERS)) {
         parameter_file <- paste(FILEPATH, "/Curve", CURVENUM, "_",
                                PARAMETERS[PARAMNUM], ".csv", sep = "")
         output_params <- PARAMETERVALS[, , PARAMNUM, CURVENUM]
@@ -161,8 +167,9 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
                     "_", PARAMETERS[PARAMNUM], ".csv", sep = ""))
       }
     }
-  } else {
-    print("The directory specified in FILEPATH does not exist.
-          No parameter samples generated")
   }
 }
+
+
+
+#efast_generate_sample("/home/kja505/Desktop/", 3, 65,c("A","B","C"), c(1,2,3), c(11,12,13))
