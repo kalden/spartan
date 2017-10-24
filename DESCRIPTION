@@ -26,7 +26,8 @@ Depends: randomForest,
     R (>= 2.10.0)
 RoxygenNote: 6.0.1
 Suggests: knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
 URL: http://www.york.ac.uk/ycil/software/spartan
 BugReports: http://github.com/kalden/spartan/issues
