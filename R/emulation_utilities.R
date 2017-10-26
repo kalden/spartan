@@ -95,7 +95,7 @@ generate_model_formula <- function(parameters, measures) {
   # For the emulation methods that require a formula (nn, lm, svm),
   # this method generates that formula
   return(stats::as.formula(paste(paste(measures, collapse = "+"), "~",
-                                 paste(parameters, collapse = "+"))))
+                                 paste(parameters, collapse = "+")),env = parent.frame()))
 }
 
 #' Internal function used to generate the requested emulator, and graph
