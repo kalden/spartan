@@ -6,5 +6,5 @@ load_lhc_training_data <- function()
   sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
   data("sim_data_for_emulation")
 
-  return(list("dataset"=sim_data_for_emulation,"parameters"=parameters,"sampleMaxes"=sampleMaxes,"sampleMins"=sampleMins))
+  return(list("dataset"=sim_data_for_emulation,"parameters"=parameters,"sample_maxes"=sampleMaxes,"sample_mins"=sampleMins))
 }
