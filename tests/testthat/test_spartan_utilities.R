@@ -43,3 +43,16 @@ test_that("normalise_dataset" , {
   expect_lte(max(normalised_set$scaled),1)
 
 })
+
+test_that("denormalise_dataset", {
+
+  # Load in the required data and parameter arguments
+  arguments <- load_lhc_training_data()
+  # Normalise dataset
+  normalised_set <- normalise_dataset(arguments$dataset, arguments$sample_mins, arguments$sample_maxes, arguments$parameters)
+
+  # Denormalise the set and it should be the same as the original
+  transformedData <- denormalise_dataset(normalised_set$scaled[arguments$parameters], arguments$sample_mins, arguments$sample_maxes)
+
+  expect_equal(transformedData, arguments$dataset[arguments$parameters])
+})
