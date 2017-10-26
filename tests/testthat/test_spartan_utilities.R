@@ -57,4 +57,8 @@ test_that("denormalise_dataset", {
   expect_equal(transformedData, arguments$dataset[arguments$parameters])
 })
 
+test_that("make_path", {
+  expect_match(make_path(c("/home/kja505/Desktop","outputFile.csv")),"/home/kja505/Desktop/outputFile.csv")
+})
+
 
