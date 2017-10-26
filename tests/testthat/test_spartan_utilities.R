@@ -34,4 +34,12 @@ test_that("normalise_dataset" , {
   expect_gte(min(normalised_set$scaled),0)
   expect_lte(max(normalised_set$scaled),1)
 
+  # Build a dataset of two columns between -50 and 50
+  x<- -50:50
+  testDat <- cbind(sample(x,100),sample(x,100))
+  colnames(testDat) <- c("A","B")
+  normalised_set <- normalise_dataset(testDat, c(-50,-50), c(50,50), c("A","B"))
+  expect_gte(min(normalised_set$scaled),0)
+  expect_lte(max(normalised_set$scaled),1)
+
 })

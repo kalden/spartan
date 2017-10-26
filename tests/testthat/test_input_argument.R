@@ -105,8 +105,12 @@ test_that("check_robustness_parameter_and_ranges_lengths", {
   })
 
 test_that("check_filepath_exists", {
+
+
+
   # Filepath should exist
   input_arguments <- make_input_arguments_object(FILEPATH="/home/kja505/Desktop")
+  skip_on_travis()
   expect_true(check_filepath_exists(input_arguments,TRUE))
   # Filepath does not exist:
   input_arguments <- make_input_arguments_object(FILEPATH="/home/kja505/Desktop2")
