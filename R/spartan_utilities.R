@@ -234,6 +234,14 @@ visualise_data_distribution <- function(dataset, measure, graphname,
   ggsave(paste(graphname, ".pdf", sep = ""), device = "pdf")
 }
 
+check_data_partitions <-function(train,test,validate)
+{
+  if(train+test+validate == 100)
+    return(TRUE)
+  else
+    return(FALSE)
+}
+
 #' Partition latin-hypercube summary file to training, testing, and validation
 #'
 #' Used in the development of emulations of a simulation using a
@@ -264,54 +272,70 @@ partition_dataset <- function(dataset, parameters, percent_train = 75, percent_t
                               sample_mins = NULL, sample_maxes = NULL,
                               timepoint = NULL) {
 
-  if (!is.null(seed)) set.seed(seed)
+  tryCatch(
+  {
+    if(check_data_partitions(percent_train, percent_test, percent_validation))
+    {
+      if (!is.null(seed)) set.seed(seed)
 
-  # If we normalise, we need to have the mins and maxes for parameters and
-  # measures for denormalisation of results. If we don't normalise then
-  # there will be no denormalisation, but the values being passed will not
-  # be initialised, so we need to cope with both here
-  pre_normed_data_mins <- NULL
-  pre_normed_data_maxes <- NULL
+      # If we normalise, we need to have the mins and maxes for parameters and
+      # measures for denormalisation of results. If we don't normalise then
+      # there will be no denormalisation, but the values being passed will not
+      # be initialised, so we need to cope with both here
+      pre_normed_data_mins <- NULL
+      pre_normed_data_maxes <- NULL
 
 
-  if (normalise == TRUE) {
-    if (is.null(sample_mins) | is.null(sample_maxes) | is.null(parameters))
-      print("You need to specify sampling mins and maxes for each parameter,
-            and parameter names, for correct normalisation. Terminated.")
-    else {
-      normed_data <- normalise_dataset(dataset, sample_mins, sample_maxes,
-                                       parameters)
-      dataset <- normed_data$scaled
-      pre_normed_data_mins <- normed_data$mins
-      pre_normed_data_maxes <- normed_data$maxs
+      if (normalise == TRUE) {
+        if (is.null(sample_mins) | is.null(sample_maxes) | is.null(parameters))
+          print("You need to specify sampling mins and maxes for each parameter,
+                and parameter names, for correct normalisation. Terminated.")
+        else {
+          normed_data <- normalise_dataset(dataset, sample_mins, sample_maxes,
+                                           parameters)
+          dataset <- normed_data$scaled
+          pre_normed_data_mins <- normed_data$mins
+          pre_normed_data_maxes <- normed_data$maxs
+        }
+      }
+
+      positions <- sample(nrow(dataset), size = floor( (nrow(dataset) / 100)
+                                                      * percent_train))
+      training <- dataset[positions, ]
+      remainder <- dataset[ -positions, ]
+
+      testing_positions <- sample(
+        nrow(remainder), size = floor(
+          (nrow(remainder) / 100) * ( (percent_test / (percent_test +
+                                                       percent_validation))
+                                     * 100)))
+      testing <- remainder[testing_positions, ]
+      validation <- remainder[-testing_positions, ]
+
+      partitioned_data <- list("training" = training, "testing" = testing,
+                              "validation" = validation,
+                              "pre_normed_mins" = pre_normed_data_mins,
+                              "pre_normed_maxes" = pre_normed_data_maxes)
+
+      if (is.null(timepoint))
+        save(partitioned_data, file = "partitioned_data.Rda")
+      else
+        save(partitioned_data, file = paste("partitioned_data_", timepoint, ".Rda",
+                                           sep = ""))
+
+      return(partitioned_data)
     }
-  }
-
-  positions <- sample(nrow(dataset), size = floor( (nrow(dataset) / 100)
-                                                  * percent_train))
-  training <- dataset[positions, ]
-  remainder <- dataset[ -positions, ]
-
-  testing_positions <- sample(
-    nrow(remainder), size = floor(
-      (nrow(remainder) / 100) * ( (percent_test / (percent_test +
-                                                   percent_validation))
-                                 * 100)))
-  testing <- remainder[testing_positions, ]
-  validation <- remainder[-testing_positions, ]
-
-  partitioned_data <- list("training" = training, "testing" = testing,
-                          "validation" = validation,
-                          "pre_normed_mins" = pre_normed_data_mins,
-                          "pre_normed_maxes" = pre_normed_data_maxes)
-
-  if (is.null(timepoint))
-    save(partitioned_data, file = "partitioned_data.Rda")
-  else
-    save(partitioned_data, file = paste("partitioned_data_", timepoint, ".Rda",
-                                       sep = ""))
-
-  return(partitioned_data)
+    else
+    {
+      message("Partition percentages do not add up to 100%. Terminated")
+      return(NULL)
+    }
+  },
+  error=function(cond) {
+  message("Training, Testing, and Validation percentages have been declared incorrectly")
+  message("Spartan Function Terminated")
+  return(NULL)
+})
 }
 
 #' Normalise a dataset such that all values are between 0 and 1

@@ -359,7 +359,7 @@ check_numeric_list_values <- function(smallList, largerList, nameSmall, nameLarg
       smallCheck <- eval(smallList)
       largeCheck <- eval(largerList)
 
-      if(all(smallCheck < maxCheck) & is.numeric(smallCheck) & is.numeric(largeCheck))
+      if(all(smallCheck < largeCheck) & is.numeric(smallCheck) & is.numeric(largeCheck))
         return(preCheckSuccess)
       else {
         message(paste(nameSmall, " must be less than ",nameLarge, " for all parameters, and must be numeric",sep=""))
