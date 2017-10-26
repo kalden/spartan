@@ -61,4 +61,8 @@ test_that("make_path", {
   expect_match(make_path(c("/home/kja505/Desktop","outputFile.csv")),"/home/kja505/Desktop/outputFile.csv")
 })
 
+test_that("make_extension", {
+  expect_match(make_extension("outputFile","csv"),"outputFile.csv")
+})
+
 
