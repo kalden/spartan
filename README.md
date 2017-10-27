@@ -4,7 +4,7 @@ Coveralls: <a href='https://coveralls.io/github/kalden/spartan?branch=master'><i
 Codecov: <a href="https://codecov.io/gh/kalden/spartan">
   <img src="https://codecov.io/gh/kalden/spartan/branch/master/graph/badge.svg" alt="Codecov" />
 </a>
-<img src='https://www.r-pkg.org/badges/version/spartan?color=red' />
-<img src='https://cranlogs.r-pkg.org/badges/grand-total/spartan?color=red' />
+<img src='https://www.r-pkg.org/badges/version/spartan?color=brightgreen' />
+<img src='https://cranlogs.r-pkg.org/badges/grand-total/spartan?color=brightgreen' />
 
 Simulation Parameter Analysis R Toolkit ApplicatioN: Spartan
