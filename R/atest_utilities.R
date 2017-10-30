@@ -15,10 +15,25 @@ atest <- function(x, y) {
 #'
 #' @param result A-Test score to be normalised
 #' @return Normalised A-Test score
-normaliseATest <- function(result) {
-  if (result < 0.5)
-    result <- 1 - result
-  return(result)
+normaliseATest <- function(result)
+  {
+  tryCatch(
+  {
+    if(is.numeric(result)) {
+      if (result < 0.5)
+        result <- 1 - result
+      return(result)
+    } else {
+      message("Error in Normalise A-Test, non numeric figure provided")
+      return(NULL)
+    }
+  },
+  error=function(cond)
+  {
+    message("Error in A-Test value sent for normalisation")
+    return(NULL)
+  })
+
 }
 
 #' Diagnostic function used to determine number of decimal places
