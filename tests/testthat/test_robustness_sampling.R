@@ -14,20 +14,21 @@ test_that("generate_parameter_table", {
                                                       1))
 
   # Now we can test the function for parameter 1: nrow should equal the number of samples
-  expect_equal(nrow(generate_parameter_table(PARAMETERS, BASELINE, p1_val_list)),11)
+  # 1 is th parameter of interest
+  expect_equal(nrow(generate_parameter_table(PARAMETERS, BASELINE, 1, p1_val_list)),11)
   # This should have two columns, one for each parameter
-  expect_equal(ncol(generate_parameter_table(PARAMETERS, BASELINE, p1_val_list)),2)
+  expect_equal(ncol(generate_parameter_table(PARAMETERS, BASELINE, 1, p1_val_list)),2)
   # Column two should all be identical, the baseline value of parameter 2
-  expect_true(all(generate_parameter_table(PARAMETERS, BASELINE, p1_val_list)[,2] == BASELINE[2]))
+  expect_true(all(generate_parameter_table(PARAMETERS, BASELINE, 1, p1_val_list)[,2] == BASELINE[2]))
 
   # Now try parameter 2
   p2_val_list <- as.numeric(prepare_parameter_value_list(PMIN, PMAX, PINC,
                                                       PARAMVALS,
                                                       2))
-  expect_equal(nrow(generate_parameter_table(PARAMETERS, BASELINE, p2_val_list)),5)
+  expect_equal(nrow(generate_parameter_table(PARAMETERS, BASELINE, 2, p2_val_list)),5)
   # This should have two columns, one for each parameter
-  expect_equal(ncol(generate_parameter_table(PARAMETERS, BASELINE, p2_val_list)),2)
+  expect_equal(ncol(generate_parameter_table(PARAMETERS, BASELINE, 2, p2_val_list)),2)
   # For some reason, putting this in expect_true did not work
-  expect_true(all(generate_parameter_table(PARAMETERS, BASELINE, p2_val_list)[,2] == BASELINE[2]))
+  expect_true(all(generate_parameter_table(PARAMETERS, BASELINE, 2, p2_val_list)[,1] == BASELINE[1]))
 
 })
