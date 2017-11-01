@@ -39,19 +39,9 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
       val_list <- as.numeric(prepare_parameter_value_list(PMIN, PMAX, PINC,
                                                           PARAMVALS,
                                                           PARAMOFINT))
-      PARAMETERTABLE <- NULL
 
-      for (PARAM in 1:length(PARAMETERS)) {
-        if (PARAMOFINT == PARAM)
-          PARAMETERTABLE <- cbind(PARAMETERTABLE, val_list)
-        else
-          PARAMETERTABLE <- cbind(PARAMETERTABLE,
-                                  array(BASELINE[PARAM],
-                                        dim = c(length(val_list))))
-      }
+      PARAMETERTABLE <- generate_parameter_table(PARAMETERS, BASELINE, val_list)
 
-      # FORMAT THEN OUTPUT THE PARAMETER TABLE FOR THIS PARAMETER OF INTEREST
-      colnames(PARAMETERTABLE) <- PARAMETERS
 
       # WRITE THE A-TEST RESULTS TO FILE
       results_file <- make_path(c(FILEPATH,
@@ -64,4 +54,29 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
                   results_file, sep = ""))
     }
   }
+}
+
+#' Takes the value list and generates the sample that is output to csv file
+#'
+#' @param PARAMETERS Array containing the names of the parameters of which parameter samples will be generated
+#' @param BASELINE Array containing the values assigned to each of these parameters in the calibrated baseline
+#' @param val_list List of parameter values to output for each parameter, to be combined with the baseline value of the complementary set
+#' @return Parameter table ready for output to CSV file
+generate_parameter_table <- function(PARAMETERS, BASELINE, val_list) {
+
+  PARAMETERTABLE <- NULL
+
+  for (PARAM in 1:length(PARAMETERS)) {
+    if (PARAMOFINT == PARAM)
+      PARAMETERTABLE <- cbind(PARAMETERTABLE, val_list)
+    else
+      PARAMETERTABLE <- cbind(PARAMETERTABLE,
+                              array(BASELINE[PARAM],
+                                    dim = c(length(val_list))))
+  }
+
+  # FORMAT THEN OUTPUT THE PARAMETER TABLE FOR THIS PARAMETER OF INTEREST
+  colnames(PARAMETERTABLE) <- PARAMETERS
+
+  return(PARAMETERTABLE)
 }

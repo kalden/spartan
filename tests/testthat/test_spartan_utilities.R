@@ -61,6 +61,10 @@ test_that("make_path", {
   expect_match(make_path(c("/home/kja505/Desktop","outputFile.csv")),"/home/kja505/Desktop/outputFile.csv")
 })
 
+test_that("make_filename", {
+  expect_match(make_filename(c("Curve","1","Parameter","2")),"Curve_1_Parameter_2")
+})
+
 test_that("make_extension", {
   expect_match(make_extension("outputFile","csv"),"outputFile.csv")
 })
@@ -68,5 +72,35 @@ test_that("make_extension", {
 test_that("join_strings_nospace", {
   expect_match(join_strings_nospace(c("Curve","1")),"Curve1")
   })
+
+test_that("prepare_parameter_value_list", {
+  # Test that mins, max, and increment produces the correct sequences
+  PMIN<-c(0,1)
+  PMAX<-c(1,2)
+  PINC<-c(0.1,0.25)
+  PARAMVALS<-NULL
+  PARAM_OF_INT<-1
+  # First parameter should generate 11 samples:
+  expect_length(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT),11)
+  # Check values have been calculated correctly
+  expect_equal(as.numeric(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT)),seq(PMIN[1],PMAX[1],by=PINC[1]))
+  # Second should generate 5
+  PARAM_OF_INT<-2
+  expect_length(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT),5)
+  # Check values have been calculated correctly
+  expect_equal(as.numeric(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT)),seq(PMIN[2],PMAX[2],by=PINC[2]))
+  # Test Paramvals
+  PMIN<-NULL
+  PMAX<-NULL
+  PINC<-NULL
+  PARAMVALS<-c("0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1","0, 0.25, 0.5, 0.75, 1")
+  # Now repeat tests
+  PARAM_OF_INT<-1
+  expect_length(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT),11)
+  expect_equal(as.numeric(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT)),as.numeric(strsplit(PARAMVALS[1],split=",")[[1]]))
+  PARAM_OF_INT<-2
+  expect_length(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT),5)
+  expect_equal(as.numeric(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT)),as.numeric(strsplit(PARAMVALS[2],split=",")[[1]]))
+})
 
 
