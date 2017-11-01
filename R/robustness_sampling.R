@@ -40,7 +40,7 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
                                                           PARAMVALS,
                                                           PARAMOFINT))
 
-      PARAMETERTABLE <- generate_parameter_table(PARAMETERS, BASELINE, val_list)
+      PARAMETERTABLE <- generate_parameter_table(PARAMETERS, BASELINE, PARAMOFINT, val_list)
 
 
       # WRITE THE A-TEST RESULTS TO FILE
@@ -60,9 +60,10 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
 #'
 #' @param PARAMETERS Array containing the names of the parameters of which parameter samples will be generated
 #' @param BASELINE Array containing the values assigned to each of these parameters in the calibrated baseline
+#' @param PARAMOFINT Number of the parameter for which samples are currently being built
 #' @param val_list List of parameter values to output for each parameter, to be combined with the baseline value of the complementary set
 #' @return Parameter table ready for output to CSV file
-generate_parameter_table <- function(PARAMETERS, BASELINE, val_list) {
+generate_parameter_table <- function(PARAMETERS, BASELINE, PARAMOFINT, val_list) {
 
   PARAMETERTABLE <- NULL
 
