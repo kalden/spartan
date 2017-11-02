@@ -13,13 +13,13 @@ test_that("sample_parameter_space", {
   expect_equal(sum(lhcSample<=1),1000)
 
   # Optimal
-  #lhcSample <- sample_parameter_space("optimum", 500, PARAMETERS)
-  #expect_equal(nrow(lhcSample),500)
-  #expect_equal(ncol(lhcSample),2)
+  lhcSample <- sample_parameter_space("optimum", 500, PARAMETERS)
+  expect_equal(nrow(lhcSample),500)
+  expect_equal(ncol(lhcSample),2)
   # At this stage all the values are normalised between 0 and 1, check that
-  #expect_equal(sum(lhcSample>1),0)
-  #expect_equal(sum(lhcSample<0),0)
-  #expect_equal(sum(lhcSample<=1),1000)
+  expect_equal(sum(lhcSample>1),0)
+  expect_equal(sum(lhcSample<0),0)
+  expect_equal(sum(lhcSample<=1),1000)
 
   # No need to test any others, as the input check will take care of that
 })
