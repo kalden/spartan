@@ -48,16 +48,11 @@ test_that("scale_lhc_sample", {
 
 # Now can test the return of the function, given the utilities above were tested
 test_that("lhc_generate_lhc_sample", {
-  PARAMETERS<-c("A","B")
-  NUMSAMPLES<-500
-  PMIN<-c(10,0.1)
-  PMAX<-c(100,0.9)
-  ALGORITHM<-"normal"
   # We don't specify a FILEPATH, to return an R object
-  lhcSample <- lhc_generate_lhc_sample(FILEPATH=NULL, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM)
+  lhcSample <- lhc_generate_lhc_sample(FILEPATH=NULL, c("A","B"), 500, c(10,0.1), c(100,0.9), "normal")
   # Do the checks as before:
   expect_equal(nrow(lhcSample),500)
-  expect_message(lhc_generate_lhc_sample(FILEPATH=NULL, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM),"No FILEPATH specified. Returning sample as R Object")
+  expect_message(lhc_generate_lhc_sample(FILEPATH=NULL, c("A","B"), 500, c(10,0.1), c(100,0.9), "normal"),"No FILEPATH specified. Returning sample as R Object")
   expect_equal(ncol(lhcSample),2)
 })
 
