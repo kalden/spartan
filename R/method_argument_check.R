@@ -5,7 +5,9 @@
 check_lhc_sampling_args <- function(arguments)
 {
   preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  # From Version 3.1, FILEPATH could be not specified, if user does not want a
+  # CSV file, but an R object returned
+  #preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
   preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
   preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
   preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")

@@ -14,6 +14,8 @@
 #' number of times identified in Aleatory Analysis. Once this has been
 #' completed, the set of remaining methods within spartan can be used to
 #' analyse the results. Note: To run this, you will require the lhs library.
+#' Version 3.1 adds returning the sample as a object, should this be easier
+#' to process than reading back in a file
 #'
 #' @param FILEPATH Directory where the parameter samples should be output to
 #' @param PARAMETERS Array containing the names of the parameters of which
@@ -27,36 +29,56 @@
 #' Can be set to either 'normal' or 'optimum'. Beware optimum can take a
 #' long time to generate an optimised parameter set (more than 24 hours
 #' in some circumstances)
+#' @return LHC generated parameter sets
 #'
 #' @export
-lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
+lhc_generate_lhc_sample <- function(FILEPATH=NULL, PARAMETERS, NUMSAMPLES, PMIN,
                                     PMAX, ALGORITHM) {
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
   input_arguments <- as.list(match.call())
-  print(input_arguments)
   # Run if all checks pass:
 
   if(check_lhc_sampling_args(input_arguments)) {
 
       # PERFORM THE SAMPLING - JUDGING ON USERS CHOICE OF ALGORITHM
-      if (tolower(ALGORITHM) == "optimum") {
-        # MAY TAKE A WHILE FOR A LARGE NUMBER OF SAMPLES
-        # (THIS BEING TWO DAYS WHERE NUMSAMPLES=500)
-        design <- lhs::optimumLHS(NUMSAMPLES, length(PARAMETERS), maxSweeps = 2,
-                                  eps = .1)
-      } else {
-        design <- lhs::randomLHS(NUMSAMPLES, length(PARAMETERS))
-      }
+      design <- sample_parameter_space(ALGORITHM, NUMSAMPLES, PARAMETERS)
 
       # Now scale this design, as currently all values are between 0 and 1
       design <- scale_lhc_sample(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
 
       # Output the scaled design to csv file
-      write_data_to_csv(design, make_path(c(FILEPATH,"LHC_Parameters_for_Runs.csv")))
+      if(!is.null(FILEPATH))
+      {
+        write_data_to_csv(design, make_path(c(FILEPATH,"LHC_Parameters_for_Runs.csv")))
+        print(paste("Parameter Set Generated and Output to ", FILEPATH,
+                    "/LHC_Parameters_for_Runs.csv", sep = ""))
+      }
+      else
+        message("No FILEPATH specified. Returning sample as R Object")
 
-      print(paste("Parameter Set Generated and Output to ", FILEPATH,
-                  "/LHC_Parameters_for_Runs.csv", sep = ""))
+      return(design)
+  }
+}
+
+#' Generate the LHC design for the chosen algorithm
+#' @param ALGORITHM Choice of algorithm to use to generate the hypercube.
+#' Can be set to either 'normal' or 'optimum'. Beware optimum can take a
+#' long time to generate an optimised parameter set (more than 24 hours
+#' in some circumstances)
+#' @param NUMSAMPLES The number of parameter subsets to generate
+#' @param PARAMETERS Array containing the names of the parameters of which
+#' parameter samples will be generated
+#' @return Latin-Hypercube sample
+sample_parameter_space <- function(ALGORITHM, NUMSAMPLES, PARAMETERS)
+{
+  if (tolower(ALGORITHM) == "optimum") {
+    # MAY TAKE A WHILE FOR A LARGE NUMBER OF SAMPLES
+    # (THIS BEING TWO DAYS WHERE NUMSAMPLES=500)
+    design <- lhs::optimumLHS(NUMSAMPLES, length(PARAMETERS), maxSweeps = 2,
+                            eps = .1)
+  } else {
+    design <- lhs::randomLHS(NUMSAMPLES, length(PARAMETERS))
   }
 }
 

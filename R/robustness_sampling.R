@@ -34,6 +34,7 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
 
     # CONSIDER EACH PARAMETER IN TURN
     for (PARAMOFINT in 1:length(PARAMETERS)) {
+
       # NOW GET THE LIST OF PARAMETER VALUES BEING EXPLORED FOR THIS PARAMETER
       # NOTE CONVERSION BACK TO NUMBERS: GETS RID OF TRAILING ZEROS MADE BY SEQ
       val_list <- as.numeric(prepare_parameter_value_list(PMIN, PMAX, PINC,
@@ -41,7 +42,6 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
                                                           PARAMOFINT))
 
       PARAMETERTABLE <- generate_parameter_table(PARAMETERS, BASELINE, PARAMOFINT, val_list)
-
 
       # WRITE THE A-TEST RESULTS TO FILE
       results_file <- make_path(c(FILEPATH,
