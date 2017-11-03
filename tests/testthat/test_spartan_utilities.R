@@ -69,6 +69,14 @@ test_that("make_extension", {
   expect_match(make_extension("outputFile","csv"),"outputFile.csv")
 })
 
+test_that("join_strings_space", {
+  expect_match(join_strings_space(c("outputFile","1",".csv")),"outputFile 1 .csv")
+})
+
+test_that("join_strings", {
+  expect_match(join_strings(c("outputFile","1","Param","2"),"_"),"outputFile_1_Param_2")
+})
+
 test_that("join_strings_nospace", {
   expect_match(join_strings_nospace(c("Curve","1")),"Curve1")
   })
