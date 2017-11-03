@@ -34,3 +34,21 @@ test_that("generate_parameter_table", {
   expect_true(all(generate_parameter_table(PARAMETERS, BASELINE, 2, val_list)[,1] == BASELINE[1]))
 
 })
+
+test_that("oat_parameter_sampling", {
+  # Now test the function generates some output
+  # Above we tested the characteristics of the sample, so we all need to know now is that some output
+  # was achieved.
+  # Input has already been checked by method_argument_check tests
+  FILEPATH<-getwd()
+  print(FILEPATH)
+  PARAMETERS<-c("A","B")
+  BASELINE<-c(50,0.5)
+
+  # Run the method
+  oat_parameter_sampling(FILEPATH, PARAMETERS, BASELINE, PMIN=c(10,0.1), PMAX=c(100,1.0), PINC=c(10,0.1), PARAMVALS=NULL)
+  # Check output files are generated
+  expect_true(file.exists(paste(FILEPATH,"/A_OAT_Values.csv",sep="")))
+  expect_true(file.exists(paste(FILEPATH,"/A_OAT_Values.csv",sep="")))
+
+})

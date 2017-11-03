@@ -3,6 +3,7 @@ context("Test of Spartan Evolution Utilities")
 
 test_that("emulator_parameter_evolution", {
 
+  skip_on_travis()
   load(file.path("built_ensemble_72.Rda"))
   parameters <- c("stableBindProbability","chemokineExpressionThreshold",
                   "initialChemokineExpressionValue","maxChemokineExpressionValue",

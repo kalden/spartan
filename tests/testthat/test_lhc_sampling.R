@@ -55,5 +55,8 @@ test_that("lhc_generate_lhc_sample", {
   expect_equal(nrow(lhcSample),500)
   expect_message(lhc_generate_lhc_sample(FILEPATH=NULL, c("A","B"), 500, c(10,0.1), c(100,0.9), "normal"),"No FILEPATH specified. Returning sample as R Object")
   expect_equal(ncol(lhcSample),2)
+  # Now specify a filepath and test for creation
+  lhcSample <- lhc_generate_lhc_sample(FILEPATH=getwd(), c("A","B"), 500, c(10,0.1), c(100,0.9), "normal")
+  expect_true(file.exists(paste(getwd(),"/LHC_Parameters_for_Runs.csv",sep="")))
 })
 
