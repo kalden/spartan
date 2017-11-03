@@ -5,7 +5,6 @@
 ## objectives: minimise the rmse between nnet and exptl values for cell velocity and displacement
 ##             minimise path size or inverse patch size
 evalfunction <- function(params,nsga2_user_set_parameters){
-  library(Metrics)
   input <- as.data.frame(rbind(params))
   colnames(input) <- nsga2_user_set_parameters$parameters
 
