@@ -21,8 +21,8 @@ evalfunction <- function(params,nsga2_user_set_parameters){
   size_prediction <- pr[,3]
   #output the rmse between the nnet prediction and the in vivo measures.
   output <- c()
-  output[1] <- rmse(nsga2_user_set_parameters$desiredResponses[1],velocity_prediction)
-  output[2] <- rmse(nsga2_user_set_parameters$desiredResponses[2],displacement_prediction)
+  output[1] <- meanSquaredError(nsga2_user_set_parameters$desiredResponses[1],velocity_prediction)
+  output[2] <- meanSquaredError(nsga2_user_set_parameters$desiredResponses[2],displacement_prediction)
 
   #if we want to minimise we use size_prediction
   # if we want to maximise we use negative value of sizeprediction, this is
