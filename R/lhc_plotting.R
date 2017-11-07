@@ -77,7 +77,7 @@ lhc_graphMeasuresForParameterChange <-
                                         y = data_to_plot[, 2])) +
                 geom_point(size = 0.5) +
                 scale_y_continuous(limits = c(
-                  0, ceiling(max(data_to_plot[, 2])))) +
+                  floor(min(data_to_plot[,2])), ceiling(max(data_to_plot[, 2])))) +
                 labs(x = x_label, y = y_label,
                      title = GRAPHTITLE, subtitle = SUBTITLE) +
                 theme(axis.title = element_text(size = 7),
