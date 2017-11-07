@@ -4,3 +4,4 @@
 ^\test_scripts$
 ^cran-comments.md
 
+^\.travis\.yml$

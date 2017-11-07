@@ -35,7 +35,7 @@ process_netlogo_parameter_range_info <- function(PARAMETERS, PARAMVALS) {
 #' @param EXPERIMENT Test for the experiment tag of the file (e.g. LHC, eFAST, etc)
 #' @param SAMPLE Number of the sample being processed
 #' @param EXPERIMENT_REPETITIONS The number of times Netlogo should repeat the experiment for each set of parameter values.
-#' @param RUNMETRICS_EVERYSTEP Boolean stating whether Netlogo should produce output for each timestep.
+#' @param RUN_METRICS_EVERYSTEP Boolean stating whether Netlogo should produce output for each timestep.
 #' @param NETLOGO_SETUP_FUNCTION The name of the function in Netlogo that sets up the simulation. Commonly is named setup.
 #' @param NETLOGO_RUN_FUNCTION The name of the function in Netlogo that starts the simulation. Commonly named go.
 #' @param MEASURES Array containing the names of the Netlogo output measures which are used to analyse the simulation.
@@ -48,7 +48,7 @@ initialise_netlogo_xml_file <- function(
 
   # NEXT TAG IN IS EXPERIMENT
   xml$addTag("experiment", attrs = c(
-    name = paste("LHC_Sample", SAMPLE, sep = ""),
+    name = paste(EXPERIMENT, SAMPLE, sep = ""),
     repetitions = EXPERIMENT_REPETITIONS,
     runMetricsEveryStep = RUN_METRICS_EVERYSTEP),
     close = FALSE)
@@ -80,11 +80,13 @@ add_parameter_value_to_file <- function(xml, PARAMETERS, ParameterInfo, LHC_DESI
   for (PARAM in 1:length(PARAMETERS))
   {
     if(PARAMETERS[PARAM] %in% ParameterInfo$STUDIED_PARAMETERS)
+    {
       # Get the value from spartan
       VALUE <- LHC_DESIGN[SAMPLE, PARAMETERS[PARAM]]
-    else
+    } else {
       # Is a constant value
       VALUE <- PARAMVALS[PARAM]
+    }
 
     # NOW CREATE THE XML FOR THIS PARAMETER
     xml$addTag("enumeratedValueSet", attrs = c(

@@ -4,7 +4,8 @@
 \alias{lhc_generate_lhc_sample}
 \title{Generates sets of simulation parameters using latin-hypercube sampling}
 \usage{
-lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM)
+lhc_generate_lhc_sample(FILEPATH = NULL, PARAMETERS, NUMSAMPLES, PMIN, PMAX,
+  ALGORITHM)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}
@@ -25,6 +26,9 @@ Can be set to either 'normal' or 'optimum'. Beware optimum can take a
 long time to generate an optimised parameter set (more than 24 hours
 in some circumstances)}
 }
+\value{
+LHC generated parameter sets
+}
 \description{
 Though robustness analysis does elucidate the effects of perturbations of
 one parameter, it cannot show any non-linear effects which occur when two
@@ -40,4 +44,6 @@ file. For each set of parameters, the simulation should be run for the
 number of times identified in Aleatory Analysis. Once this has been
 completed, the set of remaining methods within spartan can be used to
 analyse the results. Note: To run this, you will require the lhs library.
+Version 3.1 adds returning the sample as a object, should this be easier
+to process than reading back in a file
 }

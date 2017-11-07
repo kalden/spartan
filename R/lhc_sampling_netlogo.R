@@ -66,7 +66,7 @@ lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
             NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES)
 
           # Add the parameter information
-          add_parameter_value_to_file(xml, PARAMETERS, ParameterInfo,
+          xml<-add_parameter_value_to_file(xml, PARAMETERS, ParameterInfo,
                                       design, SAMPLE, PARAMVALS)
 
           # Close and write the file
@@ -80,11 +80,6 @@ lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
 
       message(paste(NUMSAMPLES, " Netlogo Experiment Files Output to ",
                   FILEPATH, sep = ""))
-      return("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
-  }
-  else
-  {
-    return("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
   }
 }
 

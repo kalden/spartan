@@ -17,6 +17,10 @@ check_lhc_sampling_args <- function(arguments)
 
 }
 
+#' Pre-execution checks to perform before the spartan lhc samplng technique
+#' is executed for a netlogo simulation
+#' @param arguments List of the arguments provided to the called function
+#' @return Boolean stating the status of the pre-execution checks
 check_lhc_sampling_netlogo_args <- function(arguments)
 {
   preCheckSuccess = TRUE
@@ -44,6 +48,29 @@ check_lhc_sampling_netlogo_args <- function(arguments)
   #                                            RUNMETRICS_EVERYSTEP,
   #                                            NETLOGO_SETUP_FUNCTION,
   #                                            NETLOGO_RUN_FUNCTION, MEASURES)
+}
+
+#' Pre-execution checks to perform before the spartan efast samplng technique
+#' is executed for a netlogo simulation
+#' @param arguments List of the arguments provided to the called function
+#' @return Boolean stating the status of the pre-execution checks
+check_efast_sampling_netlogo_args <- function(arguments)
+{
+  preCheckSuccess = TRUE
+  preCheckSuccess = check_package_installed("XML",preCheckSuccess)
+  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
+  preCheckSuccess = check_argument_positive_int(arguments$NUMCURVES,preCheckSuccess,"NUMCURVES")
+  preCheckSuccess = check_argument_positive_int(arguments$EXPERIMENT_REPETITIONS,
+                                                preCheckSuccess,"EXPERIMENT_REPETITIONS")
+  #preCheckSuccess = check_boolean(arguments$RUNMETRICS_EVERYSTEP, preCheckSuccess, "RUNMETRICS_EVERYSTEP")
+  preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
+  preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
+  preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
+  preCheckSuccess = check_text_list(arguments$PARAMETERS, preCheckSuccess, "PARAMETERS")
+  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
+
+  return(preCheckSuccess)
 }
 
 #' Pre-execution checks to perform before the spartan efast samplng technique
@@ -118,7 +145,7 @@ check_robustness_range_or_values <- function(arguments,preCheckSuccess)
   }
 }
 
-# Where used in robustness analysis, check that the length of PARAMVALS equals
+#' Where used in robustness analysis, check that the length of PARAMVALS equals
 # the number of PARAMETERS
 #' @param arguments List of the arguments provided to the called function
 #' @param preCheckSuccess Current status of pre-execution checks
@@ -265,6 +292,7 @@ check_robustness_parameter_and_ranges_lengths <- function(arguments, preCheckSuc
 #' space
 #' @param arguments List of the arguments provided to the called function
 #' @param preCheckSuccess Current status of pre-execution checks
+#' @param method Spartan method being checked
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
 check_parameters_and_ranges <- function(arguments, preCheckSuccess, method)
@@ -281,11 +309,8 @@ check_parameters_and_ranges <- function(arguments, preCheckSuccess, method)
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
 check_filepath_exists <- function(arguments,preCheckSuccess)
 {
-  out <- tryCatch(
+  tryCatch(
     {
-      #print(paste("preCheck in FP: ",preCheckSuccess,sep=""))
-      #print(paste("in: ", eval(arguments$FILEPATH),sep=""))
-      #print(paste("Does File Exist: ",file.exists(eval(arguments$FILEPATH)),sep=""))
       if(file.exists(eval(arguments$FILEPATH)))
         return(preCheckSuccess)
       else
@@ -381,7 +406,7 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
 
 #' Check that two lists are numeric, and the values of one are less than the other
 #' @param smallList List of values that should be smaller
-#' @param largeList List of values that should be larger
+#' @param largerList List of values that should be larger
 #' @param nameSmall Parameter name of the smaller list, for error reporting
 #' @param nameLarge Parameter name of the larger list, for error reporting
 #' @param preCheckSuccess Current status of pre-execution checks
@@ -443,3 +468,73 @@ check_argument_positive_int <- function(argument,preCheckSuccess,argName)
       return(FALSE)
     })
 }
+
+#' Check that an argument that should be a boolean has been specified correctly
+#' @param argument Value of the argument to check
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argName Name of the argument, for inclusion in the error message
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_boolean <- function(argument, preCheckSuccess, argName)
+{
+  tryCatch(
+    {
+      if(tolower(eval(argument)=="true") | tolower(eval(argument)=="false"))
+        return(preCheckSuccess)
+      else {
+        message(paste(argName," must be either true or false. Terminated", sep=""))
+        return(FALSE)
+      }
+    },
+    warning=function(cond) {
+      message(paste(argName, " must be either true or false. Terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+#' Check that an argument that should be a text label has been specified correctly
+#'
+#' @param argument Value of the argument to check
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argName Name of the argument, for inclusion in the error message
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_text <-function(argument, preCheckSuccess, argName)
+{
+  tryCatch(
+    {
+      if(typeof(eval(argument))=="character" | typeof(eval(argument)) == "double")
+        return(preCheckSuccess)
+    },
+    warning=function(cond) {
+      message(paste(argName, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+#' Check that an arguments of a list that should be a text label has been specified correctly
+#'
+#' @param argument Value of the argument to check
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argName Name of the argument, for inclusion in the error message
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_text_list <-function(argument, preCheckSuccess, argName)
+{
+  tryCatch(
+    {
+      for(i in 1:length(eval(argument)))
+      {
+        check = check_text(argument, preCheckSuccess, argName)
+        if(!check)
+        {
+          message(paste("Error in declaration of ",argName,". Terminated",sep=""))
+          return(FALSE)
+        }
+      }
+      return(preCheckSuccess)
+    },
+    warning=function(cond) {
+      message(paste("Error in declaration of ",argName,". Terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+

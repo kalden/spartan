@@ -5,7 +5,7 @@
 \title{Prepares Netlogo experiment files for a sampling-based sensitivity analysis, using latin-hypercube sampling}
 \usage{
 lhc_generate_lhc_sample_netlogo(FILEPATH, PARAMETERS, PARAMVALS, NUMSAMPLES,
-  ALGORITHM, EXPERIMENT_REPETITIONS, RUNMETRICS_EVERYSTEP,
+  ALGORITHM, EXPERIMENT_REPETITIONS, RUN_METRICS_EVERYSTEP,
   NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES)
 }
 \arguments{
@@ -23,7 +23,7 @@ interest in the analysis), or range under which this is being explored
 
 \item{EXPERIMENT_REPETITIONS}{The number of times Netlogo should repeat the experiment for each set of parameter values.}
 
-\item{RUNMETRICS_EVERYSTEP}{Boolean stating whether Netlogo should produce output for each timestep.}
+\item{RUN_METRICS_EVERYSTEP}{Boolean stating whether Netlogo should produce output for each timestep.}
 
 \item{NETLOGO_SETUP_FUNCTION}{The name of the function in Netlogo that sets up the simulation. Commonly is named setup.}
 

@@ -26,7 +26,7 @@ test_that("lhc_generate_lhc_sample_netlogo", {
   expect_true(file.exists(paste(getwd(),"/1/lhc_analysis_set1.xml",sep="")))
 
   # Now we can examine the internals
-  xml_doc <- read_created_xml_file()
+  xml_doc <- read_created_xml_file(paste(getwd(),"/1/lhc_analysis_set1.xml", sep=""), paste(getwd(),"/LHC_Parameters_for_Runs.csv",sep=""))
 
   # Now compare the results
   expect_equal(xml_doc$xml_param_vals,xml_doc$sampled_vals)
