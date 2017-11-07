@@ -17,6 +17,35 @@ check_lhc_sampling_args <- function(arguments)
 
 }
 
+check_lhc_sampling_netlogo_args <- function(arguments)
+{
+  preCheckSuccess = TRUE
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_package_installed("XML",preCheckSuccess)
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_argument_positive_int(arguments$EXPERIMENT_REPETITIONS,preCheckSuccess,"EXPERIMENT_REPETITIONS")
+  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+
+  return(preCheckSuccess)
+  # To check: PARAMETERS, PARAMVALS, RUNMETRICS_EVERYSTEP, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES
+
+
+  #lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
+  #                                            NUMSAMPLES, ALGORITHM,
+  #                                            EXPERIMENT_REPETITIONS,
+  #                                            RUNMETRICS_EVERYSTEP,
+  #                                            NETLOGO_SETUP_FUNCTION,
+  #                                            NETLOGO_RUN_FUNCTION, MEASURES)
+}
+
 #' Pre-execution checks to perform before the spartan efast samplng technique
 #' is executed. Checks all parameter input
 #' @param arguments List of the arguments provided to the called function
@@ -254,6 +283,9 @@ check_filepath_exists <- function(arguments,preCheckSuccess)
 {
   out <- tryCatch(
     {
+      #print(paste("preCheck in FP: ",preCheckSuccess,sep=""))
+      #print(paste("in: ", eval(arguments$FILEPATH),sep=""))
+      #print(paste("Does File Exist: ",file.exists(eval(arguments$FILEPATH)),sep=""))
       if(file.exists(eval(arguments$FILEPATH)))
         return(preCheckSuccess)
       else

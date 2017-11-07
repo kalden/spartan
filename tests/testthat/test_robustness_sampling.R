@@ -46,5 +46,7 @@ test_that("oat_parameter_sampling", {
   # Check output files are generated
   expect_true(file.exists(paste(getwd(),"/A_OAT_Values.csv",sep="")))
   expect_true(file.exists(paste(getwd(),"/A_OAT_Values.csv",sep="")))
+  file.remove(paste(getwd(),"/A_OAT_Values.csv",sep=""))
+  file.remove(paste(getwd(),"/B_OAT_Values.csv",sep=""))
 
 })

@@ -49,7 +49,7 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
                                                   "OAT_Values.csv"))))
       write_data_to_csv(PARAMETERTABLE, results_file)
 
-      print(paste("Sample File Generated for parameter ",
+      message(paste("Sample File Generated for parameter ",
                   PARAMETERS[PARAMOFINT], " and output to ",
                   results_file, sep = ""))
     }

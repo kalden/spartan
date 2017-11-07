@@ -26,6 +26,7 @@ test_that("emulator_parameter_evolution", {
 })
 
 test_that("nsga2_set_user_params", {
+
   load(file.path("built_ensemble_72.Rda"))
   parameters <- c("stableBindProbability","chemokineExpressionThreshold",
                   "initialChemokineExpressionValue","maxChemokineExpressionValue",
@@ -46,6 +47,7 @@ test_that("nsga2_set_user_params", {
 })
 
 test_that("set.nsga_sensitivity_params", {
+
   sens_params <- set.nsga_sensitivity_params(100, 0.1,0.1,500,1.0,1.0,500)
 
   expect_equal(sens_params$Generation_min,100)

@@ -51,13 +51,18 @@ lhc_generate_lhc_sample <- function(FILEPATH=NULL, PARAMETERS, NUMSAMPLES, PMIN,
       if(!is.null(FILEPATH))
       {
         write_data_to_csv(design, make_path(c(FILEPATH,"LHC_Parameters_for_Runs.csv")))
-        print(paste("Parameter Set Generated and Output to ", FILEPATH,
+        message(paste("Parameter Set Generated and Output to ", FILEPATH,
                     "/LHC_Parameters_for_Runs.csv", sep = ""))
       }
       else
         message("No FILEPATH specified. Returning sample as R Object")
 
       return(design)
+  }
+  else
+  {
+    # As this is called by the netlogo sampling, we return false here to show an error
+    return(FALSE)
   }
 }
 

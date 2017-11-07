@@ -21,166 +21,73 @@
 lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
                                             NUMSAMPLES, ALGORITHM,
                                             EXPERIMENT_REPETITIONS,
-                                            RUNMETRICS_EVERYSTEP,
+                                            RUN_METRICS_EVERYSTEP,
                                             NETLOGO_SETUP_FUNCTION,
                                             NETLOGO_RUN_FUNCTION, MEASURES) {
 
-  if (requireNamespace("lhs", quietly = TRUE)){
-    # CHECK THE OUTPUT FILE PATH EXISTS
-    if (file.exists(FILEPATH)) {
-      # AS WITH TRADITIONAL SPARTAN, WE ARE ALSO GOING TO MAKE A SPREADSHEET
-      # CONTAINING A SUMMARY OF THE PARAMETERS FOR EACH RUN
-      # AS WELL AS NETLOGO EXPERIMENT FILES. INITIALISE THE STORES HERE
-      LHC_PARAMETERS_ALL_RUNS <- NULL
-      LHC_CSV_HEADERS <- NULL
+  # Version 3.1 of spartan introduces input error checking. This has also been
+  # refactored to make better use of the original lhc sampling function
+  input_arguments <- as.list(match.call())
+  #print(paste("FILEPATH IN: ",eval(input_arguments$FILEPATH),sep=""))
+  #print(paste("Does this Exist: ",file.exists(eval(input_arguments$FILEPATH)),sep=""))
+  # Run if all checks pass:
 
-      # Firstly calculate the number of parameters that are being varied
-      # We do this by detecting the number that are in square brackets
-      # and have min & max separated by commas
-      NUM_PARAMSOFINT <- 0
-      for (PARAM in 1:length(PARAMETERS)) {
+  if(check_lhc_sampling_netlogo_args(input_arguments)) {
 
-        PARAMVALSPLIT <- strsplit(PARAMVALS[PARAM], ",")[[1]]
+      # Get the information and ranges of the parameters being perturbed
+      ParameterInfo <- process_netlogo_parameter_range_info(PARAMETERS, PARAMVALS)
 
-        if (length(PARAMVALSPLIT) > 1) {
-          NUM_PARAMSOFINT <- NUM_PARAMSOFINT + 1
-          # ADD THE PARAMETER TO THE CSV FILE HEADER
-          LHC_CSV_HEADERS <- cbind(LHC_CSV_HEADERS, PARAMETERS[PARAM])
-        }
-      }
+      # Perform the sampling
+      design <- sample_parameter_space(ALGORITHM, NUMSAMPLES,
+                                       ParameterInfo$STUDIED_PARAMETERS)
 
-      # NOW WE CAN GENERATE A LHC SAMPLE FOR THIS NUMBER OF PARAMETERS
-      # FIRSTLY MAKE SURE THE ALGORITHM CHOICE IS SPECIFIED IN LOWER CASE
-      ALGORITHM <- tolower(ALGORITHM)
-      LHC_DESIGN <- NULL
+      # Now scale this design, as currently all values are between 0 and 1
+      design <- scale_lhc_sample(ParameterInfo$STUDIED_PARAMETERS,
+                                 ParameterInfo$PMIN,
+                                 ParameterInfo$PMAX, NUMSAMPLES, design)
 
-      # PERFORM THE SAMPLING - JUDGING ON USERS CHOICE OF ALGORITHM
-      if (ALGORITHM == "optimum") {
-        # MAY TAKE A WHILE FOR A LARGE NUMBER OF SAMPLES
-        # (THIS BEING TWO DAYS WHERE NUMSAMPLES=500)
-        LHC_DESIGN <- lhs::optimumLHS(NUMSAMPLES, NUM_PARAMSOFINT,
-                                      maxSweeps = 2, eps = .1)
-      } else {
-        LHC_DESIGN <- lhs::randomLHS(NUMSAMPLES, NUM_PARAMSOFINT)
-      }
+      print(make_path(c(FILEPATH,
+                        "LHC_Parameters_for_Runs.csv")))
+      write_data_to_csv(design, make_path(c(FILEPATH,
+                                            "LHC_Parameters_for_Runs.csv")))
 
-      # NOW TO CONSTRUCT THE EXPERIMENT FILE FOR EACH SET OF PARAMETERS.
-      # THUS THERE WILL BE THE SAME NUMBER OF EXPERIMENT XML
-      # FILES AS SPECIFIED IN THE NUMBER OF SAMPLES
+      #design <- lhc_generate_lhc_sample(
+      #  FILEPATH, PARAMETERS=ParameterInfo$STUDIED_PARAMETERS, NUMSAMPLES,
+      #  PMIN=ParameterInfo$PMIN, PMAX=PMAX, ALGORITHM)
 
-      # First check the package exists
-      if (requireNamespace("XML", quietly = TRUE)) {
-        for (SAMPLE in 1:NUMSAMPLES) {
-          # CREATE A FOLDER FOR THIS SAMPLE
+     # Now construct the netlogo experiment file for each of these samples
+      for (SAMPLE in 1:NUMSAMPLES) {
+          # Create a folder for this sample
           dir.create(file.path(FILEPATH, SAMPLE), showWarnings = FALSE)
 
-          # CREATE A NEW ROW FOR THE CSV SUMMARY FILE
-          LHC_SAMPLE_RUN <- NULL
+          # Initialise the XML file
+          xml <- initialise_netlogo_xml_file(
+            "LHC_Sample", SAMPLE, EXPERIMENT_REPETITIONS, RUN_METRICS_EVERYSTEP,
+            NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES)
 
-          # AS SOME PARAMETERS VARY AND SOME DON'T, WE NEED TO KEEP A
-          # REFERENCE TO THE COLUMN OF THE GENERATED LHC FILE
-          LHC_COL_REF <- 1
+          # Add the parameter information
+          add_parameter_value_to_file(xml, PARAMETERS, ParameterInfo,
+                                      design, SAMPLE, PARAMVALS)
 
-          # INITIALISE THE XML FILE
-          xml <- XML::xmlOutputDOM(tag = "experiments")
+          # Close and write the file
+          Output_File <- make_extension(
+            make_path(c(FILEPATH,SAMPLE,
+                        join_strings_nospace(c("lhc_analysis_set",SAMPLE)))),
+            "xml")
 
-          # NEXT TAG IN IS EXPERIMENT
-          xml$addTag("experiment", attrs = c(
-            name = paste("LHC_Sample", SAMPLE, sep = ""),
-            repetitions = EXPERIMENT_REPETITIONS,
-            runMetricsEveryStep = RUNMETRICS_EVERYSTEP),
-            close = FALSE)
-
-          # PROCEDURES TO CALL SETUP, GO, AND OUTPUT MEASURES TO ANALYSE
-          xml$addTag("setup", NETLOGO_SETUP_FUNCTION)
-          xml$addTag("go", NETLOGO_RUN_FUNCTION)
-
-          for (MEASURE in 1:length(MEASURES)) {
-            xml$addTag("metric", MEASURES[MEASURE])
-          }
-
-          # NOW TO SET THE VALUE OF EACH PARAMETER IN THIS RUN.
-          # SOME ARE STATIC, SOME WILL BE TAKEN FROM THE LHC
-          for (PARAM in 1:length(PARAMETERS)) {
-            # SPLIT THE VALUES OF THIS PARAMETER BY THE COMMA.
-            # IF NO COMMA, THIS IS NOT A PARAMETER OF INTEREST
-            # AND IS OF STATIC VALUE
-            PARAMVALSPLIT <- strsplit(PARAMVALS[PARAM], ",")[[1]]
-
-            if (length(PARAMVALSPLIT) == 1) {
-              # JUST GET THE VALUE - WE ADD THIS TO THE XML LATER
-              VALUE <- PARAMVALS[PARAM]
-            } else {
-              # THIS IS MORE DIFFICULT, AS WE NEED TO SET THE VALUE BASED ON
-              # THE LATIN HYPERCUBE SAMPLE
-              # THE LHC GENERATES A NUMBER BETWEEN 0 AND 1, SO WE NEED TO
-              # SCALE THIS BASED ON THE MIN AND MAX SPECIFIED
-              # FIRST GET THE MAX AND MIN
-              MIN <- as.numeric(substring(PARAMVALSPLIT[[1]], 2))
-              MAX <- as.numeric(substring(PARAMVALSPLIT[[2]], 1,
-                                          nchar(PARAMVALSPLIT[[2]]) - 1))
-
-              # NOW CALCULATE THE VALUE TO USE FOR THIS PARAMETER
-              VALUE <- (LHC_DESIGN[SAMPLE, LHC_COL_REF] * (MAX - MIN)) + MIN
-
-              # INCREMENT THE LHC_COL_REF SO A DIFFERENT VARYING PARAMETER
-              # IS USED NEXT TIME
-              LHC_COL_REF <- LHC_COL_REF + 1
-
-              # ADD TO THE SUMMARY
-              LHC_SAMPLE_RUN <- cbind(LHC_SAMPLE_RUN, VALUE)
-            }
-
-            # NOW CREATE THE XML FOR THIS PARAMETER
-            xml$addTag("enumeratedValueSet", attrs = c(
-              variable = PARAMETERS[PARAM]), close = FALSE)
-            # NOW ADD THE VALUE
-            xml$addTag("value", attrs = c(value = VALUE))
-
-            # CLOSE THE ENUMERATED VALUE SET TAG
-            xml$closeTag()
-
-          }
-
-          # CLOSE THE EXPERIMENT TAG
-          xml$closeTag()
-
-          # CLOSE THE EXPERIMENTS TAG
-          xml$closeTag()
-
-          # SAVE THE XML FILE IN THE FOLDER FOR THIS EXPERIMENT
-          XML::saveXML(xml, file = paste(
-            FILEPATH, "/", SAMPLE, "/lhc_analysis_set", SAMPLE, ".xml",
-            sep = ""), indent = TRUE, prefix =
-              '<?xml version="1.0" encoding="us-ascii"?>\n', doctype =
-              '<!DOCTYPE experiments SYSTEM "behaviorspace.dtd">')
-
-          # ADD THIS SAMPLE TO THE CSV SUMMARY FILE
-          LHC_PARAMETERS_ALL_RUNS <- rbind(LHC_PARAMETERS_ALL_RUNS,
-                                           LHC_SAMPLE_RUN)
-        }
-      } else {
-        print("The lhc_generate_lhc_sample_netlogo function requires the
-              XML package to be installed")
+          close_and_write_netlogo_file(xml, Output_File)
       }
 
-      # WITH ALL SAMPLES DONE, CREATE THE CSV FILE
-      colnames(LHC_PARAMETERS_ALL_RUNS) <- c(LHC_CSV_HEADERS)
-      # OUTPUT THE LHC DESIGN AS A CSV FILE
-      write.csv(LHC_PARAMETERS_ALL_RUNS, paste(
-        FILEPATH, "/LHC_Parameters_for_Runs.csv", sep = ""),
-        row.names = FALSE, quote = FALSE)
-
-      print(paste("Parameter Set Generated and Output to ", FILEPATH,
-                  "/LHC_Parameters_for_Runs.csv", sep = ""))
-      print(paste(NUMSAMPLES, " Netlogo Experiment Files Output to ",
+      message(paste(NUMSAMPLES, " Netlogo Experiment Files Output to ",
                   FILEPATH, sep = ""))
-    } else {
-      print("The directory specified in FILEPATH does not exist.
-            No parameter samples generated")
-    }
-  } else {
-    print("The lhc_generate_lhc_sample_netlogo function requires the
-          lhs package to be installed")
+      return("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
+  }
+  else
+  {
+    return("RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
   }
 }
+
+
+
+

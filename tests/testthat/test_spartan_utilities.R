@@ -26,6 +26,8 @@ test_that("partition_dataset", {
                                      normalise = FALSE, sample_mins = arguments$sample_mins, sample_maxes = arguments$sample_maxes,
                                      timepoint = NULL),"Partition percentages do not add up to 100%. Terminated")
 
+    file.remove(paste(getwd(),"/partitioned_data.Rda",sep=""))
+
 })
 
 test_that("normalise_dataset" , {
