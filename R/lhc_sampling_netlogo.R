@@ -12,7 +12,7 @@
 #' @param NUMSAMPLES The number of parameter subsets to be generated in the LHC design
 #' @param ALGORITHM Choice of algorithm to use to generate the hypercube. Can be set to either 'normal' or 'optimum'. Beware optimum can take a long time to generate an optimised parameter set (more than 24 hours in some circumstances).
 #' @param EXPERIMENT_REPETITIONS The number of times Netlogo should repeat the experiment for each set of parameter values.
-#' @param RUNMETRICS_EVERYSTEP Boolean stating whether Netlogo should produce output for each timestep.
+#' @param RUN_METRICS_EVERYSTEP Boolean stating whether Netlogo should produce output for each timestep.
 #' @param NETLOGO_SETUP_FUNCTION The name of the function in Netlogo that sets up the simulation. Commonly is named setup.
 #' @param NETLOGO_RUN_FUNCTION The name of the function in Netlogo that starts the simulation. Commonly named go.
 #' @param MEASURES Array containing the names of the Netlogo output measures which are used to analyse the simulation.
