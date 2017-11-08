@@ -76,7 +76,16 @@ plot_compare_sim_observed_to_model_prediction <- function(observed, predicted,
 
   # Important that x and y are on the same scale - take the max of the
   # observed and predicted and use that plus a bit of leeway as a limit
-  axis_limit <- round(max(max(predicted), max(observed)))
+  # KA - some points were being missed by doing max. Ceiling rounds to nearest
+  # int - so instead take the max and add 10% to it, and all points will be
+  #plotted
+  axis_limit <- round(max(predicted, observed)*1.1,digits=2)
+
+  # KA v3.1 - Some problems in Edgar's data where he had negative data
+  # So we need to detect the min too if negative
+  axis_minimum <- 0
+  if(min(predicted,observed)<0)
+    axis_minimum <- round(min(predicted, observed)*1.1,digits=2)
 
   graph <- ggplot2::ggplot(plot_data, aes(x = plot_data[, 1],
                                           y = plot_data[, 2]))
@@ -85,8 +94,11 @@ plot_compare_sim_observed_to_model_prediction <- function(observed, predicted,
     ggtitle(graph_title) + theme(plot.title = element_text(hjust = 0.5,
                                                           size = 14)) +
     geom_abline(intercept = 0, slope = 1) +
-    scale_x_continuous(limits = c(0, axis_limit)) +
-    scale_y_continuous(limits = c(0, axis_limit))
+    scale_x_continuous(limits = c(axis_minimum, axis_limit)) +
+    scale_y_continuous(limits = c(axis_minimum, axis_limit))
 
   ggplot2::ggsave(graph_file_name, device = "pdf")
+
+  # KA: Checking graph error - going to store the output data so the graphs can be recreated outside spartan
+  #save(plot_data, file=paste(graph_file_name,".RDa",sep=""))
 }
