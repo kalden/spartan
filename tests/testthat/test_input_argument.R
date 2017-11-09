@@ -112,7 +112,7 @@ test_that("check_filepath_exists", {
   expect_true(check_filepath_exists(input_arguments,TRUE))
   # Filepath does not exist:
   input_arguments <- make_input_arguments_object(FILEPATH=file.path(getwd(),"2"))
-  expect_message(check_filepath_exists(input_arguments,TRUE),"FILEPATH does not seem to exist: /home/kja505/Dropbox/spartan_3.0/spartan/tests/testthat/2")
+  expect_message(check_filepath_exists(input_arguments,TRUE),paste("FILEPATH does not seem to exist: ",getwd(),"/2",sep=""))
   # Filepath stated as an undelared variable
   input_arguments <- make_input_arguments_object(FILEPATH=VAR)
   expect_message(check_filepath_exists(input_arguments,TRUE),"FILEPATH does not seem to exist")
