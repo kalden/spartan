@@ -24,30 +24,21 @@ check_lhc_sampling_args <- function(arguments)
 check_lhc_sampling_netlogo_args <- function(arguments)
 {
   preCheckSuccess = TRUE
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
   preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
   preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
   preCheckSuccess = check_package_installed("XML",preCheckSuccess)
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
   preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
   preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
   preCheckSuccess = check_argument_positive_int(arguments$EXPERIMENT_REPETITIONS,preCheckSuccess,"EXPERIMENT_REPETITIONS")
-  #print(paste("preCheck: ",preCheckSuccess,sep=""))
+  preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
+  preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
+  preCheckSuccess = check_boolean(arguments$RUN_METRICS_EVERYSTEP, preCheckSuccess, "RUN_METRICS_EVERYSTEP")
+  preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
+  preCheckSuccess = check_text_list(arguments$PARAMETERS, preCheckSuccess, "PARAMETERS")
+  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
 
   return(preCheckSuccess)
-  # To check: PARAMETERS, PARAMVALS, RUNMETRICS_EVERYSTEP, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES
-
-
-  #lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
-  #                                            NUMSAMPLES, ALGORITHM,
-  #                                            EXPERIMENT_REPETITIONS,
-  #                                            RUNMETRICS_EVERYSTEP,
-  #                                            NETLOGO_SETUP_FUNCTION,
-  #                                            NETLOGO_RUN_FUNCTION, MEASURES)
+  # To check: PARAMVALS, RUNMETRICS_EVERYSTEP
 }
 
 #' Pre-execution checks to perform before the spartan efast samplng technique
@@ -63,7 +54,7 @@ check_efast_sampling_netlogo_args <- function(arguments)
   preCheckSuccess = check_argument_positive_int(arguments$NUMCURVES,preCheckSuccess,"NUMCURVES")
   preCheckSuccess = check_argument_positive_int(arguments$EXPERIMENT_REPETITIONS,
                                                 preCheckSuccess,"EXPERIMENT_REPETITIONS")
-  #preCheckSuccess = check_boolean(arguments$RUNMETRICS_EVERYSTEP, preCheckSuccess, "RUNMETRICS_EVERYSTEP")
+  preCheckSuccess = check_boolean(arguments$RUNMETRICS_EVERYSTEP, preCheckSuccess, "RUNMETRICS_EVERYSTEP")
   preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
   preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
   preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
@@ -315,13 +306,13 @@ check_filepath_exists <- function(arguments,preCheckSuccess)
         return(preCheckSuccess)
       else
       {
-        message(paste("FILEPATH does not seem to exist:", arguments$FILEPATH))
+        message(paste("FILEPATH does not seem to exist:", eval(arguments$FILEPATH)))
         message("Spartan Function Terminated")
         return(FALSE)
       }
     },
     error=function(cond) {
-      message(paste("FILEPATH does not seem to exist:", arguments$FILEPATH))
+      message(paste("FILEPATH does not seem to exist"))
       message("Spartan Function Terminated")
       return(FALSE)
     })
@@ -430,12 +421,6 @@ check_numeric_list_values <- function(smallList, largerList, nameSmall, nameLarg
       message("Spartan Function Terminated")
       # Choose a return value in case of error
       return(FALSE)
-    },
-    warning=function(cond) {
-      message(paste("Value error in ",nameSmall, " or ", nameLarge, ". Check these are numeric",sep=""))
-      message("Spartan Function Terminated")
-      # Choose a return value in case of error
-      return(FALSE)
     })
 }
 
@@ -478,7 +463,7 @@ check_boolean <- function(argument, preCheckSuccess, argName)
 {
   tryCatch(
     {
-      if(tolower(eval(argument)=="true") | tolower(eval(argument)=="false"))
+      if(tolower(argument)=="true" | tolower(argument)=="false")
         return(preCheckSuccess)
       else {
         message(paste(argName," must be either true or false. Terminated", sep=""))
@@ -501,10 +486,16 @@ check_text <-function(argument, preCheckSuccess, argName)
 {
   tryCatch(
     {
-      if(typeof(eval(argument))=="character" | typeof(eval(argument)) == "double")
+      argEvaled <- eval(argument)
+
+      if((typeof(argEvaled)=="character" | typeof(argEvaled) == "double") & length(argEvaled)>0)
         return(preCheckSuccess)
+      else {
+        message(paste(argName, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
+        return(FALSE)
+      }
     },
-    warning=function(cond) {
+    error=function(cond) {
       message(paste(argName, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
       return(FALSE)
     })
@@ -520,9 +511,11 @@ check_text_list <-function(argument, preCheckSuccess, argName)
 {
   tryCatch(
     {
-      for(i in 1:length(eval(argument)))
+      # Get the list
+      arg_list <- eval(argument)
+      for(i in 1:length(arg_list))
       {
-        check = check_text(argument, preCheckSuccess, argName)
+        check = check_text(arg_list[i], preCheckSuccess, argName)
         if(!check)
         {
           message(paste("Error in declaration of ",argName,". Terminated",sep=""))
@@ -531,7 +524,7 @@ check_text_list <-function(argument, preCheckSuccess, argName)
       }
       return(preCheckSuccess)
     },
-    warning=function(cond) {
+    error=function(cond) {
       message(paste("Error in declaration of ",argName,". Terminated",sep=""))
       return(FALSE)
     })

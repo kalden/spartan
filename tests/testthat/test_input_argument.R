@@ -107,18 +107,18 @@ test_that("check_robustness_parameter_and_ranges_lengths", {
 test_that("check_filepath_exists", {
 
   # Filepath should exist
-  input_arguments <- make_input_arguments_object(FILEPATH="/home/kja505/Desktop")
-  skip_on_travis()
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd())
+
   expect_true(check_filepath_exists(input_arguments,TRUE))
   # Filepath does not exist:
-  input_arguments <- make_input_arguments_object(FILEPATH="/home/kja505/Desktop2")
-  expect_message(check_filepath_exists(input_arguments,TRUE),paste("FILEPATH does not seem to exist:", input_arguments$FILEPATH))
+  input_arguments <- make_input_arguments_object(FILEPATH=file.path(getwd(),"2"))
+  expect_message(check_filepath_exists(input_arguments,TRUE),"FILEPATH does not seem to exist: /home/kja505/Dropbox/spartan_3.0/spartan/tests/testthat/2")
   # Filepath stated as an undelared variable
   input_arguments <- make_input_arguments_object(FILEPATH=VAR)
-  expect_message(check_filepath_exists(input_arguments,TRUE),paste("FILEPATH does not seem to exist:", input_arguments$FILEPATH))
+  expect_message(check_filepath_exists(input_arguments,TRUE),"FILEPATH does not seem to exist")
   # Filepath is null
   input_arguments <- make_input_arguments_object(FILEPATH=NULL)
-  expect_message(check_filepath_exists(input_arguments,TRUE),paste("FILEPATH does not seem to exist:", input_arguments$FILEPATH))
+  expect_message(check_filepath_exists(input_arguments,TRUE),"FILEPATH does not seem to exist")
 })
 
 test_that("check_lhs_algorithm", {
@@ -209,4 +209,67 @@ test_that("check_argument_positive_int", {
   # Null
   expect_message(check_argument_positive_int(NULL,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
 
+})
+
+test_that("check_boolean", {
+  # true and false should be accepted
+  expect_true(check_boolean("true",TRUE,"RUNMETRICS_EVERYSTEP"))
+  expect_true(check_boolean("false",TRUE,"RUNMETRICS_EVERYSTEP"))
+  expect_true(check_boolean("TRUE",TRUE,"RUNMETRICS_EVERYSTEP"))
+  expect_true(check_boolean("FALSE",TRUE,"RUNMETRICS_EVERYSTEP"))
+  # Others should not
+  expect_message(check_boolean("NotTrue",TRUE,"RUNMETRICS_EVERYSTEP"),"RUNMETRICS_EVERYSTEP must be either true or false. Terminated")
+  input_arguments <- make_input_arguments_object(RUNMETRICS_EVERYSTEP=VAR)
+  expect_message(check_boolean(input_arguments$RUNMETRICS_EVERYSTEP,TRUE,"RUNMETRICS_EVERYSTEP"),"RUNMETRICS_EVERYSTEP must be either true or false. Terminated")
+})
+
+test_that("check_text", {
+  # Check text is accepted
+  expect_true(check_text("setup",TRUE,"NETLOGO_SETUP_FUNCTION"))
+  # Numbers should also be accepted
+  expect_true(check_text(125,TRUE,"NETLOGO_SETUP_FUNCTION"))
+  # Check the others, e.g. null and not declared
+  input_arguments <- make_input_arguments_object(RUNMETRICS_EVERYSTEP=VAR)
+  expect_message(check_text(input_arguments$RUNMETRICS_EVERYSTEP, TRUE, "NETLOGO_SETUP_FUNCTION"),"NETLOGO_SETUP_FUNCTION must be either a text string or numeric. Error in declaration. Terminated")
+  input_arguments <- make_input_arguments_object(RUNMETRICS_EVERYSTEP=NULL)
+  expect_message(check_text(input_arguments$RUNMETRICS_EVERYSTEP, TRUE, "NETLOGO_SETUP_FUNCTION"),"NETLOGO_SETUP_FUNCTION must be either a text string or numeric. Error in declaration. Terminated")
+  # Check text should not work with a list
+  expect_message(check_text(data.frame(seq(1,5,by=1)), TRUE, "NETLOGO_SETUP_FUNCTION"),"NETLOGO_SETUP_FUNCTION must be either a text string or numeric. Error in declaration. Terminated")
+})
+
+
+test_that("check_text_list", {
+  # Check that a list of acceptable test is accepted
+  expect_true(check_text_list(c("setup","go","output"),TRUE,"MEASURES"))
+  expect_true(check_text_list(c("setup","go",123),TRUE,"MEASURES"))
+  # Put errors in the list
+  input_arguments <- make_input_arguments_object(RUNMETRICS_EVERYSTEP=c("setup","go",VAR))
+  expect_message(check_text_list(input_arguments$RUNMETRICS_EVERYSTEP, TRUE, "MEASURES"),"Error in declaration of MEASURES. Terminated")
+  input_arguments <- make_input_arguments_object(RUNMETRICS_EVERYSTEP=c("nullTest","nullTest",NULL))
+  # In this case, NULLs are ignored, so true should be returned
+  expect_true(check_text_list(input_arguments$RUNMETRICS_EVERYSTEP, TRUE, "MEASURES"))
+
+})
+
+test_that("check_efast_sampling_args", {
+  # This calls many of the functions above, so we just need to check their integration returns false
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), NUMSAMPLES=65, NUMCURVES=3, PARAMETERS=c("A","B"),PMIN=c(0,1),PMAX=c(100,2))
+  expect_true(check_efast_sampling_args(input_arguments))
+  # Now to add an error
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), NUMSAMPLES="A", NUMCURVES=3, PARAMETERS=c("A","B"),PMIN=c(0,1),PMAX=c(100,2))
+  expect_false(check_efast_sampling_args(input_arguments))
+})
+
+test_that("check_robustness_sampling_args", {
+  # This calls many of the functions above, so we just need to check their integration returns false
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), PARAMETERS=c("A","B","C"),PMIN=c(1,1,1),PMAX=c(10,10,10), PINC=c(1,1,1),PARAMVALS=NULL, BASELINE=c(5,6,4))
+  expect_true(check_robustness_sampling_args(input_arguments))
+  # Check paramvals
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), PARAMETERS=c("A","B","C"),PMIN=NULL,PMAX=NULL, PINC=NULL,BASELINE=c(3,4,0.5),PARAMVALS=c("2,3,4","1,4,7","0.1,0.2,0.3,0.4,0.5,0.6,0.7"))
+  expect_true(check_robustness_sampling_args(input_arguments))
+  # Introduce errors
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), PARAMETERS=c("B","C"),PMIN=c(1,1,1),PMAX=c(10,10,10), PINC=c(1,1,1),PARAMVALS=NULL, BASELINE=c(5,6,4))
+  expect_false(check_robustness_sampling_args(input_arguments))
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), PARAMETERS=c("A","B","C"),PMIN=NULL,PMAX=NULL, PINC=NULL,BASELINE=c(17,4,0.5),PARAMVALS=c("2,3,4","1,4,7","0.1,0.2,0.3,0.4,0.5,0.6,0.7"))
+  expect_false(check_robustness_sampling_args(input_arguments))
 })
