@@ -248,6 +248,8 @@ test_that("check_text_list", {
   input_arguments <- make_input_arguments_object(RUNMETRICS_EVERYSTEP=c("nullTest","nullTest",NULL))
   # In this case, NULLs are ignored, so true should be returned
   expect_true(check_text_list(input_arguments$RUNMETRICS_EVERYSTEP, TRUE, "MEASURES"))
+  # Check text should not work with a list
+  expect_message(check_text_list(c("setup",data.frame(seq(1,5,by=1))), TRUE, "NETLOGO_SETUP_FUNCTION"),"Error in declaration of NETLOGO_SETUP_FUNCTION. Terminated")
 
 })
 

@@ -463,14 +463,16 @@ check_boolean <- function(argument, preCheckSuccess, argName)
 {
   tryCatch(
     {
-      if(tolower(argument)=="true" | tolower(argument)=="false")
+      evaled_arg<-eval(argument)
+
+      if(tolower(evaled_arg)=="true" | tolower(evaled_arg)=="false")
         return(preCheckSuccess)
       else {
         message(paste(argName," must be either true or false. Terminated", sep=""))
         return(FALSE)
       }
     },
-    warning=function(cond) {
+    error=function(cond) {
       message(paste(argName, " must be either true or false. Terminated",sep=""))
       return(FALSE)
     })
@@ -516,6 +518,7 @@ check_text_list <-function(argument, preCheckSuccess, argName)
       for(i in 1:length(arg_list))
       {
         check = check_text(arg_list[i], preCheckSuccess, argName)
+        print(paste("Check: ",check,sep=""))
         if(!check)
         {
           message(paste("Error in declaration of ",argName,". Terminated",sep=""))
