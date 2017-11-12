@@ -1,3 +1,42 @@
+#' Pre-execution checks to perform before the spartan get aTest results method
+#' within the consistency analysistechnique is executed. Checks all input
+#' @param arguments List of the arguments provided to the called function
+#' @return Boolean stating the status of the pre-execution checks
+check_getATestResult_Input <- function(arguments)
+{
+  preCheckSuccess = TRUE
+  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  preCheckSuccess = check_argument_positive_int(arguments$NUMSUBSETSPERSAMPLESIZE,preCheckSuccess,"NUMSUBSETSPERSAMPLESIZE")
+  preCheckSuccess = check_double_value_in_range(arguments$LARGEDIFFINDICATOR, preCheckSuccess, "LARGEDIFFINDICATOR",0,0.5)
+  preCheckSuccess = check_text(arguments$ATESTRESULTSFILENAME, preCheckSuccess, "ATESTRESULTSFILENAME")
+  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
+  preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
+  preCheckSuccess = check_consistency_result_type(arguments, preCheckSuccess)
+
+  return(preCheckSuccess)
+}
+
+check_aa_summariseReplicateRuns <- function(arguments)
+{
+  preCheckSuccess = TRUE
+  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
+  preCheckSuccess = check_nested_filepaths(arguments$FILEPATH, arguments$SAMPLESIZES, preCheckSuccess)
+  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
+  preCheckSuccess = check_text(arguments$RESULTFILENAME, preCheckSuccess, "RESULTFILENAME")
+  preCheckSuccess = check_text(arguments$ALTFILENAME, preCheckSuccess, "ALTFILENAME")
+  preCheckSuccess = check_column_ranges(arguments, arguments$FILEPATH, arguments$RESULTFILENAME, preCheckSuccess)
+  if(!is.null(eval(arguments$ALTFILENAME)))
+    preCheckSuccess = check_column_ranges(arguments, arguments$FILEPATH, arguments$ALTFILENAME, preCheckSuccess)
+  preCheckSuccess = check_text(arguments$SUMMARYFILENAME, preCheckSuccess, "SUMMARYFILENAME")
+
+  # Timepoints needs adding
+
+  return(preCheckSuccess)
+
+}
+
+
 #' Pre-execution checks to perform before the spartan lhc samplng technique
 #' is executed. Checks all parameter input
 #' @param arguments List of the arguments provided to the called function
@@ -518,7 +557,7 @@ check_text_list <-function(argument, preCheckSuccess, argName)
       for(i in 1:length(arg_list))
       {
         check = check_text(arg_list[i], preCheckSuccess, argName)
-        print(paste("Check: ",check,sep=""))
+        #print(paste("Check: ",check,sep=""))
         if(!check)
         {
           message(paste("Error in declaration of ",argName,". Terminated",sep=""))
@@ -533,4 +572,201 @@ check_text_list <-function(argument, preCheckSuccess, argName)
     })
 }
 
+#' Check that a double argument is within a specified range
+#'
+#' @param argument Value of the argument to check
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argName Name of the argument, for inclusion in the error message
+#' @param range_min Minimum of the range
+#' @param range_max Maximum of the range
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_double_value_in_range <- function(argument, preCheckSuccess, argName, range_min, range_max)
+{
+  tryCatch(
+    {
+      # Get the list
+      value <- eval(argument)
 
+      if(is.numeric(value) & (value >= range_min & value <= range_max))
+        return(preCheckSuccess)
+      else
+      {
+        message(paste(argName, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
+        return(FALSE)
+      }
+
+    },
+    error=function(cond) {
+      message(paste("Error: ", argName, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+#' Check that all objects of a list are integers
+#'
+#' @param argument Value of the argument to check
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argName Name of the argument, for inclusion in the error message
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_list_all_integers <- function(argument, preCheckSuccess, argName)
+{
+  tryCatch(
+    {
+      # Get the list
+      value_list <- eval(argument)
+
+      if(all(value_list == floor(value_list)) & all(value_list > 0))
+        return(preCheckSuccess)
+      else
+      {
+        message(paste(argName," must be a list of positive integers. Terminated",sep=""))
+        return(FALSE)
+      }
+    },
+    error=function(cond) {
+      message(paste("Error in declaration of ",argName,". Spartan Terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+#' Check that result filepaths under the root directory exist
+#'
+#' @param file_root Root directory of the data to analyse
+#' @param sub_dirs List of the subdirectories that should be under the root
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_nested_filepaths <- function(file_root, sub_dirs, preCheckSuccess)
+{
+  tryCatch(
+    {
+      root <- eval(file_root)
+      sub_dir_list <- eval(sub_dirs)
+
+      for(i in 1:length(sub_dir_list))
+      {
+        if(!file.exists(paste(root,"/",sub_dir_list[i],sep="")))
+        {
+          message(paste("Sub-directory ",root,"/",sub_dir_list[i])," does not exist. Spartan Terminated",sep="")
+          return(FALSE)
+        }
+      }
+      return(preCheckSuccess)
+    },
+    error=function(cond) {
+      message(paste("Error in declaration of file paths to data to analyse. Spartan Terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+#' Check that the user has declared a-test results either in an R object or in a file name
+#' @param arguments List of the arguments provided to the called function
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_consistency_result_type <- function(arguments, preCheckSuccess)
+{
+  tryCatch(
+  {
+    r_object <- eval(arguments$AA_SIM_RESULTS_OBJECT)
+    #print(paste("R OBJECT: ",r_object,sep=""))
+    file_name <- eval(arguments$AA_SIM_RESULTS_FILE )
+    filepath <- eval(arguments$FILEPATH)
+
+    # Must have specified either AA_SIM_RESULTS_OBJECT (an R object) or a results file
+    if(is.null(r_object) & is.null(file_name))
+    {
+      message("Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. You must specify one. Spartan Terminated")
+      return(FALSE)
+    }
+    else {
+      if(is.null(r_object))
+      {
+        # The user is specifying a results file name
+        # Can check this here
+        file_check <- check_text(file_name, preCheckSuccess, "AA_SIM_RESULTS_FILE")
+        if(file_check)
+          # Check the file exists
+          if(file.exists(paste(filepath,"/",file_name,sep="")))
+            return(preCheckSuccess)
+          else
+          {
+            message(paste("Simulation results summary file ",file_name, " does not exist in ",filepath,sep=""))
+            return(FALSE)
+          }
+        else
+        {
+          message(paste("Declaring A-Test results in file ",file_name," yet problem with declaration of this file name string. Spartan Terminated",sep=""))
+          return(FALSE)
+        }
+      }
+      else
+      {
+        # Any issue with the R object not existing will have already been caught
+        # when this argument was evaluated above
+        return(preCheckSuccess)
+      }
+    }
+  },
+  error=function(cond) {
+    message("Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. Spartan Terminated")
+    return(FALSE)
+  })
+}
+
+#' Checks for the existence of a file
+#' @param filepath Directory where the file should be
+#' @param file Name of the file
+#' @return Boolean showing whether or not the file exists
+check_file_exist <- function(filepath, file)
+{
+  tryCatch(
+  {
+    if(file.exists(file.path(filepath, file)))
+      return(TRUE)
+    else
+      return(FALSE)
+  },
+  error=function(cond) {
+    # error printed in calling function
+    return(FALSE)
+  })
+}
+
+#' For aleatory analysis, checks the analysis start and end columns are sensible
+#' @param arguments List of the arguments provided to the called function
+#' @param filepath Evaluated filepath argument
+#' @param resultfile Name of the result file of columns to check
+#' @param preCheckSuccess Current status of pre-execution checks
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_column_ranges <- function(arguments, filepath, resultfile, preCheckSuccess)
+{
+  # This opens the first result file and checks the number of columns.
+  # The assumption is made all others will be of the same structure
+  if(check_file_exist(filepath, resultfile)==TRUE)
+  {
+    tryCatch(
+    {
+      # Load it and check number of columns
+      result<-read.csv(file.path(filepath,resultfile),header=T)
+      if(eval(arguments$OUTPUTFILECOLSTART) > 0 &
+         eval(arguments$OUTPUTFILECOLSTART) <= ncol(result) &
+         eval(arguments$OUTPUTFILECOLEND) > 0 &
+         eval(arguments$OUTPUTFILECOLEND) <= ncol(result) &
+         eval(arguments$OUTPUTFILECOLEND) >=
+         eval(arguments$OUTPUTFILECOLSTART)) {
+        return(preCheckSuccess)
+      } else {
+        message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+        return(FALSE)
+      }
+    },
+    error=function(cond) {
+      message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+      return(FALSE)
+    })
+  } else {
+    message(paste("Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
+                  file.path(filepath,resultfile), " does not exist",sep=""))
+    return(FALSE)
+  }
+}

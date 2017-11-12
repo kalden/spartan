@@ -3,6 +3,7 @@ context("Test of Spartan Netlogo eFAST Sampling")
 
 test_that("efast_generate_sample_netlogo", {
 
+  #skip("Skip")
   # Generate the samples, then we'll check the content
   # eFAST sampling has been tested independently, within that method
 

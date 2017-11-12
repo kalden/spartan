@@ -275,3 +275,111 @@ test_that("check_robustness_sampling_args", {
   input_arguments <- make_input_arguments_object(FILEPATH=getwd(), PARAMETERS=c("A","B","C"),PMIN=NULL,PMAX=NULL, PINC=NULL,BASELINE=c(17,4,0.5),PARAMVALS=c("2,3,4","1,4,7","0.1,0.2,0.3,0.4,0.5,0.6,0.7"))
   expect_false(check_robustness_sampling_args(input_arguments))
 })
+
+test_that("check_nested_filepaths", {
+  # Checks that sub paths exist before an analysis starts
+  # Make the directories so we can test their existence (obviously the user would have done this)
+  dir.create(file.path(getwd(),"1"))
+  dir.create(file.path(getwd(),"5"))
+  dir.create(file.path(getwd(),"50"))
+  dir.create(file.path(getwd(),"100"))
+  dir.create(file.path(getwd(),"300"))
+
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,300))
+  expect_true(check_nested_filepaths(input_arguments$FILEPATH, input_arguments$SAMPLESIZES, TRUE))
+
+  # Now add some errors - 600 not existing and a reference to A
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,600))
+  expect_message(check_nested_filepaths(input_arguments$FILEPATH, input_arguments$SAMPLESIZES, TRUE),paste("Sub-directory  ",getwd()," / 600 does not exist. Spartan Terminated",sep=""))
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,R))
+  expect_message(check_nested_filepaths(input_arguments$FILEPATH, input_arguments$SAMPLESIZES, TRUE),"Error in declaration of file paths to data to analyse. Spartan Terminated")
+
+  unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
+  unlink(paste(getwd(),"/5/",sep=""), recursive = TRUE)
+  unlink(paste(getwd(),"/50/",sep=""), recursive = TRUE)
+  unlink(paste(getwd(),"/100/",sep=""), recursive = TRUE)
+  unlink(paste(getwd(),"/300/",sep=""), recursive = TRUE)
+})
+
+test_that("check_list_all_integers", {
+
+  input_arguments <- make_input_arguments_object(SAMPLESIZES=c(1,5,50,100,300))
+  expect_true(check_list_all_integers(input_arguments$SAMPLESIZES,TRUE,"SAMPLESIZES"))
+
+  # Now add some errors
+  input_arguments <- make_input_arguments_object(SAMPLESIZES=c(1,5,"A",100,300))
+  expect_message(check_list_all_integers(input_arguments$SAMPLESIZES, TRUE, "SAMPLESIZES"),"Error in declaration of SAMPLESIZES. Spartan Terminated")
+  input_arguments <- make_input_arguments_object(SAMPLESIZES=c(1,5,-2,100,300))
+  expect_message(check_list_all_integers(input_arguments$SAMPLESIZES, TRUE, "SAMPLESIZES"),"SAMPLESIZES must be a list of positive integers. Terminated")
+
+  input_arguments <- make_input_arguments_object(SAMPLESIZES=c(1,5,R,100,300))
+  expect_message(check_list_all_integers(input_arguments$SAMPLESIZES, TRUE, "SAMPLESIZES"),"Error in declaration of SAMPLESIZES. Spartan Terminated")
+
+})
+
+test_that("check_double_value_in_range", {
+  input_arguments <- make_input_arguments_object(LARGEDIFFINDICATOR=0.23)
+  expect_true(check_double_value_in_range(input_arguments$LARGEDIFFINDICATOR, TRUE, "LARGEDIFFINDICATOR", 0, 0.5))
+  # check out of range
+  input_arguments <- make_input_arguments_object(LARGEDIFFINDICATOR=0.83)
+  expect_message(check_double_value_in_range(input_arguments$LARGEDIFFINDICATOR, TRUE, "LARGEDIFFINDICATOR", 0, 0.5),"LARGEDIFFINDICATOR must be between 0 and 0.5. Spartan terminated")
+  input_arguments <- make_input_arguments_object(LARGEDIFFINDICATOR="B")
+  expect_message(check_double_value_in_range(input_arguments$LARGEDIFFINDICATOR, TRUE, "LARGEDIFFINDICATOR", 0, 0.5),"LARGEDIFFINDICATOR must be between 0 and 0.5. Spartan terminated")
+  input_arguments <- make_input_arguments_object(LARGEDIFFINDICATOR=B)
+  expect_message(check_double_value_in_range(input_arguments$LARGEDIFFINDICATOR, TRUE, "LARGEDIFFINDICATOR", 0, 0.5),"Error: LARGEDIFFINDICATOR must be between 0 and 0.5. Spartan terminated")
+
+})
+
+test_that("check_consistency_result_type", {
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = tutorial_consistency_set)
+  expect_true(check_consistency_result_type(input_arguments, TRUE))
+  # For this test we'll need to create a file, just to show that the test can pass as well as fail:
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", FILEPATH=getwd())
+  expect_message(check_consistency_result_type(input_arguments, TRUE),paste("Simulation results summary file AA_SimResponses.csv does not exist in ",getwd(),sep=""))
+  make_file <- file.create(paste(getwd(),"/AA_SimResponses.csv",sep=""))
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", FILEPATH=getwd())
+  expect_true(check_consistency_result_type(input_arguments, TRUE))
+  # Remove this file
+  remove_file <- file.remove(paste(getwd(),"/AA_SimResponses.csv",sep=""))
+  # Make both NULL
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = NULL, AA_SIM_RESULTS_FILE = NULL)
+  expect_message(check_consistency_result_type(input_arguments, TRUE),"Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. You must specify one. Spartan Terminated")
+  # Fail the file name check
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = data.frame(seq(1,5,by=1)))
+  expect_false(check_consistency_result_type(input_arguments, TRUE))
+  # Fail the R object existence check
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = A)
+  expect_message(check_consistency_result_type(input_arguments, TRUE),"Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. Spartan Terminated")
+
+})
+
+test_that("check_column_ranges", {
+  # Going to make a CSV file for testing
+  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"Test_Column_CSV.csv"), quote=F, row.names=F)
+  input_arguments <- make_input_arguments_object(OUTPUTFILECOLSTART = 1, OUTPUTFILECOLEND = 3)
+  expect_true(check_column_ranges(input_arguments, getwd(), "Test_Column_CSV.csv", TRUE))
+
+  # Now add some errors - number of columns longer than the file:
+  input_arguments <- make_input_arguments_object(OUTPUTFILECOLSTART = 1, OUTPUTFILECOLEND = 5)
+  expect_message(check_column_ranges(input_arguments, getwd(), "Test_Column_CSV.csv", TRUE),"Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+  # start greater than end
+  input_arguments <- make_input_arguments_object(OUTPUTFILECOLSTART = 2, OUTPUTFILECOLEND = 1)
+  expect_message(check_column_ranges(input_arguments, getwd(), "Test_Column_CSV.csv", TRUE),"Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+  # results file does not exist
+  expect_message(check_column_ranges(input_arguments, getwd(), "Test_Column_CSV2.csv", TRUE),"Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
+                    file.path(getwd(),"Test_Column_CSV2.csv"), " does not exist")
+  # Test with error
+  input_arguments <- make_input_arguments_object(OUTPUTFILECOLSTART = 2, OUTPUTFILECOLEND = A)
+  expect_message(check_column_ranges(input_arguments, getwd(), "Test_Column_CSV.csv", TRUE),"Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+
+  file.remove(file.path(getwd(),"Test_Column_CSV.csv"))
+})
+
+test_that("check_file_exist", {
+  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"Test_Column_CSV.csv"), quote=F, row.names=F)
+  expect_true(check_file_exist(getwd(), "Test_Column_CSV.csv"))
+  expect_false(check_file_exist(getwd(), "Test_Column_CSV2.csv"))
+  expect_false(check_file_exist(getwd(), A))
+  file.remove(file.path(getwd(),"Test_Column_CSV.csv"))
+
+})

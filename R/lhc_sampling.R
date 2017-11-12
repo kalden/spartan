@@ -59,11 +59,6 @@ lhc_generate_lhc_sample <- function(FILEPATH=NULL, PARAMETERS, NUMSAMPLES, PMIN,
 
       return(design)
   }
-  else
-  {
-    # As this is called by the netlogo sampling, we return false here to show an error
-    return(FALSE)
-  }
 }
 
 #' Generate the LHC design for the chosen algorithm

@@ -5,8 +5,8 @@
 \title{Function used to calculate the median results for those run under a set of
 parameter samples}
 \usage{
-getMediansSubset(FILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME,
-  ALTFILENAME, outputfilecolstart, outputfilecolend)
+getMediansSubset(FILEPATH, NUMRUNSPERSAMPLE, measures, resultfilename,
+  altfilename, outputfilecolstart, outputfilecolend)
 }
 \arguments{
 \item{FILEPATH}{Where the simulation results can be found}
@@ -14,17 +14,17 @@ getMediansSubset(FILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME,
 \item{NUMRUNSPERSAMPLE}{Number of times the simulation has been run for a
 parameter set}
 
-\item{MEASURES}{Names of Simulation output responses}
-
-\item{RESULTFILENAME}{Name of the simulation result file}
-
-\item{ALTFILENAME}{Where necessary, name of the alternative result file}
-
 \item{outputfilecolstart}{Number of the column of the CSV file where results
 commence}
 
 \item{outputfilecolend}{Number of the column of the CSV file where results
 end}
+
+\item{MEASURES}{Names of Simulation output responses}
+
+\item{RESULTFILENAME}{Name of the simulation result file}
+
+\item{ALTFILENAME}{Where necessary, name of the alternative result file}
 }
 \value{
 Median Simulation responses under the parameter set in the

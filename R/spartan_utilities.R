@@ -19,117 +19,115 @@
 #' end
 #' @return Median Simulation responses under the parameter set in the
 #' result file
-#'
-#'
-getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, MEASURES,
-                             RESULTFILENAME, ALTFILENAME,
+getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
+                             resultfilename, altfilename,
                              outputfilecolstart, outputfilecolend) {
-  # FUNCTION AS PART OF SPARTAN VERSION 2
-  # THIS FUNCTION NO LONGER OUTPUTS A FILE, RETURNS LIST OF MEDIANS
 
-  RESULTS <- NULL
+  all_results <- NULL
 
   for (i in 1:NUMRUNSPERSAMPLE) {
 
-    fileaddress <- make_path(c(FILEPATH, toString(i), RESULTFILENAME))
-
+    fileaddress <- file.path(FILEPATH, toString(i))
     if (file.exists(fileaddress)) {
 
-      # CHECK WHAT KIND OF INPUT FILE IS BEING DEALT WITH
-      #print(check_file_extension(RESULTFILENAME))
-      if (check_file_extension(RESULTFILENAME) == "csv") {
+      model_result <- import_model_result(fileaddress, resultfilename,
+                                      outputfilecolstart,
+                                      outputfilecolend)
 
-        # import model result
-        if (outputfilecolstart > 1) {
-          col_diff <- outputfilecolend - outputfilecolstart
-          import <- read.csv(fileaddress,
-                           colClasses = c(rep("NULL", outputfilecolstart - 1),
-                                        rep(NA, col_diff + 1)),
-                            header = TRUE, check.names = FALSE)
-        } else {
-          import <- read.csv(fileaddress,
-                           colClasses = c(rep(NA, outputfilecolend)),
-                           header = TRUE, check.names = FALSE)
-        }
-
-        MODELRESULT <- data.frame(import, check.names = FALSE)
-
-      } else if (check_file_extension(RESULTFILENAME) == "xml") {
-        if (requireNamespace("XML", quietly = TRUE))
-          MODELRESULT <- XML::xmlToDataFrame(fileaddress)
-        else
-          print("The getMediansSubset function requires the XML package")
-      }
-
-      if (nrow(MODELRESULT) > 0) {
-
-        MEDIANSFORALLMEASURES <- NULL
-
-        # NOW GET THE MEDIANS FOR EACH MEASURE
-        for (q in 1:length(MEASURES)) {
-          # STORE JUST THE RESULTS FOR THAT MEASURE (sapply CAN THEN BE USED)
-          MEASURE_RESULT <- as.matrix(MODELRESULT[MEASURES[q]])
-          MEASUREMEDIAN <- median(as.numeric(MEASURE_RESULT))
-          MEDIANSFORALLMEASURES <- cbind(MEDIANSFORALLMEASURES,
-                                         MEASUREMEDIAN[[1]])
-        }
-        RESULTS <- rbind(RESULTS, MEDIANSFORALLMEASURES)
-      } else {
-
-        if (!is.null(ALTFILENAME)) {
-          # USE THE ALTERNATIVE ON THIS OCCASION
-          # ASSUMES IN SAME FORMAT AS ORIGINAL
-          fileaddress <- paste(FILEPATH, toString(i), "/", ALTFILENAME,
-                               sep = "")
-          # import model result - again checking input type
-
-          if (check_file_extension(ALTFILENAME) == "csv") {
-            # DEALING WITH A CSV FILE
-            com <- paste("cut -d, -f", outputfilecolstart, "-",
-                         outputfilecolend, " ", fileaddress, sep = "")
-            import <- read.csv(pipe(com), header = TRUE, check.names = FALSE)
-            MODELRESULT <- data.frame(import, check.names = FALSE)
-
-          } else if (check_file_extension(ALTFILENAME) == "xml") {
-
-            if (requireNamespace("XML", quietly = TRUE))
-              MODELRESULT <- XML::xmlToDataFrame(fileaddress)
-            else
-              print("The getMediansSubset function requires the XML package")
-          }
-
-          if (nrow(MODELRESULT) > 0) {
-
-            MEDIANSFORALLMEASURES <- NULL
-
-            # NOW GET THE MEDIANS FOR EACH MEASURE
-            for (q in 1:length(MEASURES)) {
-              # STORE JUST THE RESULTS FOR THAT MEASURE (AS, INCASE OF XML,
-              # THIS WILL NEED TO BE TRANSFORMED TO A MATRIX. IT WOULD BE
-              # NICE TO SPECIFY THE XML FIELD TYPES BUT THIS IS DIFFICULT
-              # TO DO WHEN INPUT NEEDS TO BE GENERIC
-              MEASURE_RESULT <- as.matrix(MODELRESULT[MEASURES[q]])
-              MEASUREMEDIAN <- median(as.numeric(MEASURE_RESULT), na.rm = TRUE)
-              MEDIANSFORALLMEASURES <- cbind(MEDIANSFORALLMEASURES,
-                                             MEASUREMEDIAN[[1]])
-            }
-            RESULTS <- rbind(RESULTS, MEDIANSFORALLMEASURES)
-          }
-        }
+      if(nrow(model_result)>0) {
+        all_results <- rbind(all_results,
+                             get_median_results_for_all_measures(model_result,
+                                                                 measures))
       }
     } else {
       print(paste("File ", fileaddress, " does not exist", sep = ""))
     }
   }
-
-  if (!is.null(RESULTS)) {
-    if (nrow(RESULTS) > 0)
-      colnames(RESULTS) <- MEASURES
-  }
+  if(!is.null(all_results) & nrow(all_results) > 0)
+    colnames(all_results) <- measures
 
   # Now we return this set of medians
-  return (RESULTS)
+  return(all_results)
 }
+
+
+#' Import a model result from either a CSV or XML file
+#' @param fileaddress Directory where the file is
+#' @param resultfilename Name of the results file
+#' @param altfilename If no results in resultfile, can read an alternative
+#' @param outputfilecolstart Start column of output in CSV file
+#' @param outputfilecolend End column of output in CSV file
+#' @return Results for this simulation run
+import_model_result <- function(fileaddress, resultfilename,
+                                altfilename, outputfilecolstart = NULL,
+                                outputfilecolend = NULL) {
+
+  model_result <- read_model_result_file(fileaddress, resultfilename,
+                                           outputfilecolstart,
+                                           outputfilecolend)
+
+  if(nrow(model_result) == 0 & !is.null(altfilename))
+    model_result <- read_model_result_file(fileaddress, altfilename,
+                                           outputfilecolstart,
+                                           outputfilecolend)
+
+  return(model_result)
+
+
+}
+
+#' Reads a model result file, either CSV or XML
+#' @param fileaddress Folder where the result file can be found
+#' @param resultfilename Name of the result file
+#' @param outputfilecolstart Start column of output in CSV file
+#' @param outputfilecolend End column of output in CSV file
+#' @return Results for this simulation run
+read_model_result_file <- function(fileaddress, resultfilename,
+                                   outputfilecolstart = NULL,
+                                   outputfilecolend = NULL) {
+
+  filepath <- file.path(fileaddress, resultfilename)
+  if(file.exists(filepath)) {
+    if (check_file_extension(resultfilename) == "csv") {
+      # import model result
+      if (outputfilecolstart > 1) {
+        col_diff <- outputfilecolend - outputfilecolstart
+        import <- read.csv(filepath,
+                           colClasses = c(rep("NULL", outputfilecolstart - 1),
+                                          rep(NA, col_diff + 1)),
+                           header = TRUE, check.names = FALSE)
+      } else {
+        import <- read.csv(filepath,
+                           colClasses = c(rep(NA, outputfilecolend)),
+                           header = TRUE, check.names = FALSE)
+      }
+
+      return(data.frame(import, check.names = FALSE))
+
+    } else if (check_file_extension(resultfilename) == "xml")
+      return(XML::xmlToDataFrame(filepath))
+  }
+}
+
+#' For a model result, calculate the medians of the desired measures
+#' @param model_result Simulation results
+#' @param measures Measures to summarise
+#' @return Median summary statistics for all measures
+get_median_results_for_all_measures <- function(model_result, measures) {
+
+  medians_all_measures <- NULL
+
+  # Calculate the median response for each measure
+  for (q in 1:length(measures)) {
+    measure_result <- as.matrix(model_result[measures[q]])
+    measure_median <- median(as.numeric(measure_result))
+    medians_all_measures <- cbind(medians_all_measures,
+                                   measure_median[[1]])
+  }
+  return(medians_all_measures)
+
+}
+
 
 #' Check the file extension of a file and return it
 #'

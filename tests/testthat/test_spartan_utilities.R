@@ -113,4 +113,24 @@ test_that("prepare_parameter_value_list", {
   expect_equal(as.numeric(prepare_parameter_value_list(PMIN,PMAX,PINC,PARAMVALS,PARAM_OF_INT)),as.numeric(strsplit(PARAMVALS[2],split=",")[[1]]))
 })
 
+test_that("subset_results_by_param_value_set", {
+  # Tests subsetting - we can do this with the consistency analysis dataset
+  data("tutorial_consistency_set")
+
+  # Subset sample set 1, result set 2:
+  sub_result <- subset_results_by_param_value_set(c("SampleSize", "Set"), tutorial_consistency_set, c(1, 2))
+  expect_equal(nrow(sub_result),1)
+  # Check this has caught two measures (as in the dataset, so 4 columns
+  expect_equal(ncol(sub_result),4)
+  # Check for sample size 300, that 300 rows are returned
+  sub_result <- subset_results_by_param_value_set(c("SampleSize", "Set"), tutorial_consistency_set, c(300, 2))
+  expect_equal(nrow(sub_result),300)
+
+})
+
+test_that(" write_data_to_csv", {
+  write_data_to_csv(c(1,2,3,4),file.path(getwd(),"/TestFile.csv"))
+  expect_true(file.exists(file.path(getwd(),"/TestFile.csv")))
+  file.remove(file.path(getwd(),"/TestFile.csv"))
+})
 

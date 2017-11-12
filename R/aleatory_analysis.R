@@ -25,82 +25,86 @@
 #'
 #' @export
 aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
-                                      RESULTFILENAME, ALTFILENAME,
+                                      RESULTFILENAME, ALTFILENAME = NULL,
                                       OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
                                       SUMMARYFILENAME, TIMEPOINTS = NULL,
                                       TIMEPOINTSCALE = NULL) {
-  if (is.null(TIMEPOINTS)) {
-    SAMPLE_SIZE_RESULTS <- NULL
 
-    for (SAMPLESIZE in 1:length(SAMPLESIZES)) {
-      for (SET in 1:20) {
-        print(join_strings_space(c("Processing Sample Size ",
-                                   SAMPLESIZES[SAMPLESIZE], " Set ", SET)))
+  # Version 3.1 adds pre-execution check functions as part of refactoring:
+  # Get the provided function arguments
+  input_arguments <- as.list(match.call())
+  # Run if all checks pass:
+  if(aa_summariseReplicateRuns(input_arguments)) {
 
-        SAMPLE_FILEPATH <- make_path(c(FILEPATH, SAMPLESIZES[SAMPLESIZE], SET))
+    if (is.null(TIMEPOINTS)) {
 
-        MEDIANS <- data.frame(getMediansSubset(SAMPLE_FILEPATH,
-                                               SAMPLESIZES[SAMPLESIZE],
-                                               MEASURES, RESULTFILENAME,
-                                               ALTFILENAME,
-                                               OUTPUTFILECOLSTART,
-                                               OUTPUTFILECOLEND))
+      SAMPLE_SIZE_RESULTS <- NULL
 
-        # Add on the sample size and set this was generated from
-        MEDIANS <- cbind(
-          rep(SAMPLESIZES[SAMPLESIZE], nrow(MEDIANS)),
-          rep(SET,nrow(MEDIANS)),
-          MEDIANS)
-
-          SAMPLE_SIZE_RESULTS <- rbind(SAMPLE_SIZE_RESULTS, MEDIANS)
+      for (SAMPLESIZE in 1:length(SAMPLESIZES)) {
+        SAMPLE_SIZE_RESULTS <- rbind(SAMPLE_SIZE_RESULTS,
+                                     get_medians_for_size_subsets(
+                                       FILEPATH, 20,
+                                       SAMPLESIZE, MEASURES, RESULTFILENAME,
+                                       ALTFILENAME, OUTPUTFILECOLSTART,
+                                       OUTPUTFILECOLEND) )
       }
-    }
 
 
-    colnames(SAMPLE_SIZE_RESULTS) <- c("SampleSize", "Set", MEASURES)
+      colnames(SAMPLE_SIZE_RESULTS) <- c("SampleSize", "Set", MEASURES)
 
-    RESULTSFILE <- make_path(c(FILEPATH, SUMMARYFILENAME))
-    print(join_strings_space(c("Writing Median Results to CSV File:",
-                             RESULTSFILE)))
-    write.csv(SAMPLE_SIZE_RESULTS, RESULTSFILE,
-              quote = FALSE, row.names = FALSE)
+      message(join_strings_space(c("Writing Median Results to CSV File:",
+                               SUMMARYFILENAME)))
+      write_data_to_csv(SAMPLE_SIZE_RESULTS, file.path(FILEPATH,SUMMARYFILENAME))
+
 
     } else {
-    for (n in 1:length(TIMEPOINTS)) {
-      current_time <- TIMEPOINTS[n]
-      print(join_strings_space(c("PROCESSING TIMEPOINT:", current_time)))
-
-      resultfileformat <- check_file_extension(RESULTFILENAME)
-      SIMRESULTFILENAME <- paste(substr(RESULTFILENAME, 0,
-                                        nchar(RESULTFILENAME) - 4),
-                                 "_", current_time, ".", resultfileformat,
-                                 sep = "")
-
-      if (!is.null(ALTFILENAME)) {
-        ALTFILENAMEFULL <- paste(substr(ALTFILENAME, 0,
-                                        nchar(ALTFILENAME) - 4),
-                                 "_", current_time, ".",
-                                 resultfileformat, sep = "")
-      } else {
-        ALTFILENAMEFULL <- ALTFILENAME
-      }
-
-      summaryfileformat <- check_file_extension(SUMMARYFILENAME)
-      SUMMARYFILENAME_FULL <- paste(substr(SUMMARYFILENAME, 0,
-                                         nchar(SUMMARYFILENAME) - 4),
-                                  "_", current_time, ".",
-                                  summaryfileformat, sep = "")
-
-
-      aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES,
-                                SIMRESULTFILENAME, ALTFILENAMEFULL,
-                                OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-                                SUMMARYFILENAME_FULL,
-                                TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
-
+      aa_summariseReplicateRuns_overTime(FILEPATH, SAMPLESIZES, MEASURES,
+                                         RESULTFILENAME, ALTFILENAME,
+                                         OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
+                                         SUMMARYFILENAME, TIMEPOINTS,
+                                         TIMEPOINTSCALE)
     }
   }
 }
+
+#' Calculate summary responses for consistency analysis simulations at multiple timepoints
+#' @inheritParams aa_summariseReplicateRuns
+aa_summariseReplicateRuns_overTime <- function(FILEPATH, SAMPLESIZES, MEASURES,
+                                               RESULTFILENAME,
+                                               ALTFILENAME = NULL,
+                                               OUTPUTFILECOLSTART,
+                                               OUTPUTFILECOLEND,
+                                               SUMMARYFILENAME,
+                                               TIMEPOINTS,
+                                               TIMEPOINTSCALE) {
+
+  for (n in 1:length(TIMEPOINTS)) {
+    current_time <- TIMEPOINTS[n]
+    message(join_strings_space(c("Processing Timepoint:", current_time)))
+
+    simresultfilename <- append_time_to_argument(
+      RESULTFILENAME, current_time,
+      check_file_extension(RESULTFILENAME))
+
+    altfilename_full <- NULL
+    if (!is.null(ALTFILENAME))
+      altfilename_full <- append_time_to_argument(
+        ALTFILENAME, current_time,
+        check_file_extension(ALTFILENAME))
+
+    summaryfilename_full <- append_time_to_argument(
+      SUMMARYFILENAME, current_time,
+      check_file_extension(SUMMARYFILENAME))
+
+    aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES,
+                              simresultfilename, altfilename_full,
+                              OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
+                              summaryfilename_full,
+                              TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
+  }
+}
+
 
 #' Calculates the A-Test scores observed for all sets, for each sample size
 #'
@@ -134,149 +138,75 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
                                TIMEPOINTS = NULL,
                                TIMEPOINTSCALE = NULL, GRAPHNAME = NULL) {
 
-  if (is.null(TIMEPOINTS)) {
-    # ALL A-TEST SCORES, FOR ALL SAMPLE SIZES
-    RESULTS <- NULL
+  # Version 3.1 adds pre-execution check functions as part of refactoring:
+  # Get the provided function arguments
+  input_arguments <- as.list(match.call())
+  # Run if all checks pass:
+  if(check_getATestResult_Input(input_arguments)) {
 
-    # ATEST SCORES FOR JUST A SAMPLE SIZE - COMPILED FOR GRAPHING
-    SIZE_RESULTS <- NULL
+    if (is.null(TIMEPOINTS)) {
 
-    # GET THE DATA FROM THE FILE OR OBJECT
-    if(!is.null(AA_SIM_RESULTS_FILE) | !is.null(AA_SIM_RESULTS_OBJECT)) {
+      sim_results <- read_simulation_results(FILEPATH, AA_SIM_RESULTS_FILE, AA_SIM_RESULTS_OBJECT)
+      message("Generating A-Test Scores for Consistency Analysis")
 
-      if(!is.null(AA_SIM_RESULTS_FILE)) {
-        # READ IN THE SUMMARY FILE
-        RESULT <- read.csv(make_path(c(FILEPATH, AA_SIM_RESULTS_FILE)),
-                           sep = ",", header = TRUE, check.names = FALSE)
-      } else {
-        RESULT <- AA_SIM_RESULTS_OBJECT
-      }
+      analysis_result <- generate_scores_for_all_sample_sizes(
+        FILEPATH, SAMPLESIZES, sim_results, NUMSUBSETSPERSAMPLESIZE, MEASURES,
+        LARGEDIFFINDICATOR, GRAPHNAME)
 
-
-      print("Generating A-Test Scores for Consistency Analysis")
-
-      # GENERATE COLUMN HEADINGS - WE USE THIS TWICE LATER
-      ATESTRESULTSHEADER <- cbind("Sample Size", "Sample")
-
-      for (l in 1:length(MEASURES)) {
-        ATESTRESULTSHEADER <- cbind(ATESTRESULTSHEADER,
-                                    paste("ATest", MEASURES[l], sep = ""),
-                                    paste("ATest", MEASURES[l], "Norm",
-                                          sep = ""))
-      }
-
-      for (s in 1:length(SAMPLESIZES)) {
-        print(join_strings_space(c("Processing Sample Size:", SAMPLESIZES[s])))
-
-        ## GET THE FIRST SET, SO THIS CAN BE COMPARED WITH ALL THE OTHERS
-        ## SO SUBSET THE RESULTS
-        SUBSET_CRITERIA <- c("SampleSize", "Set")
-        SET1 <- subset_results_by_param_value_set(SUBSET_CRITERIA, RESULT,
-                                                  c(SAMPLESIZES[s], 1))
-
-        # RESET THE SCORES FOR EACH SAMPLE SIZE
-        SIZE_RESULTS <- NULL
-
-        for (m in 2:NUMSUBSETSPERSAMPLESIZE) {
-
-          ALLATESTRESULTS <- cbind(SAMPLESIZES[s], m)
-
-          COMPAREDSET <- subset_results_by_param_value_set(SUBSET_CRITERIA,
-                                                           RESULT,
-                                                           c(SAMPLESIZES[s], m))
-
-          if (nrow(COMPAREDSET) > 0) {
-            # Now perform the analysis for each measure
-            # THEN NORMALISE (PUT ABOVE 0.5) AS DIRECTION DOES NOT MATTER
-            for (l in 1:length(MEASURES)) {
-              ATESTMEASURERESULT <- atest(as.numeric
-                                          (as.matrix(SET1[MEASURES[l]][, 1])),
-                                        as.numeric(
-                                          as.matrix(COMPAREDSET[MEASURES[l]][, 1]
-                                                    )))
-              # the [,1] is added so the data is extracted
-              ATESTMEASURENORM <- normaliseATest(ATESTMEASURERESULT)
-              ALLATESTRESULTS <- cbind(ALLATESTRESULTS, ATESTMEASURERESULT,
-                                       ATESTMEASURENORM)
-
-            }
-          } else {
-            for (l in 1:length(MEASURES)) {
-              ALLATESTRESULTS <- cbind(ALLATESTRESULTS, 1, 1)
-            }
-          }
-          # ADD THESE TESTS TO THE RESULTS
-          RESULTS <- rbind(RESULTS, ALLATESTRESULTS)
-
-          SIZE_RESULTS <- rbind(SIZE_RESULTS, ALLATESTRESULTS)
-        }
-
-        colnames(SIZE_RESULTS) <- ATESTRESULTSHEADER
-
-        # NOW GRAPH THIS SAMPLE SIZE
-        if (is.null(GRAPHNAME))
-          GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZES[s],
-                                                    "Samples.pdf"))
-        else
-          GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZES[s],
-                                                    "Samples_", GRAPHNAME,
-                                                    ".pdf"))
-
-        aa_graphATestsForSampleSize(FILEPATH, SIZE_RESULTS, MEASURES,
-                                    LARGEDIFFINDICATOR,
-                                    GRAPHOUTPUTNAME, NULL, NULL)
-
-        print(join_strings_space(c("Summary Graph for Sample Size of",
-                                   SAMPLESIZES[s], "Saved to",
-                                   join_strings_nospace(c(FILEPATH,"/",
-                                   GRAPHOUTPUTNAME)))))
-      }
-
-      colnames(RESULTS) <- c(ATESTRESULTSHEADER)
-
-      # NOW WRITE THE FILE OUT
-      write.csv(RESULTS, make_path(c(FILEPATH, ATESTRESULTSFILENAME)),
-                quote = FALSE, row.names = FALSE)
+      # Write out the result
+      write_data_to_csv(analysis_result, make_path(c(FILEPATH, ATESTRESULTSFILENAME)))
 
       # From 3.0 we're going to return the results too.
       # Future additions may remove the CSV writing altogether
-      return(RESULTS)
+      return(analysis_result)
 
     } else {
-      print(paste("You must specify either an R object containing simulation ",
-                  "results, or the name of a CSV file in the filepath",
-                  "containing those results",sep=""))
-    }
-
-  } else {
-    # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
-    for (n in 1:length(TIMEPOINTS)) {
-      current_time <- TIMEPOINTS[n]
-      print(join_strings_space(c("PROCESSING TIMEPOINT:", current_time)))
-
-      aa_sim_results_format <- check_file_extension(AA_SIM_RESULTS_FILE)
-      AA_SIM_RESULTS_FULL <- paste(substr(AA_SIM_RESULTS_FILE, 0,
-                                          nchar(AA_SIM_RESULTS_FILE) - 4),
-                                   "_", current_time, ".",
-                                   aa_sim_results_format, sep = "")
-
-      atest_results_format <- check_file_extension(ATESTRESULTSFILENAME)
-      ATESTRESULTSFILENAME_FULL <- paste(substr
-                                         (ATESTRESULTSFILENAME, 0,
-                                           nchar(ATESTRESULTSFILENAME) - 4),
-                                         "_", current_time, ".",
-                                         atest_results_format, sep = "")
-
-      GRAPHOUTPUTNAME <- current_time
-
-      aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
-                        MEASURES, ATESTRESULTSFILENAME_FULL,
-                        LARGEDIFFINDICATOR,
-                        AA_SIM_RESULTS_FILE = AA_SIM_RESULTS_FULL,
-                        AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
-                        TIMEPOINTSCALE = NULL, GRAPHNAME = GRAPHOUTPUTNAME)
+      # Process each timepoint
+      aa_getATestResults_overTime(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
+                                  MEASURES, ATESTRESULTSFILENAME,
+                                  LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE,
+                                  AA_SIM_RESULTS_OBJECT, TIMEPOINTS, TIMEPOINTSCALE,
+                                  GRAPHNAME = NULL)
 
     }
+  }
+}
+
+#' Get A-Test results for multiple simulation timepoints
+#'
+#' @inheritParams aa_summariseReplicateRuns
+#' @param NUMSUBSETSPERSAMPLESIZE The number of subsets for each sample size (i.e in the tutorial case, 20)
+#' @param ATESTRESULTSFILENAME Name of the file that will contain the A-Test scores for each sample size
+#' @param LARGEDIFFINDICATOR The A-Test determines there is a large difference between two sets if the result is greater than 0.2 either side of the 0.5 line.  Should this not be suitable, this can be changed here
+#' @param GRAPHNAME Used internally by the getATestResults method when producing graphs for multiple timepoints. Should not be set in function call.
+#' @param AA_SIM_RESULTS_FILE The name of the CSV file containing the simulation responses, if reading from a CSV file
+#' @param AA_SIM_RESULTS_OBJECT The name of the R object containing the simulation responses, if not reading from a CSV file
+aa_getATestResults_overTime <- function(
+  FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
+  ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = NULL,
+  AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS, TIMEPOINTSCALE, GRAPHNAME = NULL) {
+
+  for (n in 1:length(TIMEPOINTS)) {
+    current_time <- TIMEPOINTS[n]
+    print(join_strings_space(c("Processing Timepoint:",
+                               current_time)))
+
+    aa_sim_results_full <- append_time_to_argument(
+      AA_SIM_RESULTS_FILE, current_time,
+      check_file_extension(AA_SIM_RESULTS_FILE))
+
+    atest_results_full <- append_time_to_argument(
+      ATESTRESULTSFILENAME, current_time,
+      check_file_extension(ATESTRESULTSFILENAME))
+
+    graph_output_name <- current_time
+
+    aa_getATestResults(
+      FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
+      MEASURES, atest_results_full, LARGEDIFFINDICATOR,
+      AA_SIM_RESULTS_FILE = aa_sim_results_full,
+      AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
+      TIMEPOINTSCALE = NULL, GRAPHNAME = graph_output_name)
   }
 }
 
@@ -423,4 +353,223 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
 
     }
   }
+}
+
+#' For a given sample size, get the median results to summarise results for all sets
+#' @inheritParams aa_summariseReplicateRuns
+#' @param SAMPLESIZE Current sample size being processed
+#' @param NUMSUBSETSPERSAMPLESIZE Number of run subsets for this sample size, typically 20
+#' @return Summary statistics for all runs under this sample size
+get_medians_for_size_subsets <- function(FILEPATH, NUMSUBSETSPERSAMPLESIZE,
+                                         SAMPLESIZE, MEASURES, RESULTFILENAME,
+                                         ALTFILENAME, OUTPUTFILECOLSTART,
+                                         OUTPUTFILECOLEND) {
+
+  sample_size_results <- NULL
+  for (SET in 1:NUMSUBSETSPERSAMPLESIZE) {
+    message(join_strings_space(c("Processing Sample Size ",
+                             SAMPLESIZE, " Set ", SET)))
+
+    SAMPLE_FILEPATH <- make_path(c(FILEPATH, SAMPLESIZE, SET))
+
+    MEDIANS <- data.frame(getMediansSubset(SAMPLE_FILEPATH,
+                                         SAMPLESIZE,
+                                         MEASURES, RESULTFILENAME,
+                                         ALTFILENAME,
+                                         OUTPUTFILECOLSTART,
+                                         OUTPUTFILECOLEND))
+
+    # Add on the sample size and set this was generated from
+    MEDIANS <- cbind(
+      rep(SAMPLESIZE, nrow(MEDIANS)),
+      rep(SET,nrow(MEDIANS)),
+      MEDIANS)
+
+    sample_size_results <- rbind(sample_size_results, MEDIANS)
+  }
+
+  return(sample_size_results)
+}
+
+
+
+
+#' Read in the simulation results either from a file, or R object
+#' The existance of these results was checked in pre-execution checks
+#' @param FILEPATH Where the results can be found
+#' @param AA_SIM_RESULTS_FILE If the objects are in a file, the file name
+#' @param AA_SIM_RESULTS_OBJECT If in an R object, the name of the object
+#' @return Simulation results for processing
+read_simulation_results <- function(FILEPATH, AA_SIM_RESULTS_FILE,
+                                    AA_SIM_RESULTS_OBJECT) {
+
+  if(!is.null(AA_SIM_RESULTS_FILE)) {
+    # READ IN THE SUMMARY FILE
+    return(read.csv(make_path(c(FILEPATH, AA_SIM_RESULTS_FILE)),
+                       sep = ",", header = TRUE, check.names = FALSE))
+  } else {
+    return(AA_SIM_RESULTS_OBJECT)
+  }
+}
+
+#' Generates the CSV file header for the A-Test results file
+#' @param MEASURES The simulation output responses
+#' @return Header object for CSV file
+generate_a_test_results_header <- function(MEASURES) {
+
+  ATESTRESULTSHEADER <- cbind("Sample Size", "Sample")
+
+  for (l in 1:length(MEASURES)) {
+    ATESTRESULTSHEADER <- cbind(ATESTRESULTSHEADER,
+                                paste("ATest", MEASURES[l], sep = ""),
+                                paste("ATest", MEASURES[l], "Norm",
+                                      sep = ""))
+  }
+
+  return(ATESTRESULTSHEADER)
+}
+
+#' Get the first result set, to which all others are compared
+#' @param RESULT Simulation results
+#' @param SAMPLESIZE Current sample size being examined
+#' @return Results for set 1 of this sample size
+retrieve_results_for_comparison_result_set <- function(RESULT, SAMPLESIZE)
+{
+  return(subset_results_by_param_value_set(c("SampleSize", "Set"), RESULT,
+                                            c(SAMPLESIZE, 1)))
+}
+
+compare_result_sets_to_comparison_set <- function(NUMSUBSETSPERSAMPLESIZE,
+                                                  RESULT, SET1, SAMPLESIZE,
+                                                  MEASURES)
+{
+  SIZE_RESULTS <- NULL
+
+  # Now process all the remaining subsets:
+  for (m in 2:NUMSUBSETSPERSAMPLESIZE) {
+
+    # Get this result set
+    COMPAREDSET <- subset_results_by_param_value_set(c("SampleSize", "Set"),
+                                                     RESULT,
+                                                     c(SAMPLESIZE, m))
+
+    # Append A-Test scores on to labels of sample size and measure:
+    ALLATESTRESULTS <- generate_a_test_score(cbind(SAMPLESIZE, m), SET1,
+                                             COMPAREDSET, MEASURES)
+
+    # Add these tests to the results sheets
+    SIZE_RESULTS <- rbind(SIZE_RESULTS, ALLATESTRESULTS)
+    colnames(SIZE_RESULTS) <- c(generate_a_test_results_header(MEASURES))
+  }
+
+  return(SIZE_RESULTS)
+}
+
+generate_scores_for_all_sample_sizes <- function(FILEPATH, SAMPLESIZES, RESULT,
+                                                 NUMSUBSETSPERSAMPLESIZE,
+                                                 MEASURES, LARGEDIFFINDICATOR,
+                                                 GRAPHNAME) {
+
+  analysis_result <- NULL
+
+  for (s in 1:length(SAMPLESIZES)) {
+    message(join_strings_space(c("Processing Sample Size:", SAMPLESIZES[s])))
+
+    # Get the first set, for comparison to all the other results
+    # Subsetting on SampleSize and Set
+    SET1 <- retrieve_results_for_comparison_result_set(RESULT, SAMPLESIZES[s])
+
+    # Now do the comparisons for all other sets for this sample size
+    SIZE_RESULTS <- compare_result_sets_to_comparison_set(
+      NUMSUBSETSPERSAMPLESIZE, RESULT, SET1, SAMPLESIZES[s], MEASURES)
+
+
+    # Plot the results
+    graph_sample_size_results(FILEPATH, GRAPHNAME, SAMPLESIZES[s], SIZE_RESULTS,
+                              MEASURES, LARGEDIFFINDICATOR)
+
+    # Add to total analysis result
+    analysis_result<-rbind(analysis_result, SIZE_RESULTS)
+  }
+
+  colnames(analysis_result) <- c(generate_a_test_results_header(MEASURES))
+
+  return(analysis_result)
+}
+
+#' Take the first set and compare it to a distribution from another set
+#' using the A-Test
+#'
+#' @param ALLATESTRESULTS Current set of A-Test results to append to
+#' @param SET1 Results from sample set one
+#' @param COMPAREDSET Results from a second set being compared
+#' @param MEASURES Simulation output measures
+#' @return Appended result to ALLATESTRESULTS
+generate_a_test_score <- function(ALLATESTRESULTS, SET1, COMPAREDSET,
+                                  MEASURES) {
+
+  if (nrow(COMPAREDSET) > 0) {
+    # Now perform the analysis for each measure
+    # Then normalise (put above 0.5) as direction does not matter
+    for (l in 1:length(MEASURES)) {
+      ATESTMEASURERESULT <- atest(as.numeric
+                                  (as.matrix(SET1[MEASURES[l]][, 1])),
+                                  as.numeric(
+                                    as.matrix(COMPAREDSET[MEASURES[l]][, 1]
+                                    )))
+      # the [,1] is added so the data is extracted
+      ATESTMEASURENORM <- normaliseATest(ATESTMEASURERESULT)
+      # Bind to result set
+      ALLATESTRESULTS <- cbind(ALLATESTRESULTS, ATESTMEASURERESULT,
+                               ATESTMEASURENORM)
+    }
+  } else {
+    for (l in 1:length(MEASURES)) {
+      ALLATESTRESULTS <- cbind(ALLATESTRESULTS, 1, 1)
+    }
+  }
+
+  return(ALLATESTRESULTS)
+}
+
+#' Graph the A-Test results for a sample size
+#'
+#' @param FILEPATH Where the results can be found
+#' @param GRAPHNAME If multiple timepoints, holds the time so this can be appended to graph name
+#' @param SAMPLESIZE Current sample size being analysed
+#' @param SIZE_RESULTS Simulation results for this sample size
+#' @param MEASURES Simulation output responses
+#' @param LARGEDIFFINDICATOR Value either side of 0.5 that indicates a large difference
+graph_sample_size_results <- function(FILEPATH, GRAPHNAME, SAMPLESIZE,
+                                      SIZE_RESULTS, MEASURES,
+                                      LARGEDIFFINDICATOR)
+{
+  # NOW GRAPH THIS SAMPLE SIZE
+  if (is.null(GRAPHNAME))
+    GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZE,
+                                              "Samples.pdf"))
+  else
+    GRAPHOUTPUTNAME <- join_strings_nospace(c(SAMPLESIZE,
+                                              "Samples_", GRAPHNAME,
+                                              ".pdf"))
+
+  aa_graphATestsForSampleSize(FILEPATH, SIZE_RESULTS, MEASURES,
+                              LARGEDIFFINDICATOR,
+                              GRAPHOUTPUTNAME, NULL, NULL)
+
+  message(join_strings_space(c("Summary Graph for Sample Size of",
+                             SAMPLESIZE, "Saved to",
+                             join_strings_nospace(c(FILEPATH,"/",
+                                                    GRAPHOUTPUTNAME)))))
+}
+
+#' Appends the time to an argument if processing timepoints
+#' @param argument Argument to append the current time to
+#' @param current_time Current time being processed
+#' @param file_format Format of the file name being altered
+#' @return Amended file name argument with time point
+append_time_to_argument <- function(argument, current_time, file_format)
+{
+  return(paste(substr(argument, 0, nchar(argument)-4),
+               "_", current_time, ".", file_format, sep = ""))
 }
