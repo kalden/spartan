@@ -181,33 +181,55 @@ test_that("check_lengths_parameters_ranges", {
 })
 
 test_that("check_numeric_list_values", {
-  # Min should be less than max, for all values
-  expect_true(check_numeric_list_values(smallList=c(2,1,0.1), largerList=c(4,7,0.7),"PMIN","PMAX",TRUE))
+  input_arguments <- make_input_arguments_object(PMIN=c(2,1,0.1), PMAX=c(4,7,0.7))
+  # Min should be less than max, for all values, for upper case
+  expect_true(check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE))
+  # Lower case however will fail, as pmin and pmax are reserved in the base package
+  input_arguments <- make_input_arguments_object(pmin=c(2,1,0.1), pmax=c(4,7,0.7))
+  b<-check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE)
+  expect_message(check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
   # Should return an error and false if not
-  expect_false(check_numeric_list_values(smallList=c(12,1,0.1), largerList=c(4,7,0.7),"PMIN","PMAX",TRUE))
-  expect_message(check_numeric_list_values(smallList=c(12,1,0.1), largerList=c(4,7,0.7),"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, and must be numeric")
+  input_arguments <- make_input_arguments_object(pmin=c(12,1,0.1), pmax=c(4,7,0.7))
+  expect_false(check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE))
+  expect_message(check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
   # If one is null
-  expect_message(check_numeric_list_values(smallList=NULL, largerList=c(4,7,0.7),"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, and must be numeric")
+  input_arguments <- make_input_arguments_object(PMIN=NULL, PMAX=c(4,7,0.7))
+  expect_message(check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
   # If not numeric
-  expect_message(check_numeric_list_values(smallList=c(2,1,0.1), largerList=c(4,7,"a"),"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, and must be numeric")
+  input_arguments <- make_input_arguments_object(PMIN=c(12,1,0.1), PMAX=c(4,7,"a"))
+  expect_message(check_numeric_list_values(input_arguments,"PMIN","PMAX",TRUE),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
   # Reference to an undeclared variable
-  expect_message(check_numeric_list_values(smallList=NULL, largerList=A, "PMIN","PMAX",TRUE),"Value error in PMIN or PMAX. Check these are numeric")
+  input_arguments <- make_input_arguments_object(PMIN=c(12,1,0.1), PMAX=A)
+  expect_message(check_numeric_list_values(input_arguments, "PMIN","PMAX",TRUE),"Value error in PMIN or PMAX. Check these are numeric")
 
 })
 
 test_that("check_argument_positive_int", {
+
+  input_arguments <- make_input_arguments_object(NUMSAMPLES=65)
   # Positive integers should be accepted
-  expect_true(check_argument_positive_int(50,TRUE,"NUMSAMPLES"))
+  expect_true(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"))
+  # If you specify the argument using lower case, this should also work:
+  input_arguments <- make_input_arguments_object(numsamples=65)
+  expect_true(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"))
+  # Currently a mixture should fail - we may address this later
+  input_arguments <- make_input_arguments_object(numSamples=65)
+  expect_false(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"))
   # If negative:
-  expect_message(check_argument_positive_int(-50,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
+  input_arguments <- make_input_arguments_object(NUMSAMPLES=-50)
+  expect_message(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
   # Double
-  expect_message(check_argument_positive_int(50.234,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
+  input_arguments <- make_input_arguments_object(NUMSAMPLES=50.234)
+  expect_message(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
   # String
-  expect_message(check_argument_positive_int("A",TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
+  input_arguments <- make_input_arguments_object(NUMSAMPLES="A")
+  expect_message(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
   # Referenced variable that doesn't exist
-  expect_message(check_argument_positive_int(A,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
+  input_arguments <- make_input_arguments_object(NUMSAMPLES=A)
+  expect_message(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
   # Null
-  expect_message(check_argument_positive_int(NULL,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
+  input_arguments <- make_input_arguments_object(NUMSAMPLES=NULL)
+  expect_message(check_argument_positive_int(input_arguments,TRUE,"NUMSAMPLES"),"NUMSAMPLES must be a positive integer. Terminated")
 
 })
 
@@ -382,4 +404,14 @@ test_that("check_file_exist", {
   expect_false(check_file_exist(getwd(), A))
   file.remove(file.path(getwd(),"Test_Column_CSV.csv"))
 
+})
+
+test_that("check_aa_summariseReplicateRuns", {
+  # This joins many input functions that have already been tested - we need to check the output is correct
+  expect_true(aa_summariseReplicateRuns(getwd(),c(1,50),c("Velocity","Displacement","Result.csv","AltResult.csv",1,2,"SummaryFile.csv")))
+
+  # Introduce some errors
+  expect_false(aa_summariseReplicateRuns(getwd(),c(A,50),c("Velocity","Displacement","Result.csv","AltResult.csv",1,2,"SummaryFile.csv")))
+  expect_false(aa_summariseReplicateRuns(getwd(),c(1,50),c("Velocity","Displacement","Result.csv","AltResult.csv",10,2,"SummaryFile.csv")))
+  expect_false(aa_summariseReplicateRuns(getwd(),c(1,50),c("Velocity","Displacement","Result.csv","AltResult.csv",1,2,VAR)))
 })

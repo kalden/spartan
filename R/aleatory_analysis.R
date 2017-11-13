@@ -41,14 +41,19 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
       SAMPLE_SIZE_RESULTS <- NULL
 
       for (SAMPLESIZE in 1:length(SAMPLESIZES)) {
-        SAMPLE_SIZE_RESULTS <- rbind(SAMPLE_SIZE_RESULTS,
-                                     get_medians_for_size_subsets(
-                                       FILEPATH, 20,
-                                       SAMPLESIZE, MEASURES, RESULTFILENAME,
-                                       ALTFILENAME, OUTPUTFILECOLSTART,
-                                       OUTPUTFILECOLEND) )
-      }
+        subset_medians <- get_medians_for_size_subsets(
+          FILEPATH, 20, SAMPLESIZE, MEASURES, RESULTFILENAME,
+          ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND)
 
+        if(!is.null(SAMPLE_SIZE_RESULTS))
+          SAMPLE_SIZE_RESULTS <- rbind(SAMPLE_SIZE_RESULTS, subset_medians)
+        else
+        {
+          message("Error Processing Results. Spartan Terminated.")
+          return(NULL)
+        }
+
+      }
 
       colnames(SAMPLE_SIZE_RESULTS) <- c("SampleSize", "Set", MEASURES)
 

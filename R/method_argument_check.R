@@ -6,7 +6,7 @@ check_getATestResult_Input <- function(arguments)
 {
   preCheckSuccess = TRUE
   preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments$NUMSUBSETSPERSAMPLESIZE,preCheckSuccess,"NUMSUBSETSPERSAMPLESIZE")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSUBSETSPERSAMPLESIZE")
   preCheckSuccess = check_double_value_in_range(arguments$LARGEDIFFINDICATOR, preCheckSuccess, "LARGEDIFFINDICATOR",0,0.5)
   preCheckSuccess = check_text(arguments$ATESTRESULTSFILENAME, preCheckSuccess, "ATESTRESULTSFILENAME")
   preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
@@ -49,7 +49,7 @@ check_lhc_sampling_args <- function(arguments)
   #preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
   preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
   preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
   preCheckSuccess = check_parameters_and_ranges(arguments, preCheckSuccess, "lhc")
 
   return(preCheckSuccess)
@@ -66,9 +66,9 @@ check_lhc_sampling_netlogo_args <- function(arguments)
   preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
   preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
   preCheckSuccess = check_package_installed("XML",preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
   preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments$EXPERIMENT_REPETITIONS,preCheckSuccess,"EXPERIMENT_REPETITIONS")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"EXPERIMENT_REPETITIONS")
   preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
   preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
   preCheckSuccess = check_boolean(arguments$RUN_METRICS_EVERYSTEP, preCheckSuccess, "RUN_METRICS_EVERYSTEP")
@@ -89,10 +89,9 @@ check_efast_sampling_netlogo_args <- function(arguments)
   preCheckSuccess = TRUE
   preCheckSuccess = check_package_installed("XML",preCheckSuccess)
   preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
-  preCheckSuccess = check_argument_positive_int(arguments$NUMCURVES,preCheckSuccess,"NUMCURVES")
-  preCheckSuccess = check_argument_positive_int(arguments$EXPERIMENT_REPETITIONS,
-                                                preCheckSuccess,"EXPERIMENT_REPETITIONS")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMCURVES")
+  preCheckSuccess = check_argument_positive_int(arguments, preCheckSuccess,"EXPERIMENT_REPETITIONS")
   preCheckSuccess = check_boolean(arguments$RUNMETRICS_EVERYSTEP, preCheckSuccess, "RUNMETRICS_EVERYSTEP")
   preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
   preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
@@ -111,8 +110,8 @@ check_efast_sampling_args <- function(arguments)
 {
   preCheckSuccess = TRUE
   preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments$NUMSAMPLES,preCheckSuccess,"NUMSAMPLES")
-  preCheckSuccess = check_argument_positive_int(arguments$NUMCURVES,preCheckSuccess,"NUMCURVES")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
+  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMCURVES")
   preCheckSuccess = check_parameters_and_ranges(arguments, preCheckSuccess, "efast")
 
   return(preCheckSuccess)
@@ -133,8 +132,8 @@ check_robustness_sampling_args <- function(arguments)
   if(is.null(eval(arguments$PARAMVALS)))
   {
     preCheckSuccess = check_robustness_parameter_and_ranges_lengths(arguments, preCheckSuccess)
-    preCheckSuccess = check_numeric_list_values(arguments$PMIN, arguments$PMAX, "PMIN", "PMAX", preCheckSuccess)
-    preCheckSuccess = check_numeric_list_values(arguments$PINC, arguments$PMAX, "PINC", "PMAX", preCheckSuccess)
+    preCheckSuccess = check_numeric_list_values(arguments, "PMIN", "PMAX", preCheckSuccess)
+    preCheckSuccess = check_numeric_list_values(arguments, "PINC", "PMAX", preCheckSuccess)
     preCheckSuccess = check_robustness_range_contains_baseline(arguments, preCheckSuccess)
   }
   else
@@ -328,7 +327,7 @@ check_robustness_parameter_and_ranges_lengths <- function(arguments, preCheckSuc
 check_parameters_and_ranges <- function(arguments, preCheckSuccess, method)
 {
   preCheckSuccess = check_lengths_parameters_ranges(arguments,preCheckSuccess)
-  preCheckSuccess = check_numeric_list_values(arguments$PMIN, arguments$PMAX, "PMIN", "PMAX", preCheckSuccess)
+  preCheckSuccess = check_numeric_list_values(arguments, "PMIN", "PMAX", preCheckSuccess)
 
   return(preCheckSuccess)
 }
@@ -408,10 +407,11 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
 {
   tryCatch(
     {
-      minCheck <- as.numeric(eval(arguments$PMIN))
-      maxCheck <- as.numeric(eval(arguments$PMAX))
+      minCheck <- as.numeric(get_argument_correct_case(arguments, "PMIN"))
+      maxCheck <- as.numeric(get_argument_correct_case(arguments, "PMAX"))
+      parameters <- get_argument_correct_case(arguments, "PARAMETERS")
 
-      if(length(eval(arguments$PARAMETERS)) == length(minCheck) & length(eval(arguments$PARAMETERS)) == length(maxCheck))
+      if(length(parameters) == length(minCheck) & length(parameters) == length(maxCheck))
         return(preCheckSuccess)
       else {
         message("Number of parameters must match the numbers of entries in PMIN and PMAX")
@@ -419,7 +419,7 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
       }
     },
     error=function(cond) {
-      message("Value error in PMIN or PMAX. Check these are numeric")
+      message("Value error in PMIN or PMAX. Check these are numeric, and declared in capitals (not 'pmin' and 'pmax')")
       message("Spartan Function Terminated")
       # Choose a return value in case of error
       return(FALSE)
@@ -441,26 +441,49 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
 #' @param nameLarge Parameter name of the larger list, for error reporting
 #' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_numeric_list_values <- function(smallList, largerList, nameSmall, nameLarge, preCheckSuccess)
+check_numeric_list_values <- function(arguments, nameSmall, nameLarge, preCheckSuccess)
 {
+  #print(arguments)
   tryCatch(
     {
-      smallCheck <- eval(smallList)
-      largeCheck <- eval(largerList)
+      smallCheck <- get_argument_correct_case(arguments, nameSmall)
+      largeCheck <- get_argument_correct_case(arguments, nameLarge)
 
       if(all(smallCheck < largeCheck) & is.numeric(smallCheck) & is.numeric(largeCheck))
         return(preCheckSuccess)
       else {
-        message(paste(nameSmall, " must be less than ",nameLarge, " for all parameters, and must be numeric",sep=""))
+        message(paste(nameSmall, " must be less than ", nameLarge, " for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC",sep=""))
         return(FALSE)
       }
     },
     error=function(cond) {
-      message(paste("Value error in ",nameSmall, " or ", nameLarge, ". Check these are numeric",sep=""))
+      message(paste("Value error in ",nameSmall, " or ", nameLarge, ". Check these are numeric, and declared in capitals: e.g. PMIN, PMAX, PINC",sep=""))
       message("Spartan Function Terminated")
       # Choose a return value in case of error
       return(FALSE)
     })
+}
+
+#' Tries upper and lower case names for input arguments
+#'
+#' The method checking relies on the user calling the variables the right name.
+#' If they don't, an error is produced. This helper function checks they haven't
+#' just used lower case arguments, in which case the lower case is checked
+#'
+#' @param arguments List of the arguments provided to the called function
+#' @param argName Name of the argument to return
+#' @return The evaluated input value of this argument
+#'
+get_argument_correct_case <- function(arguments, argName)
+{
+  value = eval(arguments[argName][[1]])
+
+  if(is.null(value) & argName!="PMIN" & argName !="PMAX")
+     # Try raising argname to upper case, as it should have been specified
+     value = eval(arguments[tolower(argName)][[1]])
+
+
+  return(value)
 }
 
 #' Check that an argument that should be a positive integer has been specified correctly
@@ -468,11 +491,14 @@ check_numeric_list_values <- function(smallList, largerList, nameSmall, nameLarg
 #' @param preCheckSuccess Current status of pre-execution checks
 #' @param argName Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_argument_positive_int <- function(argument,preCheckSuccess,argName)
+check_argument_positive_int <- function(arguments,preCheckSuccess,argName)
 {
   tryCatch(
     {
-      if(all(eval(argument) == as.integer(eval(argument))) & eval(argument) > 0)
+      # Get the argument. We're going to force to upper case incase the user has specified lower
+      arg <- get_argument_correct_case(arguments, argName)
+
+      if(all.equal(arg, as.integer(arg)) & arg > 0)
         return(preCheckSuccess)
       else {
         message(paste(argName, " must be a positive integer. Terminated",sep=""))

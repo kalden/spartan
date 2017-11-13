@@ -69,3 +69,34 @@ NULL
 #' @usage data(tutorial_consistency_set)
 #' @format A list with 9060 rows and four columns
 NULL
+
+
+#' Example of a dataset output from an agent-based simulation, used in package testing
+#'
+#' This dataset contains exemplar results from an agent-based simulation, the
+#' case study shown in the tutorial. This is used in unit testing of the spartan
+#' package.
+#'
+#' \itemize{
+#'   \item Cell.Type. The type of cell
+#'   \item Time.Span Amount of minutes this cell was tracked for
+#'   \item Cell.State Current state of this agent
+#'   \item Cell.Speed Cell speed, assigned at start of sim
+#'   \item Cell.Start.Position.X Start point X
+#'   \item Cell.Start.Position.Y Start point Y
+#'   \item Cell.End.Position.X End point X
+#'   \item Cell.End.Position.Y End point Y
+#'   \item Length Distance covered from start to end point
+#'   \item Velocity Calculated velocity over this period
+#'   \item Displacement The displacement of this agent
+#'   \item Displacement.Rate Displacement rate of this agent
+#'   \item Meandering.Index Meandering index of the agent
+#'   \item Nearest.LTo.Cell..microns. Distance to nearest LTo cell
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name exemplar_sim_output
+#' @usage data(exemplar_sim_output)
+#' @format A list with 136 rows and 14 columns
+NULL

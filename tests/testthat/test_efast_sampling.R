@@ -44,7 +44,7 @@ test_that("efast_generate_sample", {
   expect_message(efast_generate_sample(getwd(), 3, 65, c("BindProbability", "ChemoThreshold", "ChemoUpperLinearAdjust",
                                                            "ChemoLowerLinearAdjust", "VCAMProbabilityThreshold", "VCAMSlope", "Dummy"),
                                        c(0, 0.10, 0.10, 0.015, 0.1, 0.25, 1),
-                                       PMAX <- c(100, 0.9, 0.10, 0.08, 1.0, 5.0, 10)),"PMIN must be less than PMAX for all parameters, and must be numeric")
+                                       PMAX <- c(100, 0.9, 0.10, 0.08, 1.0, 5.0, 10)),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
 
   # Cleanup
 

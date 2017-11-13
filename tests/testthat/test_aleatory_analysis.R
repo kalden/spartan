@@ -207,7 +207,9 @@ test_that("import_model_result", {
   file.remove(file.path(getwd(),"Test_Results_CSV_file2.csv"))
   file.remove(file.path(getwd(),"Test_Results_CSV_file.csv"))
   file.remove(file.path(getwd(),"Test_Results_Alternative_file.csv"))
+})
 
-
+test_that("append_time_to_argument", {
+  expect_equal(append_time_to_argument("ResultFile.csv", 12, "csv"),"ResultFile_12.csv")
 })
 

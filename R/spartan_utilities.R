@@ -20,7 +20,7 @@
 #' @return Median Simulation responses under the parameter set in the
 #' result file
 getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
-                             resultfilename, altfilename,
+                             resultfilename, altfilename = NULL,
                              outputfilecolstart, outputfilecolend) {
 
   all_results <- NULL
@@ -31,7 +31,7 @@ getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
     if (file.exists(fileaddress)) {
 
       model_result <- import_model_result(fileaddress, resultfilename,
-                                      outputfilecolstart,
+                                      altfilename, outputfilecolstart,
                                       outputfilecolend)
 
       if(nrow(model_result)>0) {
@@ -40,7 +40,8 @@ getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
                                                                  measures))
       }
     } else {
-      print(paste("File ", fileaddress, " does not exist", sep = ""))
+      message(paste("File ", fileaddress, " does not exist", sep = ""))
+      return(NULL)
     }
   }
   if(!is.null(all_results) & nrow(all_results) > 0)
@@ -116,6 +117,8 @@ read_model_result_file <- function(fileaddress, resultfilename,
 get_median_results_for_all_measures <- function(model_result, measures) {
 
   medians_all_measures <- NULL
+  #print(measures)
+  #print(model_result)
 
   # Calculate the median response for each measure
   for (q in 1:length(measures)) {

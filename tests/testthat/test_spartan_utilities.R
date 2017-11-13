@@ -1,6 +1,34 @@
 library(spartan)
 context("Testing Spartan Utilities Class")
 
+test_that("getMediansSubset", {
+
+  # Subfunctions of this method are tested below - we just need to test
+  # these all work together
+  # Input has already been checked by the calling function
+
+  # Make a result file:
+  dir.create(file.path(getwd(),"1"))
+  result <- cbind(4.4,86.5922532761)
+  result <- rbind(result, cbind(4.7621290718,37.8444574614))
+  result <- rbind(result, cbind(3.5112582903,52.5471704902))
+  colnames(result) <- c("Velocity","Displacement")
+  write.csv(result,file=file.path(getwd(),"1","Test_Results_CSV_file.csv"),row.names=F,quote=F)
+
+  # Now see if we can get medians from this:
+  medians <- getMediansSubset(getwd(), 1, c("Velocity","Displacement"),
+                   "Test_Results_CSV_file.csv", altfilename = NULL, 1, 2)
+
+  expect_equal(as.numeric(round(medians,digits=5)),c(4.40000,52.54717))
+
+  # Now a file that does not exist
+  expect_message(a<-getMediansSubset(getwd(), 2, c("Velocity","Displacement"),
+                                  "Test_Results_CSV_file.csv", altfilename = NULL, 1, 2),paste("File ", file.path(getwd(),2), " does not exist", sep = ""))
+
+  unlink(file.path(getwd(),"1"), recursive = TRUE)
+
+})
+
 test_that("partition_dataset", {
     arguments <- load_lhc_training_data()
     partitionedData <- partition_dataset(arguments$dataset,arguments$parameters,percent_train = 75, percent_test = 15,
@@ -132,5 +160,20 @@ test_that(" write_data_to_csv", {
   write_data_to_csv(c(1,2,3,4),file.path(getwd(),"/TestFile.csv"))
   expect_true(file.exists(file.path(getwd(),"/TestFile.csv")))
   file.remove(file.path(getwd(),"/TestFile.csv"))
+})
+
+test_that("check_file_extension", {
+  expect_equal(check_file_extension("File.csv"),"csv")
+  expect_equal(check_file_extension("File.xml"),"xml")
+  expect_equal(check_file_extension("File.pdf"),"pdf")
+  expect_equal(check_file_extension("File.tiff"),"NULL")
+
+})
+
+test_that("get_median_results_for_all_measures", {
+  # Read in the sample result set
+  data(exemplar_sim_output)
+  medians <- get_median_results_for_all_measures(exemplar_sim_output, c("Velocity","Displacement"))
+  expect_equal(round(medians,digits=5),cbind(4.49823, 54.81939))
 })
 
