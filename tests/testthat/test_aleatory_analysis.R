@@ -2,6 +2,7 @@ library(spartan)
 context("Test of Spartan Consistency Analysis")
 
 test_that("read_simulation_results", {
+
   # Simple function that reads in the simulation results from a CSV or R object
   # The existance of the paths had been checked by pre-execution tests
   # The R object is part of the package
@@ -16,9 +17,13 @@ test_that("read_simulation_results", {
                                             AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT = NULL)),9060)
   expect_equal(ncol(read_simulation_results("/home/kja505/Dropbox/spartan_web_data/Technique1/AA_Spartan2/CSV_Structure/",
                                             AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT = NULL)),4)
+
+  rm(tutorial_consistency_set)
+
 })
 
 test_that("retrieve_results_for_comparison_result_set", {
+
   # This should return one set of results, to which everything else is compared
   data("tutorial_consistency_set")
   expect_equal(nrow(retrieve_results_for_comparison_result_set(tutorial_consistency_set,1)),1)
@@ -29,9 +34,12 @@ test_that("retrieve_results_for_comparison_result_set", {
   expect_equal(nrow(retrieve_results_for_comparison_result_set(tutorial_consistency_set,50)),50)
   expect_equal(retrieve_results_for_comparison_result_set(tutorial_consistency_set,50)[1,1],50)
   expect_equal(retrieve_results_for_comparison_result_set(tutorial_consistency_set,50)[1,2],1)
+
+  rm(tutorial_consistency_set)
 })
 
 test_that("compare_result_sets_to_comparison_set", {
+
   data("tutorial_consistency_set")
   set1<-retrieve_results_for_comparison_result_set(tutorial_consistency_set,1)
   results <- compare_result_sets_to_comparison_set(20, tutorial_consistency_set, set1, 1, c("Velocity","Displacement"))
@@ -53,9 +61,11 @@ test_that("compare_result_sets_to_comparison_set", {
   expect_equal(round(results[4,3][[1]],7),0.5138565)
   expect_equal(round(results[4,5][[1]],7),0.5559835)
 
+  rm(tutorial_consistency_set)
 })
 
 test_that("generate_a_test_score", {
+
   # Going to give the function some distributions and check the score is calculated correctly
   data("tutorial_consistency_set")
   set1<-retrieve_results_for_comparison_result_set(tutorial_consistency_set,1)
@@ -73,9 +83,11 @@ test_that("generate_a_test_score", {
 
   expect_equal(round(as.numeric(generate_a_test_score(NULL, set300, COMPAREDSET, c("Velocity","Displacement"))),7),c(0.5421483,0.5421483,0.5770353,0.5770353))
 
+  rm(tutorial_consistency_set)
 })
 
 test_that("graph_sample_size_results", {
+
   # Difficult one to test - going to test that some output is produced
   SET1 <- retrieve_results_for_comparison_result_set(tutorial_consistency_set, 1)
 
@@ -100,9 +112,11 @@ test_that("graph_sample_size_results", {
 
   expect_true(file.exists(file.path(getwd(),"/300Samples.pdf")))
   file.remove(file.path(getwd(),"/300Samples.pdf"))
+
 })
 
 test_that("generate_scores_for_all_sample_sizes", {
+
   # The above functions are all called within this one, so we just need to make sure this produces some output
   data("tutorial_consistency_set")
   analysis_result <- generate_scores_for_all_sample_sizes(
@@ -118,9 +132,11 @@ test_that("generate_scores_for_all_sample_sizes", {
   file.remove(file.path(getwd(),"/1Samples.pdf"))
   file.remove(file.path(getwd(),"/50Samples.pdf"))
 
+  rm(tutorial_consistency_set)
 })
 
 test_that("aa_getATestResults", {
+
   # Overarching call to many of the above methods
   # Inputs are checked, we just need to check CSV is output and the results returned
   data("tutorial_consistency_set")
@@ -141,6 +157,7 @@ test_that("aa_getATestResults", {
   file.remove(file.path(getwd(),"/1Samples.pdf"))
   file.remove(file.path(getwd(),"/50Samples.pdf"))
 
+  rm(tutorial_consistency_set)
 })
 
 test_that("read_model_result_file", {
@@ -168,6 +185,7 @@ test_that("read_model_result_file", {
 
   file.remove(file.path(getwd(),"Test_Results_CSV_file.csv"))
 
+  rm(tutorial_consistency_set)
 })
 
 test_that("import_model_result", {
@@ -207,6 +225,8 @@ test_that("import_model_result", {
   file.remove(file.path(getwd(),"Test_Results_CSV_file2.csv"))
   file.remove(file.path(getwd(),"Test_Results_CSV_file.csv"))
   file.remove(file.path(getwd(),"Test_Results_Alternative_file.csv"))
+
+
 })
 
 test_that("append_time_to_argument", {

@@ -2,6 +2,7 @@ library(spartan)
 context("Test of A-Test calculation utilities")
 
 test_that("normaliseATest", {
+
   # Normalise should return a value scaled between 0.5 and 1
   expect_equal(normaliseATest(0.5),0.5)
   expect_equal(normaliseATest(1.0),1.0)
@@ -17,6 +18,7 @@ test_that("normaliseATest", {
 })
 
 test_that("num.decimals", {
+
   # Should return the correct number of decimal places
   expect_equal(num.decimals(0.33),2)
   expect_equal(num.decimals(1),1)

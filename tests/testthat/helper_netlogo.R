@@ -41,8 +41,8 @@ read_created_xml_file <- function(xmlFile, csvFile)
 read_created_efast_xml_file <- function()
 {
 
-  xmlFile <- paste(getwd(),"/1/3/1/efast_analysis_set1.xml",sep="")
-  csvFile <- paste(getwd(),"/Curve1_duration.csv",sep="")
+  xmlFile <- paste(getwd(),"/1/1/1/efast_analysis_set1.xml",sep="")
+  csvFile <- paste(getwd(),"/Curve1_infectiousness.csv",sep="")
 
   # Now using xml2
   #doc <- read_xml(paste(getwd(),"/1/lhc_analysis_set1.xml", sep=""))
@@ -59,10 +59,10 @@ read_created_efast_xml_file <- function()
   xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
   els = getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='infectiousness']//value[@value]")
   xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
-  els = getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='chance-recover']//value[@value]")
-  xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
-  els = getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='duration']//value[@value]")
-  xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
+  #els = getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='chance-recover']//value[@value]")
+  #xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
+  #els = getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='duration']//value[@value]")
+  #xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
   els = getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='dummy']//value[@value]")
   xml_param_vals <- c(xml_param_vals, xmlAttrs(els[[1]])[[1]])
 
@@ -80,6 +80,8 @@ read_created_efast_xml_file <- function()
   setupVal <- xmlValue(els[[1]])
   els <- getNodeSet(doc, "/experiments//go")
   goVal <- xmlValue(els[[1]])
+
+  rm(doc)
 
   #print(paste("xml_param_vals ", as.numeric(xml_param_vals)))
   #print(paste("sampled_vals ", as.numeric(sample[1,])))

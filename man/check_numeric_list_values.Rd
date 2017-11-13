@@ -4,13 +4,10 @@
 \alias{check_numeric_list_values}
 \title{Check that two lists are numeric, and the values of one are less than the other}
 \usage{
-check_numeric_list_values(smallList, largerList, nameSmall, nameLarge,
-  preCheckSuccess)
+check_numeric_list_values(arguments, nameSmall, nameLarge, preCheckSuccess)
 }
 \arguments{
-\item{smallList}{List of values that should be smaller}
-
-\item{largerList}{List of values that should be larger}
+\item{arguments}{List of the arguments provided to the called function}
 
 \item{nameSmall}{Parameter name of the smaller list, for error reporting}
 

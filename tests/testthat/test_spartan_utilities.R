@@ -30,6 +30,7 @@ test_that("getMediansSubset", {
 })
 
 test_that("partition_dataset", {
+
     arguments <- load_lhc_training_data()
     partitionedData <- partition_dataset(arguments$dataset,arguments$parameters,percent_train = 75, percent_test = 15,
                                        percent_validation = 10, seed = NULL,
@@ -59,6 +60,7 @@ test_that("partition_dataset", {
 })
 
 test_that("normalise_dataset" , {
+
   arguments <- load_lhc_training_data()
   normalised_set <- normalise_dataset(arguments$dataset, arguments$sample_mins, arguments$sample_maxes, arguments$parameters)
   expect_gte(min(normalised_set$scaled),0)
@@ -112,6 +114,7 @@ test_that("join_strings_nospace", {
   })
 
 test_that("prepare_parameter_value_list", {
+
   # Test that mins, max, and increment produces the correct sequences
   PMIN<-c(0,1)
   PMAX<-c(1,2)
@@ -142,6 +145,7 @@ test_that("prepare_parameter_value_list", {
 })
 
 test_that("subset_results_by_param_value_set", {
+
   # Tests subsetting - we can do this with the consistency analysis dataset
   data("tutorial_consistency_set")
 
@@ -171,9 +175,11 @@ test_that("check_file_extension", {
 })
 
 test_that("get_median_results_for_all_measures", {
+
   # Read in the sample result set
   data(exemplar_sim_output)
   medians <- get_median_results_for_all_measures(exemplar_sim_output, c("Velocity","Displacement"))
   expect_equal(round(medians,digits=5),cbind(4.49823, 54.81939))
+  rm(exemplar_sim_output)
 })
 

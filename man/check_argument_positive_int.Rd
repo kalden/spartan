@@ -4,10 +4,10 @@
 \alias{check_argument_positive_int}
 \title{Check that an argument that should be a positive integer has been specified correctly}
 \usage{
-check_argument_positive_int(argument, preCheckSuccess, argName)
+check_argument_positive_int(arguments, preCheckSuccess, argName)
 }
 \arguments{
-\item{argument}{Value of the argument to check}
+\item{arguments}{List of the arguments provided to the called function}
 
 \item{preCheckSuccess}{Current status of pre-execution checks}
 

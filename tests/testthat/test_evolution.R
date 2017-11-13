@@ -24,6 +24,8 @@ test_that("emulator_parameter_evolution", {
   # Check none are na
   expect_equal(sum(is.na(nsga2result)),0)
 
+  rm(nsga2result, nsga2_settings, nsga2_user_set_parameters)
+
 })
 
 test_that("nsga2_set_user_params", {

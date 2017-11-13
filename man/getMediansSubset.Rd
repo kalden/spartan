@@ -6,7 +6,7 @@
 parameter samples}
 \usage{
 getMediansSubset(FILEPATH, NUMRUNSPERSAMPLE, measures, resultfilename,
-  altfilename, outputfilecolstart, outputfilecolend)
+  altfilename = NULL, outputfilecolstart, outputfilecolend)
 }
 \arguments{
 \item{FILEPATH}{Where the simulation results can be found}

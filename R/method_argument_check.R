@@ -435,8 +435,7 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
 }
 
 #' Check that two lists are numeric, and the values of one are less than the other
-#' @param smallList List of values that should be smaller
-#' @param largerList List of values that should be larger
+#' @param arguments List of the arguments provided to the called function
 #' @param nameSmall Parameter name of the smaller list, for error reporting
 #' @param nameLarge Parameter name of the larger list, for error reporting
 #' @param preCheckSuccess Current status of pre-execution checks
@@ -487,7 +486,7 @@ get_argument_correct_case <- function(arguments, argName)
 }
 
 #' Check that an argument that should be a positive integer has been specified correctly
-#' @param argument Value of the argument to check
+#' @param arguments List of the arguments provided to the called function
 #' @param preCheckSuccess Current status of pre-execution checks
 #' @param argName Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
