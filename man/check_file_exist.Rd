@@ -4,12 +4,12 @@
 \alias{check_file_exist}
 \title{Checks for the existence of a file}
 \usage{
-check_file_exist(filepath, file)
+check_file_exist(filepath, filename)
 }
 \arguments{
 \item{filepath}{Directory where the file should be}
 
-\item{file}{Name of the file}
+\item{filename}{Name of the file}
 }
 \value{
 Boolean showing whether or not the file exists

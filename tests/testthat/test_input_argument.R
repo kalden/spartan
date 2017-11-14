@@ -353,25 +353,26 @@ test_that("check_double_value_in_range", {
 })
 
 test_that("check_consistency_result_type", {
-  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = tutorial_consistency_set)
-  expect_true(check_consistency_result_type(input_arguments, TRUE))
+  data("tutorial_consistency_set")
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = tutorial_consistency_set, AA_SIM_RESULTS_FILE=NULL)
+  expect_true(check_consistency_result_type(input_arguments, TRUE,"AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"))
   # For this test we'll need to create a file, just to show that the test can pass as well as fail:
-  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", FILEPATH=getwd())
-  expect_message(check_consistency_result_type(input_arguments, TRUE),paste("Simulation results summary file AA_SimResponses.csv does not exist in ",getwd(),sep=""))
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT=NULL, FILEPATH=getwd())
+  expect_message(check_consistency_result_type(input_arguments, TRUE, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"),paste("File AA_SimResponses.csv in argument AA_SIM_RESULTS_FILE does not exist in ",getwd(),sep=""))
   make_file <- file.create(paste(getwd(),"/AA_SimResponses.csv",sep=""))
-  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", FILEPATH=getwd())
-  expect_true(check_consistency_result_type(input_arguments, TRUE))
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT=NULL, FILEPATH=getwd())
+  expect_true(check_consistency_result_type(input_arguments, TRUE, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"))
   # Remove this file
   remove_file <- file.remove(paste(getwd(),"/AA_SimResponses.csv",sep=""))
   # Make both NULL
   input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = NULL, AA_SIM_RESULTS_FILE = NULL)
-  expect_message(check_consistency_result_type(input_arguments, TRUE),"Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. You must specify one. Spartan Terminated")
+  expect_message(check_consistency_result_type(input_arguments, TRUE, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"),"Error in declaring either AA_SIM_RESULTS_FILE or AA_SIM_RESULTS_OBJECT. You must specify one. Spartan Terminated")
   # Fail the file name check
-  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = data.frame(seq(1,5,by=1)))
-  expect_false(check_consistency_result_type(input_arguments, TRUE))
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = data.frame(seq(1,5,by=1)), AA_SIM_RESULTS_OBJECT=NULL)
+  expect_false(check_consistency_result_type(input_arguments, TRUE, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"))
   # Fail the R object existence check
-  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = A)
-  expect_message(check_consistency_result_type(input_arguments, TRUE),"Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. Spartan Terminated")
+  input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = A,  AA_SIM_RESULTS_FILE=NULL)
+  expect_message(check_consistency_result_type(input_arguments, TRUE, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"),"Error in declaring either AA_SIM_RESULTS_FILE or AA_SIM_RESULTS_OBJECT. You must specify one. Spartan Terminated")
 
 })
 
@@ -406,12 +407,73 @@ test_that("check_file_exist", {
 
 })
 
-#test_that("check_aa_summariseReplicateRuns", {
+test_that("check_aaSampleSizeSummary", {
+  # Calls the functions testeed in this file - need to make sure a combination returns the correct result
+  data("a_test_results")
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,300),
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 SUMMARYFILENAME="ATestSummary.csv",
+                                                 ATESTRESULTS_OBJECT = a_test_results,
+                                                 ATESTRESULTS_FILE = NULL)
+  expect_true(check_aaSampleSizeSummary(input_arguments))
+  # File
+  write.csv(a_test_results,file=file.path(getwd(),"ATests.csv"),row.names=F,quote=F)
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,300),
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 SUMMARYFILENAME="ATestSummary.csv",
+                                                 ATESTRESULTS_FILE = "ATests.csv")
+  expect_true(check_aaSampleSizeSummary(input_arguments))
+  # Some errors:
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=A,
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 SUMMARYFILENAME="ATestSummary.csv",
+                                                 ATESTRESULTS_FILE = "ATests.csv")
+  expect_false(check_aaSampleSizeSummary(input_arguments))
+
+  file.remove(file.path(getwd(),"ATests.csv"))
+})
+
+test_that("check_aa_summariseReplicateRuns", {
   # This joins many input functions that have already been tested - we need to check the output is correct
- #expect_true(aa_summariseReplicateRuns(getwd(),c(1),c("Velocity","Displacement","Result.csv","AltResult.csv",1,2,"SummaryFile.csv")))
+  dir.create(file.path(getwd(),"1"))
+  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"1","ATestSummary.csv"), quote=F, row.names=F)
+  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"1","AltResult.csv"), quote=F, row.names=F)
+
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1),
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 RESULTFILENAME="ATestSummary.csv",
+                                                 ALTFILENAME="AltResult.csv",
+                                                 OUTPUTFILECOLSTART = 1,
+                                                 OUTPUTFILECOLEND = 2,
+                                                 SUMMARYFILENAME="SummaryFile.csv")
+
+
+  expect_true(check_aa_summariseReplicateRuns(input_arguments))
+
 
   # Introduce some errors
-#  expect_false(aa_summariseReplicateRuns(getwd(),c(A,50),c("Velocity","Displacement","Result.csv","AltResult.csv",1,2,"SummaryFile.csv")))
-#  expect_false(aa_summariseReplicateRuns(getwd(),c(1,50),c("Velocity","Displacement","Result.csv","AltResult.csv",10,2,"SummaryFile.csv")))
-#  expect_false(aa_summariseReplicateRuns(getwd(),c(1,50),c("Velocity","Displacement","Result.csv","AltResult.csv",1,2,VAR)))
-#})
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(A,1),
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 RESULTFILENAME="ATestSummary.csv",
+                                                 ALTFILENAME="AltResult.csv",
+                                                 OUTPUTFILECOLSTART = 1,
+                                                 OUTPUTFILECOLEND = 2,
+                                                 SUMMARYFILENAME="SummaryFile.csv")
+  expect_false(check_aa_summariseReplicateRuns(input_arguments))
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1),
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 RESULTFILENAME="ATestSummary.csv",
+                                                 ALTFILENAME="AltResult.csv",
+                                                 OUTPUTFILECOLSTART = 10,
+                                                 OUTPUTFILECOLEND = 2,
+                                                 SUMMARYFILENAME="SummaryFile.csv")
+  expect_false(check_aa_summariseReplicateRuns(input_arguments))
+  input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1),
+                                                 MEASURES=c("Velocity","Displacement"),
+                                                 RESULTFILENAME="ATestSummary.csv",
+                                                 ALTFILENAME="AltResult.csv",
+                                                 OUTPUTFILECOLSTART = 1,
+                                                 OUTPUTFILECOLEND = 2,
+                                                 SUMMARYFILENAME=VAR)
+  expect_false(check_aa_summariseReplicateRuns(input_arguments))
+})

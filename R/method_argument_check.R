@@ -11,7 +11,7 @@ check_getATestResult_Input <- function(arguments)
   preCheckSuccess = check_text(arguments$ATESTRESULTSFILENAME, preCheckSuccess, "ATESTRESULTSFILENAME")
   preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
   preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
-  preCheckSuccess = check_consistency_result_type(arguments, preCheckSuccess)
+  preCheckSuccess = check_consistency_result_type(arguments, preCheckSuccess, "AA_SIM_RESULTS_FILE", "AA_SIM_RESULTS_OBJECT")
 
   return(preCheckSuccess)
 }
@@ -25,15 +25,28 @@ check_aa_summariseReplicateRuns <- function(arguments)
   preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
   preCheckSuccess = check_text(arguments$RESULTFILENAME, preCheckSuccess, "RESULTFILENAME")
   preCheckSuccess = check_text(arguments$ALTFILENAME, preCheckSuccess, "ALTFILENAME")
-  preCheckSuccess = check_column_ranges(arguments, arguments$FILEPATH, arguments$RESULTFILENAME, preCheckSuccess)
+  preCheckSuccess = check_column_ranges(arguments, eval(arguments$FILEPATH), arguments$RESULTFILENAME, preCheckSuccess)
   if(!is.null(eval(arguments$ALTFILENAME)))
-    preCheckSuccess = check_column_ranges(arguments, arguments$FILEPATH, arguments$ALTFILENAME, preCheckSuccess)
+    preCheckSuccess = check_column_ranges(arguments, eval(arguments$FILEPATH), arguments$ALTFILENAME, preCheckSuccess)
   preCheckSuccess = check_text(arguments$SUMMARYFILENAME, preCheckSuccess, "SUMMARYFILENAME")
 
   # Timepoints needs adding
 
   return(preCheckSuccess)
 
+}
+
+check_aaSampleSizeSummary <- function(arguments)
+{
+  preCheckSuccess = TRUE
+  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
+  preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
+  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
+  preCheckSuccess = check_text(arguments$SUMMARYFILENAME, preCheckSuccess, "SUMMARYFILENAME")
+  preCheckSuccess = check_consistency_result_type(arguments, preCheckSuccess,
+                                                  "ATESTRESULTS_FILE", "ATESTRESULTS_OBJECT")
+
+  return(preCheckSuccess)
 }
 
 
@@ -683,23 +696,24 @@ check_nested_filepaths <- function(file_root, sub_dirs, preCheckSuccess)
     })
 }
 
-#' Check that the user has declared a-test results either in an R object or in a file name
+#' Check that the user has declared either a file name or an R object
 #' @param arguments List of the arguments provided to the called function
 #' @param preCheckSuccess Current status of pre-execution checks
+#' @param fileArg Name of the argument for which a file should be specified
+#' @param rObjArg Name of the argument for which an R object should be specified
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_consistency_result_type <- function(arguments, preCheckSuccess)
+check_consistency_result_type <- function(arguments, preCheckSuccess, fileArg, rObjArg)
 {
   tryCatch(
   {
-    r_object <- eval(arguments$AA_SIM_RESULTS_OBJECT)
-    #print(paste("R OBJECT: ",r_object,sep=""))
-    file_name <- eval(arguments$AA_SIM_RESULTS_FILE )
+    r_object <- eval(arguments[rObjArg][[1]])
+    file_name <- eval(arguments[fileArg][[1]])
     filepath <- eval(arguments$FILEPATH)
 
-    # Must have specified either AA_SIM_RESULTS_OBJECT (an R object) or a results file
+    # Must have specified either an R object or a file
     if(is.null(r_object) & is.null(file_name))
     {
-      message("Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. You must specify one. Spartan Terminated")
+      message(paste("Error in declaring either ",fileArg," or ",rObjArg,". You must specify one. Spartan Terminated",sep=""))
       return(FALSE)
     }
     else {
@@ -707,45 +721,44 @@ check_consistency_result_type <- function(arguments, preCheckSuccess)
       {
         # The user is specifying a results file name
         # Can check this here
-        file_check <- check_text(file_name, preCheckSuccess, "AA_SIM_RESULTS_FILE")
+        file_check <- check_text(arguments[fileArg][[1]], preCheckSuccess, fileArg)
         if(file_check)
           # Check the file exists
-          if(file.exists(paste(filepath,"/",file_name,sep="")))
+          if(file.exists(file.path(filepath,file_name)))
             return(preCheckSuccess)
           else
           {
-            message(paste("Simulation results summary file ",file_name, " does not exist in ",filepath,sep=""))
+            message(paste("File ",file_name, " in argument ",fileArg, " does not exist in ",filepath,sep=""))
             return(FALSE)
           }
         else
         {
-          message(paste("Declaring A-Test results in file ",file_name," yet problem with declaration of this file name string. Spartan Terminated",sep=""))
+          message(paste("Problem with declaration of argument ",fileArg,", ",file_name, ". Spartan Terminated",sep=""))
           return(FALSE)
         }
       }
       else
       {
-        # Any issue with the R object not existing will have already been caught
-        # when this argument was evaluated above
+        # Existence of R object will have been checked when evaluated earlier
         return(preCheckSuccess)
       }
     }
   },
   error=function(cond) {
-    message("Error in declaring either AA_SIM_RESULTS_OBJECT or MEDIANS_SUMMARY_FILE_NAME. Spartan Terminated")
+    message(paste("Error in declaring either ",fileArg," or ",rObjArg,". You must specify one. Spartan Terminated",sep=""))
     return(FALSE)
   })
 }
 
 #' Checks for the existence of a file
 #' @param filepath Directory where the file should be
-#' @param file Name of the file
+#' @param filename Name of the file
 #' @return Boolean showing whether or not the file exists
-check_file_exist <- function(filepath, file)
+check_file_exist <- function(filepath, filename)
 {
   tryCatch(
   {
-    if(file.exists(file.path(filepath, file)))
+    if(file.exists(file.path(filepath, filename)))
       return(TRUE)
     else
       return(FALSE)
@@ -767,12 +780,17 @@ check_column_ranges <- function(arguments, filepath, resultfile, preCheckSuccess
 {
   # This opens the first result file and checks the number of columns.
   # The assumption is made all others will be of the same structure
-  if(check_file_exist(filepath, resultfile)==TRUE)
+  # So we need to get the first sample size
+
+  tryCatch(
   {
-    tryCatch(
+    samplesize <- eval(arguments$SAMPLESIZES)[1]
+
+    if(check_file_exist(paste(filepath,"/",samplesize,sep=""), eval(resultfile))==TRUE)
     {
+
       # Load it and check number of columns
-      result<-read.csv(file.path(filepath,resultfile),header=T)
+      result<-read.csv(file.path(paste(filepath,"/",samplesize,sep=""), eval(resultfile)),header=T)
       if(eval(arguments$OUTPUTFILECOLSTART) > 0 &
          eval(arguments$OUTPUTFILECOLSTART) <= ncol(result) &
          eval(arguments$OUTPUTFILECOLEND) > 0 &
@@ -784,14 +802,16 @@ check_column_ranges <- function(arguments, filepath, resultfile, preCheckSuccess
         message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
         return(FALSE)
       }
-    },
-    error=function(cond) {
-      message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+    }
+    else {
+      message(paste("Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
+                    file.path(filepath,resultfile), " does not exist",sep=""))
       return(FALSE)
-    })
-  } else {
-    message(paste("Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
-                  file.path(filepath,resultfile), " does not exist",sep=""))
+    }
+  },
+  error=function(cond) {
+    message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
     return(FALSE)
-  }
+  })
 }
+

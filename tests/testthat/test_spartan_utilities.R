@@ -180,6 +180,5 @@ test_that("get_median_results_for_all_measures", {
   data(exemplar_sim_output)
   medians <- get_median_results_for_all_measures(exemplar_sim_output, c("Velocity","Displacement"))
   expect_equal(round(medians,digits=5),cbind(4.49823, 54.81939))
-  rm(exemplar_sim_output)
 })
 

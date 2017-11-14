@@ -2,18 +2,22 @@
 % Please edit documentation in R/method_argument_check.R
 \name{check_consistency_result_type}
 \alias{check_consistency_result_type}
-\title{Check that the user has declared a-test results either in an R object or in a file name}
+\title{Check that the user has declared either a file name or an R object}
 \usage{
-check_consistency_result_type(arguments, preCheckSuccess)
+check_consistency_result_type(arguments, preCheckSuccess, fileArg, rObjArg)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
 
 \item{preCheckSuccess}{Current status of pre-execution checks}
+
+\item{fileArg}{Name of the argument for which a file should be specified}
+
+\item{rObjArg}{Name of the argument for which an R object should be specified}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
 }
 \description{
-Check that the user has declared a-test results either in an R object or in a file name
+Check that the user has declared either a file name or an R object
 }

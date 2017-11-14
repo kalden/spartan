@@ -70,6 +70,27 @@ NULL
 #' @format A list with 9060 rows and four columns
 NULL
 
+#' Analysed results from tutorial_consistency_set: a-test scores when sets compared
+#'
+#' This dataset contains the results of the analysis aa_getATestResults when
+#' applied to the tutorial_consistency_dataset. Used in testing
+#'
+#' \itemize{
+#'   \item Sample.Size Sample size being analysed
+#'   \item Sample The number of the subset of this sample size
+#'   \item ATestVelocity A-Test score for the velocity measure
+#'   \item ATestVelocityNorm Normalised A-Test score for the velocity measure
+#'   \item ATestDisplacement A-Test score for the displacement measure
+#'   \item ATestDisplacementNorm Normalised A-Test score for the displacement measure
+#' }
+#'
+#' @docType data
+#' @keywords datasets
+#' @name a_test_results
+#' @usage data(a_test_results)
+#' @format A list with 95 rows and 6 columns
+NULL
+
 
 #' Example of a dataset output from an agent-based simulation, used in package testing
 #'

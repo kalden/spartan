@@ -18,8 +18,6 @@ test_that("read_simulation_results", {
   expect_equal(ncol(read_simulation_results("/home/kja505/Dropbox/spartan_web_data/Technique1/AA_Spartan2/CSV_Structure/",
                                             AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT = NULL)),4)
 
-  rm(tutorial_consistency_set)
-
 })
 
 test_that("retrieve_results_for_comparison_result_set", {
@@ -35,7 +33,6 @@ test_that("retrieve_results_for_comparison_result_set", {
   expect_equal(retrieve_results_for_comparison_result_set(tutorial_consistency_set,50)[1,1],50)
   expect_equal(retrieve_results_for_comparison_result_set(tutorial_consistency_set,50)[1,2],1)
 
-  rm(tutorial_consistency_set)
 })
 
 test_that("compare_result_sets_to_comparison_set", {
@@ -60,8 +57,6 @@ test_that("compare_result_sets_to_comparison_set", {
   # Note the rounding to 7 dp to make sure the floating point doesnt cause an issue
   expect_equal(round(results[4,3][[1]],7),0.5138565)
   expect_equal(round(results[4,5][[1]],7),0.5559835)
-
-  rm(tutorial_consistency_set)
 })
 
 test_that("generate_a_test_score", {
@@ -82,8 +77,6 @@ test_that("generate_a_test_score", {
                                                    c(300, 18))
 
   expect_equal(round(as.numeric(generate_a_test_score(NULL, set300, COMPAREDSET, c("Velocity","Displacement"))),7),c(0.5421483,0.5421483,0.5770353,0.5770353))
-
-  rm(tutorial_consistency_set)
 })
 
 test_that("graph_sample_size_results", {
@@ -131,8 +124,6 @@ test_that("generate_scores_for_all_sample_sizes", {
 
   file.remove(file.path(getwd(),"/1Samples.pdf"))
   file.remove(file.path(getwd(),"/50Samples.pdf"))
-
-  rm(tutorial_consistency_set)
 })
 
 test_that("aa_getATestResults", {
@@ -157,7 +148,6 @@ test_that("aa_getATestResults", {
   file.remove(file.path(getwd(),"/1Samples.pdf"))
   file.remove(file.path(getwd(),"/50Samples.pdf"))
 
-  rm(tutorial_consistency_set)
 })
 
 test_that("read_model_result_file", {
@@ -185,7 +175,6 @@ test_that("read_model_result_file", {
 
   file.remove(file.path(getwd(),"Test_Results_CSV_file.csv"))
 
-  rm(tutorial_consistency_set)
 })
 
 test_that("import_model_result", {
@@ -233,3 +222,26 @@ test_that("append_time_to_argument", {
   expect_equal(append_time_to_argument("ResultFile.csv", 12, "csv"),"ResultFile_12.csv")
 })
 
+test_that("produce_atest_score_summary", {
+
+  # Read in the exemplar test data
+  data("a_test_results")
+  allSubset_ATest_Scores<-read_simulation_results(getwd(),NULL,a_test_results)
+  # Produce the a-test summary, using the package exemplar data
+  atest_summary <- produce_atest_score_summary(
+    c(1,5,50,100,300), allSubset_ATest_Scores, c("Velocity","Displacement"))
+
+
+  # Check the structure
+  expect_equal(nrow(atest_summary), 5)
+  expect_equal(ncol(atest_summary), 5)
+
+})
+
+test_that("generate_headers_for_atest_file", {
+  # Simple test to make sure the headers are generated correctly
+  a<-cbind(1,0.9,0.9,0.6,0.6)
+  colnames(a)<-generate_headers_for_atest_file(c("Velocity","Displacement"))
+  expect_equal(toString(colnames(a)),
+  "samplesize, VelocityMaxA, VelocityMedianA, DisplacementMaxA, DisplacementMedianA")
+})

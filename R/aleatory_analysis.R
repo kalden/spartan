@@ -238,125 +238,63 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
                                  ATESTRESULTS_OBJECT = NULL,
                                  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
 
-  if (is.null(TIMEPOINTS)) {
-    errorLog <-1
+  input_arguments <- as.list(match.call())
+  # Run if all checks pass:
+  if(check_aaSampleSizeSummary(input_arguments))
+  {
+    if (is.null(TIMEPOINTS)) {
 
-    if(!is.null(ATESTRESULTS_FILE) | !is.null(ATESTRESULTS_OBJECT)) {
-
-      if(!is.null(ATESTRESULTS_FILE)) {
-        # READ IN THE SUMMARY FILE
-        if (file.exists(make_path(c(FILEPATH, ATESTRESULTS_FILE)))) {
-
-          ALLSUBSET_ATEST_SCORES <- read.csv(make_path(c(FILEPATH,
-                                                         ATESTRESULTS_FILE)),
-                                             header = TRUE, check.names = FALSE)
-        } else {
-          print("Specified A-Test File does not exist")
-          errorLog <- 0
-        }
-
-      } else {
-        ALLSUBSET_ATEST_SCORES <- ATESTRESULTS_OBJECT
-      }
-
-      # Bit of a bodge here to make sure this does not preceed if file did not
-      # exist, long term this needs refactoring
-      if(errorLog > 0) {
-
-      ATESTMAXES <- NULL
+      # Can use read_simulation_results to read CSV or R object
+      allSubset_ATest_Scores <- read_simulation_results(FILEPATH,
+                                                        ATESTRESULTS_FILE,
+                                                        ATESTRESULTS_OBJECT)
+      # These were checked in pre-execution check, so should exist
 
       print("Producing Analysis Summary (aa_sampleSizeSummary)")
+      atest_summary <- produce_atest_score_summary(
+        SAMPLESIZES, allSubset_ATest_Scores, MEASURES)
 
-      #if (file.exists(make_path(c(FILEPATH, ATESTRESULTSFILENAME)))) {
+      # Output results
+      write_data_to_csv(atest_summary,file.path(FILEPATH, SUMMARYFILENAME))
 
-      #ALLSUBSET_ATEST_SCORES <- read.csv(make_path(c(FILEPATH,
-       #                                              ATESTRESULTSFILENAME)),
-        #                                 header = TRUE, check.names = FALSE)
+      message(join_strings(c("Summary file of all A-Test results output to ",
+                             FILEPATH, "/", SUMMARYFILENAME), ""))
 
-      for (k in 1:length(SAMPLESIZES)) {
-        SAMPLEPROCESSING <- SAMPLESIZES[k]
-        print(join_strings_space(c("Processing Sample Size:",
-                                   SAMPLEPROCESSING)))
-
-        # Subset by column 1, Sample Size
-        # KA 3.0 Issue with processing by label "Sample Size" when handling
-        # files and objects, so changed to reference column 1. Could do with
-        # looking at again
-        SAMPLE_SIZE_RESULT <- as.data.frame(subset(ALLSUBSET_ATEST_SCORES,
-                                     ALLSUBSET_ATEST_SCORES[,1] ==
-                                       as.numeric(SAMPLEPROCESSING)))
-
-        # NOW WORK OUT MAX AND MEDIAN A-TEST RESULTS FOR EACH SAMPLE SIZE
-        SAMPLE_SIZE_SUMMARY <- c(SAMPLEPROCESSING)
-
-        for (MEASURE in 1:length(MEASURES)) {
-          MEASURELABEL <- join_strings_nospace(c("ATest",
-                                                 MEASURES[MEASURE], "Norm"))
-          MEDIANATESTMEASUREVAL <- median(
-            SAMPLE_SIZE_RESULT[MEASURELABEL][, 1])
-          MAXATESTMEASUREVAL <- max(SAMPLE_SIZE_RESULT[MEASURELABEL][, 1])
-          SAMPLE_SIZE_SUMMARY <- cbind(SAMPLE_SIZE_SUMMARY, MAXATESTMEASUREVAL,
-                                       MEDIANATESTMEASUREVAL)
-        }
-
-        ATESTMAXES <- rbind(ATESTMAXES, SAMPLE_SIZE_SUMMARY)
-      }
-
-      # NOW OUTPUT THE RESULTS
-      # GENERATE COL HEADER FOR THE OUTPUT FILE
-      OUTPUTCOLHEADS <- c("samplesize")
-
-      for (l in 1:length(MEASURES)) {
-        OUTPUTCOLHEADS <- cbind(OUTPUTCOLHEADS, paste(MEASURES[l],
-                                                      "MaxA", sep = ""),
-                                paste(MEASURES[l], "MedianA", sep = ""))
-      }
-
-      colnames(ATESTMAXES) <- c(OUTPUTCOLHEADS)
-
-      # NOW OUTPUT THESE FOR GRAPHING LATER
-      # SUMMARY FILENAME SOMETHING LIKE ATESTMAXANDMEDIANS.CSV FOR ONE TIMEPOINT
-      RESULTFILE <- make_path(c(FILEPATH, SUMMARYFILENAME))
-      # WRITE OUT SO HAVE THE TABLE IF NECESSARY LATER
-      write.csv(ATESTMAXES, RESULTFILE, quote = FALSE, row.names = FALSE)
-
-      print(join_strings(c("Summary file of all A-Test results output to ",
-                           FILEPATH, "/", SUMMARYFILENAME), ""))
-
-      # From 3.0 we're returning the results too:
-      return(ATESTMAXES)
-
-      }
-    } else {
-      print(paste("You must specify either an R object containing simulation ",
-                  "a test results, or the name of a CSV file in the filepath",
-                  "containing those results",sep=""))
+      return(atest_summary)
     }
-
   } else {
 
-    for (n in 1:length(TIMEPOINTS)) {
+    aa_sampleSizeSummary_overTime(FILEPATH, SAMPLESIZES, MEASURES,
+                                  SUMMARYFILENAME, ATESTRESULTS_FILE,
+                                  ATESTRESULTS_OBJECT,
+                                  TIMEPOINTS, TIMEPOINTSCALE)
+  }
+}
 
-      current_time <- TIMEPOINTS[n]
-      print(join_strings(c("PROCESSING TIMEPOINT:", current_time), " "))
+#' Determines median and maximum A-Test score for each sample size over time
+#' @inheritParams aa_sampleSizeSummary
+aa_sampleSizeSummary_overTime <- function(FILEPATH, SAMPLESIZES, MEASURES,
+                                 SUMMARYFILENAME, ATESTRESULTS_FILE = NULL,
+                                 ATESTRESULTS_OBJECT = NULL,
+                                 TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
 
-      atest_results_format <- check_file_extension(ATESTRESULTS_FILE)
-      ATESTRESULTSFILENAME_FULL <- paste(substr(ATESTRESULTS_FILE, 0,
-                                              nchar(ATESTRESULTS_FILE) - 4),
-                                       "_", current_time, ".",
-                                       atest_results_format, sep = "")
+  for (n in 1:length(TIMEPOINTS)) {
 
-      summaryfile_format <- check_file_extension(SUMMARYFILENAME)
-      SUMMARYFILENAME_FULL <- paste(substr(SUMMARYFILENAME, 0,
-                                         nchar(SUMMARYFILENAME) - 4),
-                                  "_", current_time, ".", summaryfile_format,
-                                  sep = "")
+    current_time <- TIMEPOINTS[n]
+    message(join_strings_space(c("Processing Timepoint:", current_time)))
 
-      aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES,
-                           ATESTRESULTSFILENAME_FULL, SUMMARYFILENAME_FULL,
-                           TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+    atestresultsfilename_full <- append_time_to_argument(
+      ATESTRESULTS_FILE, current_time,
+      check_file_extension(ATESTRESULTS_FILE))
 
-    }
+    summaryfilename_full <- append_time_to_argument(
+      SUMMARYFILENAME, current_time,
+      check_file_extension(SUMMARYFILENAME))
+
+    aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES,
+                         atestresultsfilename_full, summaryfilename_full,
+                         TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
   }
 }
 
@@ -578,3 +516,70 @@ append_time_to_argument <- function(argument, current_time, file_format)
   return(paste(substr(argument, 0, nchar(argument)-4),
                "_", current_time, ".", file_format, sep = ""))
 }
+
+
+#' Return the max and median A-Test score for all measures for a sample size
+#' @param sample_processing Sample size being analysed
+#' @param measures Simulation output responses
+#' @param sample_size_result all processed simulation responses
+#' @return Summary of median and max A-Test scores for this sample size
+get_max_and_median_atest_scores <- function(sample_processing,
+                                            measures, sample_size_result) {
+
+  sample_size_summary <- c(sample_processing)
+  for (measure in 1:length(measures)) {
+    measurelabel <- join_strings_nospace(c("ATest",
+                                           measures[measure], "Norm"))
+
+    median_atest_measure_val <- median(
+      sample_size_result[measurelabel][, 1])
+    max_atest_measure_val <- max(sample_size_result[measurelabel][, 1])
+    sample_size_summary <- cbind(sample_size_summary, max_atest_measure_val,
+                                 median_atest_measure_val)
+  }
+  return(sample_size_summary)
+}
+
+#' Generates headers for the A-Test summary CSV and R Object
+#' @param measures Simulation output responses
+#' @return header list for A-Test summary object
+generate_headers_for_atest_file <- function(measures) {
+  headers <- c("samplesize")
+
+  for (l in 1:length(measures)) {
+    headers <- cbind(headers, paste(measures[l],
+                                                  "MaxA", sep = ""),
+                            paste(measures[l], "MedianA", sep = ""))
+  }
+  return(headers)
+}
+
+#' Generates A-Test score summary for all sample sizes
+#' @param sample_sizes Sample sizes being assessed
+#' @param allSubset_ATest_Scores Scores from all subsets for all sample sizes
+#' @param measures Simulation output responses
+#' @return A-Test max and median summary for all sample sizes
+produce_atest_score_summary <- function(sample_sizes, allSubset_ATest_Scores,
+                                        measures) {
+
+  atest_summary <- NULL
+  for (k in 1:length(sample_sizes)) {
+    sample_processing <- sample_sizes[k]
+    message(join_strings_space(c("Processing Sample Size:",
+                                 sample_processing)))
+
+    # Subset by column 1, Sample Size
+    # KA 3.0 Issue with processing by label "Sample Size" when handling
+    # files and objects, so changed to reference column 1.
+    sample_size_result <- as.data.frame(subset(allSubset_ATest_Scores,
+                                               allSubset_ATest_Scores[,1] ==
+                                                 as.numeric(sample_processing)))
+
+    # Calculate max and median A-Test results for all sample sizes
+    atest_summary <- rbind(atest_summary, get_max_and_median_atest_scores(
+      sample_processing, measures, sample_size_result))
+  }
+  colnames(atest_summary) <- generate_headers_for_atest_file(measures)
+  return(atest_summary)
+}
+
