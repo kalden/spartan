@@ -7,7 +7,8 @@
 #' @param MEASURE Current simulation output measure being analysed in this loop
 #' @param DESIREDRESULT The specific requirement to match when counting simulation responses
 #' @param OUTPUTFILENAME CSV file name to contain the counts where simulation responses meet a specific requirement
-#'
+#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @export
 oat_countResponsesOfDesiredValue <- function(FILEPATH, PARAMETERS,
                                              RESULTFILENAME, OUTPUTCOLSTART,

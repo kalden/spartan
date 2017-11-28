@@ -4,12 +4,12 @@
 \alias{check_filepath_exists}
 \title{Check that the filepath of required data or output exists}
 \usage{
-check_filepath_exists(arguments, preCheckSuccess)
+check_filepath_exists(arguments, argument_name)
 }
 \arguments{
-\item{arguments}{List of the arguments provided to the called function}
+\item{arguments}{Input arguments}
 
-\item{preCheckSuccess}{Current status of pre-execution checks}
+\item{argument_name}{Name of the argument, as provided by function}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails

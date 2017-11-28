@@ -4,12 +4,10 @@
 \alias{check_lengths_parameters_ranges}
 \title{Check that the lengths of the parameters, minimum values, and maximum values, are equal}
 \usage{
-check_lengths_parameters_ranges(arguments, preCheckSuccess)
+check_lengths_parameters_ranges(arguments)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails

@@ -4,14 +4,12 @@
 \alias{check_list_all_integers}
 \title{Check that all objects of a list are integers}
 \usage{
-check_list_all_integers(argument, preCheckSuccess, argName)
+check_list_all_integers(arguments, argument_name)
 }
 \arguments{
-\item{argument}{Value of the argument to check}
+\item{arguments}{List of the arguments provided to the called function}
 
-\item{preCheckSuccess}{Current status of pre-execution checks}
-
-\item{argName}{Name of the argument, for inclusion in the error message}
+\item{argument_name}{Name of the argument, for inclusion in the error message}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails

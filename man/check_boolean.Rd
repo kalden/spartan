@@ -4,14 +4,12 @@
 \alias{check_boolean}
 \title{Check that an argument that should be a boolean has been specified correctly}
 \usage{
-check_boolean(argument, preCheckSuccess, argName)
+check_boolean(arguments, argument_name)
 }
 \arguments{
-\item{argument}{Value of the argument to check}
+\item{arguments}{List of the arguments provided to the called function}
 
-\item{preCheckSuccess}{Current status of pre-execution checks}
-
-\item{argName}{Name of the argument, for inclusion in the error message}
+\item{argument_name}{Name of the argument, for inclusion in the error message}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails

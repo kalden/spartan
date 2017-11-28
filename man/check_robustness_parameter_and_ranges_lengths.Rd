@@ -5,12 +5,10 @@
 \title{Where used, checks that PARAMETERS, PMIN, PMAX, PINC, and BASELINE are all
 the same length}
 \usage{
-check_robustness_parameter_and_ranges_lengths(arguments, preCheckSuccess)
+check_robustness_parameter_and_ranges_lengths(arguments)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks,

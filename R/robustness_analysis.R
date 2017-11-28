@@ -16,8 +16,8 @@
 #' @param MEASURES Array containing the names of the output measures which are used to analyse the simulation
 #' @param RESULTFILENAME Name of the simulation results file. In the current version, XML and CSV files can be processed. If performing this analysis over multiple timepoints, it is assumed that the timepoint follows the file name, e.g. trackedCells_Close_12.csv.
 #' @param ALTERNATIVEFILENAME In some cases, it may be relevant to read from a further results file if he initial file contains no results. This filename is set here.
-#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
-#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
+#' @param OUTPUTFILECOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTFILECOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @param CSV_FILE_NAME Name of the file created that summarises the median value of each measure for every run. This specifies what that file should be called (e.g. Medians.csv).
 #' @param BASELINE Array containing the values assigned to each of these parameters in the calibrated baseline
 #' @param PMIN Array containing the minimum value that should be used for each parameter.  Sets a lower bound on sampling space
@@ -75,6 +75,8 @@ oat_processParamSubsets <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
 
 #' Summarises stochastic, repeated, simulations for all robustness parameter sets into a single file, for multiple timepoints
 #'
+#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @inheritParams oat_processParamSubsets
 oat_processParamSubsets_overTime <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
                                     MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME,
@@ -114,6 +116,9 @@ oat_processParamSubsets_overTime <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAM
 }
 
 #' Generate summary statistics for each value of all parameters in this analysis
+#'
+#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @inheritParams oat_processParamSubsets
 generate_summary_stats_for_all_param_sets <- function(
   FILEPATH, PARAMETERS, BASELINE, PMIN, PMAX, PINC, PARAMVALS, NUMRUNSPERSAMPLE,
@@ -161,7 +166,9 @@ generate_summary_stats_for_all_param_sets <- function(
 #' @param BASELINE Array containing the values assigned to each of these parameters in the calibrated baseline
 #' @param baseline_evaluated Whether results for the baseline have been calculated
 #' @param PARAMETERS Array containing the names of the parameters for which local analyses are being conducted
-#' @param all_median_results The current result set to append the parameter results to
+#' @param EXP_PARAMS Set of the value of all parameters being examined
+#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @inheritParams oat_processParamSubsets
 #' @return The results for this parameter, and whether the baseline has been evaluated
 produce_summary_for_all_values_of_parameter <- function(
@@ -200,10 +207,12 @@ produce_summary_for_all_values_of_parameter <- function(
 
 #' Generate the median responses for a set of parameter values
 #'
-#' @param SAMPLEFILEPATH
+#' @param SAMPLEFILEPATH Path to the results currently being analysed (parameter and value)
 #' @param EXP_PARAMS Set of the value of all parameters being examined
 #' @param PARAMETER Name of the parameter currently being analysed
 #' @param PARAM_VAL Value of the parameter currently being analysed
+#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @inheritParams oat_processParamSubsets
 #' @return parameter set with median responses for all values
 generate_medians_for_param_set <- function(SAMPLEFILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
@@ -237,6 +246,8 @@ generate_medians_for_param_set <- function(SAMPLEFILEPATH, NUMRUNSPERSAMPLE, MEA
 #' @param PARAMETER Name of the parameter currently being analysed
 #' @param PARAM_VAL Value of the parameter currently being analysed
 #' @param EXP_PARAMS Set of the value of all parameters being examined
+#' @param OUTPUTCOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
+#' @param OUTPUTCOLEND Column number in the simulation results file where the last output measure is. Only required if running the first method.
 #' @return medians for this parameter set
 process_parameter_value_if_exists <- function(
   FILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME,

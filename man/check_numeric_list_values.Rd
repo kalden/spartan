@@ -4,7 +4,7 @@
 \alias{check_numeric_list_values}
 \title{Check that two lists are numeric, and the values of one are less than the other}
 \usage{
-check_numeric_list_values(arguments, nameSmall, nameLarge, preCheckSuccess)
+check_numeric_list_values(arguments, nameSmall, nameLarge)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
@@ -12,8 +12,6 @@ check_numeric_list_values(arguments, nameSmall, nameLarge, preCheckSuccess)
 \item{nameSmall}{Parameter name of the smaller list, for error reporting}
 
 \item{nameLarge}{Parameter name of the larger list, for error reporting}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails

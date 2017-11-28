@@ -4,12 +4,10 @@
 \alias{check_robustness_range_contains_baseline}
 \title{Checks that the range specified by PMIN and PMAX contains the BASELINE}
 \usage{
-check_robustness_range_contains_baseline(arguments, preCheckSuccess)
+check_robustness_range_contains_baseline(arguments)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks,

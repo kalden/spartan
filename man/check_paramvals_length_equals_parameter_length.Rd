@@ -4,12 +4,10 @@
 \alias{check_paramvals_length_equals_parameter_length}
 \title{Where used in robustness analysis, check that the length of PARAMVALS equals}
 \usage{
-check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
+check_paramvals_length_equals_parameter_length(arguments)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks,

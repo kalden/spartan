@@ -4,12 +4,10 @@
 \alias{check_robustness_paramvals_contains_baseline}
 \title{Checks that the parameter values specified in PARAMVALS contain the BASELINE}
 \usage{
-check_robustness_paramvals_contains_baseline(arguments, preCheckSuccess)
+check_robustness_paramvals_contains_baseline(arguments)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks,

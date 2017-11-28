@@ -4,7 +4,7 @@
 \alias{check_column_ranges}
 \title{For aleatory analysis, checks the analysis start and end columns are sensible}
 \usage{
-check_column_ranges(arguments, filepath, resultfile, preCheckSuccess)
+check_column_ranges(arguments, filepath, resultfile)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
@@ -12,8 +12,6 @@ check_column_ranges(arguments, filepath, resultfile, preCheckSuccess)
 \item{filepath}{Evaluated filepath argument}
 
 \item{resultfile}{Name of the result file of columns to check}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks,

@@ -4,15 +4,12 @@
 \alias{check_double_value_in_range}
 \title{Check that a double argument is within a specified range}
 \usage{
-check_double_value_in_range(argument, preCheckSuccess, argName, range_min,
-  range_max)
+check_double_value_in_range(argument, argument_name, range_min, range_max)
 }
 \arguments{
 \item{argument}{Value of the argument to check}
 
-\item{preCheckSuccess}{Current status of pre-execution checks}
-
-\item{argName}{Name of the argument, for inclusion in the error message}
+\item{argument_name}{Name of the argument, for inclusion in the error message}
 
 \item{range_min}{Minimum of the range}
 

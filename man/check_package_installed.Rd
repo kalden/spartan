@@ -4,12 +4,10 @@
 \alias{check_package_installed}
 \title{Check that a required package has been installed}
 \usage{
-check_package_installed(packageName, preCheckSuccess)
+check_package_installed(packageName)
 }
 \arguments{
 \item{packageName}{Name of the package to check for}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating whether the package is installed or not

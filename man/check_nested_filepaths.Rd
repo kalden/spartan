@@ -4,14 +4,12 @@
 \alias{check_nested_filepaths}
 \title{Check that result filepaths under the root directory exist}
 \usage{
-check_nested_filepaths(file_root, sub_dirs, preCheckSuccess)
+check_nested_filepaths(file_root, sub_dirs)
 }
 \arguments{
 \item{file_root}{Root directory of the data to analyse}
 
 \item{sub_dirs}{List of the subdirectories that should be under the root}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 }
 \value{
 Boolean stating the current status of the pre-execution checks, or FALSE if this check fails

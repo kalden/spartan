@@ -40,7 +40,7 @@ lhc_generateTimepointFiles <- function(FILEPATH, SPARTAN_PARAMETER_FILE,
                                          RUN_SUMMARY_FILE_NAME, sep = ""),
                                    header = TRUE)
 
-        RESULT <- cbind(LHCTABLE[k, ], MEDIAN_RESULTS[TIMEPOINTPROCESSING, ])
+        RESULT <- cbind(LHCTABLE[k, ], MEDIAN_RESULTS[current_timepoint, ])
 
         # NOW ADD THIS TO THE LIST OF ALL MEDIANS BEING PROCESSED IN THIS
         # ANALYSIS
@@ -50,7 +50,7 @@ lhc_generateTimepointFiles <- function(FILEPATH, SPARTAN_PARAMETER_FILE,
 
       # WRITE THE RESULTS FILE FOR THIS TIMEPOINT
       if (!is.null(ALL_SIM_RESULTS_FOR_TIMEPOINT)) {
-        RESULTSFILE <- paste(FILEPATH, "/Results_Time_", TIMEPOINTPROCESSING,
+        RESULTSFILE <- paste(FILEPATH, "/Results_Time_", current_timepoint,
                              ".csv", sep = "")
         write.csv(ALL_SIM_RESULTS_FOR_TIMEPOINT,
                   RESULTSFILE, quote = FALSE, row.names = FALSE)

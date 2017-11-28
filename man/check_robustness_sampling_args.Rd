@@ -5,10 +5,12 @@
 \title{Pre-execution checks to perform before the spartan robustness samplng
 technique is executed. Checks all parameter input}
 \usage{
-check_robustness_sampling_args(arguments)
+check_robustness_sampling_args(arguments, argument_name)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
+
+\item{argument_name}{Null in this case, but keeps auto-called functions consistent}
 }
 \value{
 Boolean stating the status of the pre-execution checks

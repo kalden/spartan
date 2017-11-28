@@ -158,7 +158,7 @@ get_file_and_object_argument_names <- function(input_arguments)
 #' check_column_ranges takes a filepath containing a sample results file,
 #' and this changes across functions. This takes the function name
 #' and returns the correct argument names for passing to the function
-#' @param input_arguments Input arguments object passed from the checked
+#' @param arguments Input arguments object passed from the checked
 #' function
 #' @return Filepath to the results file to check
 get_correct_file_path_for_function <- function(arguments)
@@ -243,7 +243,7 @@ check_robustness_sampling_args <- function(arguments, argument_name)
 #' @param argument_name Name of the argument being checked.
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_robustness_range_or_values <- function(arguments, argumentName)
+check_robustness_range_or_values <- function(arguments, argument_name)
 {
   if(is.null(eval(arguments$PARAMVALS)))
   {
@@ -269,6 +269,7 @@ check_robustness_range_or_values <- function(arguments, argumentName)
 
 #' Checks the netlogo parameters and values are formatted correctly
 #' @param arguments List of the arguments provided to the called function
+#' @param argument_name Here for consistency in auto-function calling, but not used
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
 check_netlogo_parameters_and_values <- function(arguments, argument_name)

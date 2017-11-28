@@ -4,12 +4,10 @@
 \alias{check_consistency_result_type}
 \title{Check that the user has declared either a file name or an R object}
 \usage{
-check_consistency_result_type(arguments, preCheckSuccess, fileArg, rObjArg)
+check_consistency_result_type(arguments, fileArg, rObjArg)
 }
 \arguments{
 \item{arguments}{List of the arguments provided to the called function}
-
-\item{preCheckSuccess}{Current status of pre-execution checks}
 
 \item{fileArg}{Name of the argument for which a file should be specified}
 
