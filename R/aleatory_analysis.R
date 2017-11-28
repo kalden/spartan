@@ -32,9 +32,9 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
-  if(aa_summariseReplicateRuns(input_arguments)) {
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
     if (is.null(TIMEPOINTS)) {
 
@@ -145,9 +145,10 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+
   # Run if all checks pass:
-  if(check_getATestResult_Input(input_arguments)) {
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
     if (is.null(TIMEPOINTS)) {
 
@@ -238,9 +239,9 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
                                  ATESTRESULTS_OBJECT = NULL,
                                  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
 
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
-  if(check_aaSampleSizeSummary(input_arguments))
+  if(check_input_args(input_check$names, input_check$arguments))
   {
     if (is.null(TIMEPOINTS)) {
 

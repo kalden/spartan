@@ -30,168 +30,239 @@
 #' @export
 oat_processParamSubsets <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
                                     MEASURES, RESULTFILENAME,
-                                    ALTERNATIVEFILENAME, OUTPUTCOLSTART,
-                                    OUTPUTCOLEND, CSV_FILE_NAME,
+                                    ALTERNATIVEFILENAME, OUTPUTFILECOLSTART,
+                                    OUTPUTFILECOLEND, CSV_FILE_NAME,
                                     BASELINE, PMIN = NULL, PMAX = NULL,
                                     PINC = NULL, PARAMVALS = NULL,
                                     TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
 
   # CREATE THE MEDIAN DISTRIBUTION OVER THE SET OF RUNS FOR EACH PARAMETER SET,
   # FOR EACH PARAMETER (AS THIS IS ONE AT A TIME)
-  # SPARTAN VERSION 2: THESE MEDIANS ARE NOW STORED IN ONE SINGLE FILE, NOT
-  # PER PARAMETER VALUE AS IN SPARTAN 1.0-1.3.
-  # LATER PROCESSING NOW DEALS WITH THESE FILES ONLY.
   # NOTE FROM SPARTAN 2, THIS FILE CAN ONLY BE A CSV FILE - XML FILES OF THIS
   # SIZE TAKE A LARGE AMOUNT OF TIME TO PROCESS
+  # Version 3.1 - added pre-execution error checks
+  # Get the provided function arguments
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  #print(input_check)
 
-  if (is.null(TIMEPOINTS)) {
-    if (file.exists(FILEPATH)) {
-      print("Generating Median Response File (oat_processParamSubsets)")
+  if(check_input_args(input_check$names, input_check$arguments))
+  {
 
-      # NOW ALL THE MEDIANS ARE HELD TOGETHER, ACCOMPANIED BY THEIR
-      # SIMULATION PARAMETERS BEING ANALYSED
-      ALL_MEDIAN_RESULTS <- NULL
+    if (is.null(TIMEPOINTS)) {
 
-      # THE WAY WE DO OUR SIMULATIONS, WITH THE OLD FOLDER STRUCTURE, THE
-      # BASELINE WILL BE SIMULATED FOR EACH PARAMETER IN ROBUSTNESS ANALYSIS.
-      # THERE IS NO NEED TO PERFORM THE ANALYSIS AGAIN AND AGAIN (AS WOULD
-      # HAPPEN WHEN WE INCREMENT THROUGH THE VALUES. THUS, WE DO THE
-      # BASELINE WHEN FIRST DETECTED, AND IGNORE IT LATER. THIS FLAG ENSURES
-      # THIS HAPPENS
-      BASELINEFLAG <- 0
+      message("Generating Median Response File (oat_processParamSubsets)")
 
-      for (PARAM in 1:length(PARAMETERS)) {
-        EXP_PARAMS <- as.character(BASELINE)
+      all_median_results <- generate_summary_stats_for_all_param_sets(
+        FILEPATH, PARAMETERS, BASELINE, PMIN, PMAX, PINC, PARAMVALS, NUMRUNSPERSAMPLE,
+        MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTFILECOLSTART,
+        OUTPUTFILECOLEND)
 
-        # SET THE VALUE TO ITS LOWEST LIMIT
-        PARAMVAL <- PMIN[PARAM]
-
-        if (file.exists(paste(FILEPATH, "/", PARAMETERS[PARAM], sep = ""))) {
-          # NOW WE CAN WORK WITH INCREMENTS BETWEEN MAX AND MIN, AND SPECIFIED
-          # VALUES, WE NEED TO GET THE VALUES OF THE PARAMETERS WE'RE ANALYSING
-          # NOTE CONVERSION TO NUMBERS - GETS RID OF TRAILING ZEROS MADE BY SEQ
-          PARAM_VAL_LIST <-
-            as.numeric(prepare_parameter_value_list(PMIN, PMAX, PINC,
-                                                    PARAMVALS, PARAM))
-
-          # NOW WE ITERATE THROUGH THE VALUES IN THIS LIST
-          for (PARAMVAL in 1:length(PARAM_VAL_LIST)) {
-            # SET THE VALUE OF THE PARAMETERS BEING EXAMINED TO INCLUDE THE
-            # CURRENT VALUE OF THE PARAMETER
-            EXP_PARAMS[PARAM] <- as.character(PARAM_VAL_LIST[PARAMVAL])
-
-            if (PARAM_VAL_LIST[PARAMVAL] != BASELINE[PARAM] ||
-                BASELINEFLAG == 0) {
-
-              if (file.exists(paste(FILEPATH, "/", PARAMETERS[PARAM], "/",
-                                    toString(PARAM_VAL_LIST[PARAMVAL]),
-                                    sep = ""))) {
-
-                print(paste("Generating Median Results for Parameter: ",
-                            PARAMETERS[PARAM], ", Value: ",
-                            PARAM_VAL_LIST[PARAMVAL], sep = ""))
-
-                # CREATE THE START OF THE FILE ADDRESS WHERE THE RESULTS
-                #FOR THIS PARAMETER ARE
-                SAMPLEFILEPATH <- paste(FILEPATH, "/", PARAMETERS[PARAM], "/",
-                                        toString(PARAM_VAL_LIST[PARAMVAL]),
-                                        "/", sep = "")
-
-                # NOW CALL THE MEDIAN FUNCTIONS METHOD TO GET THE
-                # DISTRIBUTION FOR THIS SET OF RUNS
-                MEDIAN_RESULTS <- getMediansSubset(SAMPLEFILEPATH,
-                                                   NUMRUNSPERSAMPLE, MEASURES,
-                                                   RESULTFILENAME,
-                                                   ALTERNATIVEFILENAME,
-                                                   OUTPUTCOLSTART,
-                                                   OUTPUTCOLEND)
-
-                # NOW WE NEED TO REPLICATE THE PARAMETER CONDITIONS THESE WERE
-                # OBTAINED UNDER FOR THE NUMBER OF MEDIAN RESULTS
-                PARAMS <- NULL
-                for (p in 1:length(EXP_PARAMS)) {
-                  PARAMS <- cbind(PARAMS, array(as.numeric(EXP_PARAMS[p]),
-                                                dim = c(nrow(MEDIAN_RESULTS))))
-
-                }
-                # NOW BIND THESE TO THE RESULTS
-                PARAMRESULT <- cbind(PARAMS, MEDIAN_RESULTS)
-                # NOW ADD THIS TO THE LIST OF ALL MEDIANS BEING PROCESSED
-                # IN THIS ANALYSIS
-                ALL_MEDIAN_RESULTS <- rbind(ALL_MEDIAN_RESULTS, PARAMRESULT)
-              } else {
-                print(paste("No results can be found for parameter: ",
-                            PARAMETERS[PARAM], " Value: ", PARAMVAL, sep = ""))
-              }
-
-              if (PARAM_VAL_LIST[PARAMVAL] == BASELINE[PARAM]) {
-                BASELINEFLAG <- 1
-              }
-            }
-          }
-        } else {
-          print(paste("No results can be found for the parameter specified: ",
-                      PARAMETERS[PARAM], sep = ""))
-        }
-      }
-
-      # NOW OUTPUT ALL THE MEDIAN RESULTS TO THE SPECIFIED FILEPATH
-      colnames(ALL_MEDIAN_RESULTS) <- c(PARAMETERS, MEASURES)
-
-      # OUTPUT IF THE RESULTS ARE NOT BLANK
-      if (!is.null(ALL_MEDIAN_RESULTS)) {
-        RESULTSFILE <- paste(FILEPATH, "/", CSV_FILE_NAME, sep = "")
-        print(paste("Writing Median Results to CSV File: ", RESULTSFILE,
-                    sep = ""))
-        write.csv(ALL_MEDIAN_RESULTS, RESULTSFILE, quote = FALSE,
-                  row.names = FALSE)
+      # Output if results not blank
+      if (!is.null(all_median_results)) {
+        write_data_to_csv(all_median_results,
+                          paste(FILEPATH, "/", CSV_FILE_NAME, sep = ""))
       }
     } else {
-      print("The directory specified in FILEPATH does not exist.
-            No analysis completed")
+      oat_processParamSubsets_overTime(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
+                                       MEASURES, RESULTFILENAME,
+                                       ALTERNATIVEFILENAME, OUTPUTFILECOLSTART,
+                                       OUTPUTFILECOLEND, CSV_FILE_NAME, BASELINE,
+                                       PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS,
+                                       TIMEPOINTSCALE)
     }
-    } else {
-      # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
-      for (n in 1:length(TIMEPOINTS)) {
-
-        current_time <- TIMEPOINTS[n]
-        print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
-
-        RESULTFILEFORMAT <- check_file_extension(RESULTFILENAME)
-        SIMRESULTFILENAME <- paste(substr(RESULTFILENAME, 0,
-                                          nchar(RESULTFILENAME) - 4),
-                                   "_", current_time, ".",
-                                   RESULTFILEFORMAT, sep = "")
-
-        if (!is.null(ALTERNATIVEFILENAME))
-          ALTERNATIVEFILENAMEFULL <- paste(substr(ALTERNATIVEFILENAME, 0,
-                                                  nchar(ALTERNATIVEFILENAME) - 4),
-                                           "_", current_time, ".",
-                                           RESULTFILEFORMAT, sep = "")
-        else
-          ALTERNATIVEFILENAMEFULL <- ALTERNATIVEFILENAME
-
-
-        CSV_FILE_NAMEFORMAT <- substr(CSV_FILE_NAME,
-                                      (nchar(CSV_FILE_NAME) + 1) - 3,
-                                      nchar(CSV_FILE_NAME))
-
-        CSV_FILE_NAMEFULL <- paste(substr(CSV_FILE_NAME, 0,
-                                          nchar(CSV_FILE_NAME) - 4),
-                                   "_", current_time, ".", CSV_FILE_NAMEFORMAT,
-                                   sep = "")
-
-        # NOW CALL THIS FUNCTION AGAIN TO DO THE TIMEPOINTS - WE SET THE
-        # TIMEPOINTS AND TIMEPOINTSCALE TO NULL NOW SO WE DONT END UP BACK
-        # IN THIS ELSE
-
-        oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,
-                                SIMRESULTFILENAME, ALTERNATIVEFILENAMEFULL,
-                                OUTPUTCOLSTART, OUTPUTCOLEND, CSV_FILE_NAMEFULL,
-                                BASELINE, PMIN, PMAX, PINC, PARAMVALS, NULL, NULL)
-      }
   }
 }
+
+#' Summarises stochastic, repeated, simulations for all robustness parameter sets into a single file, for multiple timepoints
+#'
+#' @inheritParams oat_processParamSubsets
+oat_processParamSubsets_overTime <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
+                                    MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME,
+                                    OUTPUTCOLSTART, OUTPUTCOLEND, CSV_FILE_NAME,
+                                    BASELINE, PMIN = NULL, PMAX = NULL,
+                                    PINC = NULL, PARAMVALS = NULL,
+                                    TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+
+  # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
+  for (n in 1:length(TIMEPOINTS)) {
+
+    current_time <- TIMEPOINTS[n]
+    message(join_strings_space(c("Processing Timepoint:", current_time)))
+
+    simresultfilename <- append_time_to_argument(
+      RESULTFILENAME, current_time,
+      check_file_extension(RESULTFILENAME))
+
+    altfilename_full <- NULL
+    if (!is.null(ALTERNATIVEFILENAME))
+      altfilename_full <- append_time_to_argument(
+        ALTERNATIVEFILENAME, current_time,
+        check_file_extension(ALTERNATIVEFILENAME))
+
+    csvfilename_full <- append_time_to_argument(
+      CSV_FILE_NAME, current_time,
+      check_file_extension(CSV_FILE_NAME))
+
+    # Now process this point, timepoints null so we don't end up back here
+
+    oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,
+                            simresultfilename, altfilename_full,
+                            OUTPUTCOLSTART, OUTPUTCOLEND, csvfilename_full,
+                            BASELINE, PMIN, PMAX, PINC, PARAMVALS, NULL, NULL)
+  }
+
+}
+
+#' Generate summary statistics for each value of all parameters in this analysis
+#' @inheritParams oat_processParamSubsets
+generate_summary_stats_for_all_param_sets <- function(
+  FILEPATH, PARAMETERS, BASELINE, PMIN, PMAX, PINC, PARAMVALS, NUMRUNSPERSAMPLE,
+  MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+  OUTPUTCOLEND) {
+
+  # With multiple parameters, the baseline will be simulated multiple times
+  # No need to analyse them all. This flag stops that happening.
+  baseline_evaluated = FALSE
+
+  # Store for all results
+  all_median_results <- NULL
+
+  for (param in 1:length(PARAMETERS)) {
+    EXP_PARAMS <- as.character(BASELINE)
+
+    # Now we can work with increments between min and max or specified values,
+    # we get the values of the parameters we're analysing. Conversion gets rid
+    # of trailing zeros
+    param_val_list <-
+      as.numeric(prepare_parameter_value_list(PMIN, PMAX, PINC,
+                                              PARAMVALS, param))
+
+    param_result <- produce_summary_for_all_values_of_parameter(
+      FILEPATH, param, param_val_list, BASELINE, baseline_evaluated, PARAMETERS, EXP_PARAMS,
+      NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+      OUTPUTCOLEND)
+
+    all_median_results <- rbind(
+      all_median_results, param_result$parameter_result)
+
+    baseline_evaluated <- param_result$baseline_evaluated
+
+
+  }
+
+  colnames(all_median_results) <- c(PARAMETERS, MEASURES)
+  return(all_median_results)
+
+}
+
+#' For one parameter, evaluate the results of all values that parameter can take
+#' @param param Current index of parameter being evaluated
+#' @param param_val_list List of values this parameter can take
+#' @param BASELINE Array containing the values assigned to each of these parameters in the calibrated baseline
+#' @param baseline_evaluated Whether results for the baseline have been calculated
+#' @param PARAMETERS Array containing the names of the parameters for which local analyses are being conducted
+#' @param all_median_results The current result set to append the parameter results to
+#' @inheritParams oat_processParamSubsets
+#' @return The results for this parameter, and whether the baseline has been evaluated
+produce_summary_for_all_values_of_parameter <- function(
+  FILEPATH, param, param_val_list, BASELINE, baseline_evaluated, PARAMETERS, EXP_PARAMS,
+  NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+  OUTPUTCOLEND) {
+
+  parameter_result <- NULL
+  # iterate through all values in this list
+  for (paramval in 1:length(param_val_list)) {
+    # Set the value of the parameters being examined to include current examined value
+    EXP_PARAMS[param] <- as.character(param_val_list[paramval])
+
+    if (param_val_list[paramval] != BASELINE[param] ||
+        !baseline_evaluated) {
+
+      param_set_result <- process_parameter_value_if_exists(
+        FILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME,
+        OUTPUTCOLSTART, OUTPUTCOLEND, PARAMETERS[param], param_val_list[paramval],
+        EXP_PARAMS)
+
+      # Add to result set if results were found
+      if(!is.null(param_set_result))
+        parameter_result <- rbind(
+          parameter_result, param_set_result)
+
+      if (param_val_list[paramval] == BASELINE[param]) {
+        baseline_evaluated <- TRUE
+      }
+    }
+  }
+
+  return(list("baseline_evaluated"=baseline_evaluated, "parameter_result"=parameter_result))
+}
+
+
+#' Generate the median responses for a set of parameter values
+#'
+#' @param SAMPLEFILEPATH
+#' @param EXP_PARAMS Set of the value of all parameters being examined
+#' @param PARAMETER Name of the parameter currently being analysed
+#' @param PARAM_VAL Value of the parameter currently being analysed
+#' @inheritParams oat_processParamSubsets
+#' @return parameter set with median responses for all values
+generate_medians_for_param_set <- function(SAMPLEFILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+                                           OUTPUTCOLEND, EXP_PARAMS, PARAMETER, PARAM_VAL)
+{
+  message(paste("Generating Median Results for Parameter: ",
+              PARAMETER, ", Value: ",
+              PARAM_VAL, sep = ""))
+
+  # Get median distribution for all runs under these parameter conditions
+  median_results <- getMediansSubset(SAMPLEFILEPATH, NUMRUNSPERSAMPLE,
+                                     MEASURES, RESULTFILENAME,
+                                     ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+                                     OUTPUTCOLEND)
+
+  # Bind parameter set to calculated median results
+  params <- NULL
+  for (p in 1:length(EXP_PARAMS)) {
+    params <- cbind(params, array(as.numeric(
+      EXP_PARAMS[p]),dim = c(nrow(median_results))))
+  }
+  params_and_result <- cbind(params, median_results)
+
+  return(params_and_result)
+
+}
+
+#' Process parameter value set if results exist
+#'
+#' @inheritParams oat_processParamSubsets
+#' @param PARAMETER Name of the parameter currently being analysed
+#' @param PARAM_VAL Value of the parameter currently being analysed
+#' @param EXP_PARAMS Set of the value of all parameters being examined
+#' @return medians for this parameter set
+process_parameter_value_if_exists <- function(
+  FILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME,
+  OUTPUTCOLSTART, OUTPUTCOLEND, PARAMETER, PARAM_VAL, EXP_PARAMS)
+{
+  # Where results for this parameter and value should be:
+  SAMPLEFILEPATH <- paste(FILEPATH, "/", PARAMETER, "/",
+                          toString(PARAM_VAL), "/", sep = "")
+
+  if (file.exists(SAMPLEFILEPATH)) {
+
+    return(generate_medians_for_param_set(
+        SAMPLEFILEPATH, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME,
+        ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,
+        EXP_PARAMS, PARAMETER, PARAM_VAL))
+
+
+  } else {
+
+    message(paste("No results can be found for parameter: ",
+                PARAMETER, " Value: ", PARAM_VAL, sep = ""))
+    return(NULL)
+  }
+}
+
+
 
 #' Performs a robustness analysis for supplied simulation data, comparing simulation behaviour at different parameter values
 #'

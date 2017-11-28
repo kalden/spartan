@@ -41,10 +41,10 @@ efast_generate_sample <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
 
-  if(check_efast_sampling_args(input_arguments)) {
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
     parameter_vals <- generate_efast_parameter_sets(FILEPATH, NUMCURVES,
                                                     NUMSAMPLES, PARAMETERS,

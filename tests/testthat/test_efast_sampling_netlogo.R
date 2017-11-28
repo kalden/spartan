@@ -7,7 +7,7 @@ test_that("efast_generate_sample_netlogo", {
   # eFAST sampling has been tested independently, within that method
 
   efast_generate_sample_netlogo(
-    FILEPATH=getwd(), 1, 65,
+    FILEPATH=getwd(), 3, 65,
     c("death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"),
     c("people","infectiousness","dummy"),
     c(150,"[10,90]","[1,10]"),
@@ -32,19 +32,19 @@ test_that("efast_generate_sample_netlogo", {
 
    # Remove the created files
    file.remove(paste(getwd(),"/Curve1_infectiousness.csv",sep=""))
-   #file.remove(paste(getwd(),"/Curve2_infectiousness.csv",sep=""))
-   #file.remove(paste(getwd(),"/Curve3_infectiousness.csv",sep=""))
+   file.remove(paste(getwd(),"/Curve2_infectiousness.csv",sep=""))
+   file.remove(paste(getwd(),"/Curve3_infectiousness.csv",sep=""))
    #file.remove(paste(getwd(),"/Curve1_duration.csv",sep=""))
    #file.remove(paste(getwd(),"/Curve2_duration.csv",sep=""))
    #file.remove(paste(getwd(),"/Curve3_duration.csv",sep=""))
    file.remove(paste(getwd(),"/Curve1_dummy.csv",sep=""))
-   #file.remove(paste(getwd(),"/Curve2_dummy.csv",sep=""))
-   #file.remove(paste(getwd(),"/Curve3_dummy.csv",sep=""))
+   file.remove(paste(getwd(),"/Curve2_dummy.csv",sep=""))
+   file.remove(paste(getwd(),"/Curve3_dummy.csv",sep=""))
    #file.remove(paste(getwd(),"/Curve1_chance-recover.csv",sep=""))
    #file.remove(paste(getwd(),"/Curve2_chance-recover.csv",sep=""))
    #file.remove(paste(getwd(),"/Curve3_chance-recover.csv",sep=""))
    unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
-   #unlink(paste(getwd(),"/2/",sep=""), recursive = TRUE)
-   #unlink(paste(getwd(),"/3/",sep=""), recursive = TRUE)
+   unlink(paste(getwd(),"/2/",sep=""), recursive = TRUE)
+   unlink(paste(getwd(),"/3/",sep=""), recursive = TRUE)
 
 })

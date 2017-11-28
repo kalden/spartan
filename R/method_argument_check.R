@@ -1,169 +1,249 @@
-#' Pre-execution checks to perform before the spartan get aTest results method
-#' within the consistency analysistechnique is executed. Checks all input
-#' @param arguments List of the arguments provided to the called function
+# Method checking works as follows:
+# 1. Method being checked passes a list of the EXPECTED arguments and the
+# arguments the user has passed
+# 2. generate+list_of_checks generates the list of functions that should
+# be called based on the expected arguments
+# 3. These functions are called sequentially by execute_checks, until
+# either one fails and false is returned, or all pass & true is returned
+# 4. As the functions are called from a list, it is vital these all have
+# the same input argument structure. If need be, we'll need to tailor the
+# function internally
+
+#' Wrapper function called by all spartan methods to check input pre-execution
+#'
+#' @param argNames Expected argument names for the calling function
+#' @param arguments User input to the called function
+#' @return Boolean stating whether the input checks pass or fail
+check_input_args <- function(argNames, arguments)
+{
+  # Generate list of checks
+  check_methods_to_call <- generate_list_of_checks(argNames)
+  # Execute
+  check_result <- execute_checks(check_methods_to_call,
+                                 arguments, argNames)
+
+  return(check_result)
+}
+
+#' Defines which functions to call to check an input argument.
+#'
+#' This creates a list of check functions to call for the input arguments
+#' for a spartan function. This is using the expected argument names,
+#' provided by the calling function
+#' @param argNames Expected argument names for the calling function
+#' @return List of check functions that should be called to check input
+generate_list_of_checks <-function(argNames)
+{
+  argList <- NULL
+  # We initialise the length of the list, but in reality this could be
+  # longer, if some methods require more than one check. As such we keep
+  # a list index count
+  check_methods_to_call <- vector("list", length(argNames))
+  list_index <- 1
+
+  for(arg in 1:length(argNames))
+  {
+    if(argNames[arg] == "FILEPATH")
+      check_methods_to_call[[list_index]] = check_filepath_exists  # TAKES ALL ARGS FIXED
+    else if(argNames[arg] == "SAMPLESIZES")
+      check_methods_to_call[[list_index]] = check_list_all_integers   # TAKES ALL ARGS FIXED
+    else if(argNames[arg] %in% c("PARAMETERS","MEASURES"))
+      check_methods_to_call[[list_index]] = check_text_list            # TAKES ALL ARGS FIXED
+    else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMSAMPLES","NUMCURVES","EXPERIMENT_REPETITIONS"))
+      check_methods_to_call[[list_index]] = check_argument_positive_int      # TAKES ALL ARGS FIXED
+    else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "ALTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION"))
+      check_methods_to_call[[list_index]] = check_text     # TAKES ALL ARGS FIXED
+    else if(argNames[arg] == "RUN_METRICS_EVERYSTEP")
+      check_methods_to_call[[list_index]] = check_boolean
+    else if(argNames[arg] == "LARGEDIFFINDICATOR")
+      check_methods_to_call[[list_index]] = check_double_value_in_range
+    else if(argNames[arg] == "AA_SIM_RESULTS_FILE")
+      check_methods_to_call[[list_index]] = check_consistency_result_type
+    else if(argNames[arg] == "OUTPUTFILECOLSTART")
+      check_methods_to_call[[list_index]] = check_column_ranges
+    else if(argNames[arg] == "PMIN")
+      check_methods_to_call[[list_index]] = check_global_param_sampling_args
+    else if(argNames[arg] == "PARAMVALS")   # This will also need some more thought once other approaches added
+      check_methods_to_call[[list_index]] = check_function_dependent_paramvals
+    else if(argNames[arg] == "ALGORITHM")
+      check_methods_to_call[[list_index]] = check_lhs_algorithm
+    # To deal with AA_SIM_RESULTS_OBJECT, and OUTPUTFILECOLEND, which are checked by FILE and START respectively,
+    # and PMAX, BASELINE, PINC, that are checked in PMIN/PARAMVALS checks,we put in an ignore, and detect this later
+    # This needs to be done to keep the function list referenced to the argument names
+    else if(argNames[arg] %in% c("AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE"))
+      check_methods_to_call[[list_index]] = NULL
+
+    list_index = list_index + 1
+
+    # KA: No testing of nested filepaths in here - this may be worth re-adding: check_nested_filepaths(arguments$FILEPATH, arguments$PARAMETERS, preCheckSuccess)
+    # Also no testing of timepoints
+    # Need to test PARAMVALS for Netlogo LHC here, as well as test for installation of XML package
+  }
+
+  return(check_methods_to_call)
+}
+
+#' Executes the list of check functions compiled for the calling function
+#'
+#' This returns TRUE if all arguments pass, or FALSE when the first test fails
+#'
+#' @param check_methods_to_call List of check functions that should be called
+#' @param input_arguments The user's input to a function
+#' @param function_args The expected names of the arguments, provided by
+#' calling function
+#' @return Boolean stating whether the input checks pass or fail
+execute_checks <- function(check_methods_to_call, input_arguments, function_args)
+{
+  for(check_method in 1:length(check_methods_to_call))
+  {
+    # print(function_args[check_method])
+    # Need to tailor some methods that cannot be called with the same two arguments, so check these first
+    if(identical(check_methods_to_call[[check_method]],check_double_value_in_range))
+    {
+      if(!check_double_value_in_range(input_arguments$LARGEDIFFINDICATOR, "LARGEDIFFINDICATOR",0,0.5))   # This will need changing if we use this method for any other arguments
+        return(FALSE)
+    }
+    else if(identical(check_methods_to_call[[check_method]],check_consistency_result_type))
+    {
+      # As check_consistency_result type differs for each function, need to get the names of the R and file name arguments before calling
+      check_args <- get_file_and_object_argument_names(input_arguments)
+      # Now can call the function
+      if(!check_consistency_result_type(input_arguments, check_args$file, check_args$object))
+        return(FALSE)
+    }
+    else if(identical(check_methods_to_call[[check_method]],check_column_ranges))
+    {
+      # As this varies across functions, we need to get the correct file name to check
+      filepath <- get_correct_file_path_for_function(input_arguments)
+      # Now we can run the function
+      if(!check_column_ranges(input_arguments, filepath, input_arguments$RESULTFILENAME))
+        return(FALSE)
+      if(!is.null(eval(input_arguments$ALTFILENAME)))
+        if(!check_column_ranges(input_arguments, filepath, input_arguments$ALTFILENAME))
+          return(FALSE)
+    }
+    # Every other method needs no specific tailoring, just make sure we ignore any that were checked elsewhere
+    else if(!is.null(check_methods_to_call[[check_method]]))
+    {
+      if(!check_methods_to_call[[check_method]](input_arguments, function_args[check_method]))
+      {
+        return(FALSE)
+      }
+    }
+  }
+  return(TRUE)
+}
+
+#' Gets the correct file and R object argument names for the input checker
+#'
+#' check_consistency_result_type takes the argument name of a file or R
+#' object, and this changes across functions. This takes the function name
+#' and returns the correct argument names for passing to the function
+#' @param input_arguments Input arguments object passed from the checked
+#' function
+#' @return List containg argument names for file and R object
+get_file_and_object_argument_names <- function(input_arguments)
+{
+  # First entry of input_arguments is the calling function, so we can adjust here as need be:
+  if(input_arguments[[1]]=="aa_summariseReplicateRuns")
+    return(list("file"="AA_SIM_RESULTS_FILE","object"="AA_SIM_RESULTS_OBJECT"))
+  else if(input_arguments[[1]]=="aa_SampleSizeSummary")
+    return(list("file"="ATESTRESULTS_FILE","object"="ATESTRESULTS_OBJECT"))
+  else if(input_arguments[[1]]=="aa_getATestResults")
+    return(list("file"="AA_SIM_RESULTS_FILE","object"="AA_SIM_RESULTS_OBJECT"))
+}
+
+#' Gets the correct filepath for the column range input checker
+#'
+#' check_column_ranges takes a filepath containing a sample results file,
+#' and this changes across functions. This takes the function name
+#' and returns the correct argument names for passing to the function
+#' @param input_arguments Input arguments object passed from the checked
+#' function
+#' @return Filepath to the results file to check
+get_correct_file_path_for_function <- function(arguments)
+{
+  if(arguments[[1]] == "aa_summariseReplicateRuns")
+    return(paste(eval(arguments$FILEPATH),"/",eval(arguments$SAMPLESIZES)[1],sep=""))
+  else if(arguments[[1]] == "oat_processParamSubsets")
+    return(paste(eval(arguments$FILEPATH),"/",eval(arguments$PARAMETERS)[1],"/",eval(arguments$PMIN)[1],"/1/",sep=""))
+}
+
+#' Call the correct paramvals check for the calling function, as netlogo & robustness differ
+#' @param input_arguments List of the arguments provided to the called function
+#' @param argument_name Null in this case, but keeps auto-called functions consistent
 #' @return Boolean stating the status of the pre-execution checks
-check_getATestResult_Input <- function(arguments)
+check_function_dependent_paramvals <- function(input_arguments, argument_name)
 {
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSUBSETSPERSAMPLESIZE")
-  preCheckSuccess = check_double_value_in_range(arguments$LARGEDIFFINDICATOR, preCheckSuccess, "LARGEDIFFINDICATOR",0,0.5)
-  preCheckSuccess = check_text(arguments$ATESTRESULTSFILENAME, preCheckSuccess, "ATESTRESULTSFILENAME")
-  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
-  preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
-  preCheckSuccess = check_consistency_result_type(arguments, preCheckSuccess, "AA_SIM_RESULTS_FILE", "AA_SIM_RESULTS_OBJECT")
-
-  return(preCheckSuccess)
+  ## Check for param vals also is dependent on the function called
+  if(toString(input_arguments[[1]]) %in% c("lhc_generate_lhc_sample_netlogo","efast_generate_sample_netlogo"))
+    return(check_netlogo_parameters_and_values(input_arguments, argument_name))
+  else if(toString(input_arguments[[1]]) %in% c("oat_parameter_sampling","oat_processParamSubsets"))
+    return(check_robustness_sampling_args(input_arguments, argument_name))
 }
 
-check_aa_summariseReplicateRuns <- function(arguments)
-{
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
-  preCheckSuccess = check_nested_filepaths(arguments$FILEPATH, arguments$SAMPLESIZES, preCheckSuccess)
-  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
-  preCheckSuccess = check_text(arguments$RESULTFILENAME, preCheckSuccess, "RESULTFILENAME")
-  preCheckSuccess = check_text(arguments$ALTFILENAME, preCheckSuccess, "ALTFILENAME")
-  preCheckSuccess = check_column_ranges(arguments, eval(arguments$FILEPATH), arguments$RESULTFILENAME, preCheckSuccess)
-  if(!is.null(eval(arguments$ALTFILENAME)))
-    preCheckSuccess = check_column_ranges(arguments, eval(arguments$FILEPATH), arguments$ALTFILENAME, preCheckSuccess)
-  preCheckSuccess = check_text(arguments$SUMMARYFILENAME, preCheckSuccess, "SUMMARYFILENAME")
-
-  # Timepoints needs adding
-
-  return(preCheckSuccess)
-
-}
-
-check_aaSampleSizeSummary <- function(arguments)
-{
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_list_all_integers(arguments$SAMPLESIZES, preCheckSuccess, "SAMPLESIZES")
-  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
-  preCheckSuccess = check_text(arguments$SUMMARYFILENAME, preCheckSuccess, "SUMMARYFILENAME")
-  preCheckSuccess = check_consistency_result_type(arguments, preCheckSuccess,
-                                                  "ATESTRESULTS_FILE", "ATESTRESULTS_OBJECT")
-
-  return(preCheckSuccess)
-}
-
-
-#' Pre-execution checks to perform before the spartan lhc samplng technique
-#' is executed. Checks all parameter input
-#' @param arguments List of the arguments provided to the called function
+#' Checks the input values for global parameter sampling techniques
+#' @param input_arguments List of the arguments provided to the called function
+#' @param argument_name Null in this case, but keeps auto-called functions consistent
 #' @return Boolean stating the status of the pre-execution checks
-check_lhc_sampling_args <- function(arguments)
+check_global_param_sampling_args <- function(input_arguments, argument_name)
 {
-  preCheckSuccess = TRUE
-  # From Version 3.1, FILEPATH could be not specified, if user does not want a
-  # CSV file, but an R object returned
-  #preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
-  preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
-  preCheckSuccess = check_parameters_and_ranges(arguments, preCheckSuccess, "lhc")
-
-  return(preCheckSuccess)
+  # As PMIN also in robustness (yet this would fail if PMIN is null, we check the calling function)
+  # If this is not lhc or efast sampling, we simply return true. Robustness is taken care of in PARAMVALS check
+  if(toString(input_arguments[[1]]) %in% c("lhc_generate_lhc_sample","efast_generate_sample"))
+    return(check_parameters_and_ranges(input_arguments, argument_name))
+  else
+    return(TRUE)
 
 }
 
-#' Pre-execution checks to perform before the spartan lhc samplng technique
-#' is executed for a netlogo simulation
-#' @param arguments List of the arguments provided to the called function
-#' @return Boolean stating the status of the pre-execution checks
-check_lhc_sampling_netlogo_args <- function(arguments)
-{
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_package_installed("lhs",preCheckSuccess)
-  preCheckSuccess = check_package_installed("XML",preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
-  preCheckSuccess = check_lhs_algorithm(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"EXPERIMENT_REPETITIONS")
-  preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
-  preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
-  preCheckSuccess = check_boolean(arguments$RUN_METRICS_EVERYSTEP, preCheckSuccess, "RUN_METRICS_EVERYSTEP")
-  preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
-  preCheckSuccess = check_text_list(arguments$PARAMETERS, preCheckSuccess, "PARAMETERS")
-  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
 
-  return(preCheckSuccess)
-  # To check: PARAMVALS, RUNMETRICS_EVERYSTEP
-}
-
-#' Pre-execution checks to perform before the spartan efast samplng technique
-#' is executed for a netlogo simulation
-#' @param arguments List of the arguments provided to the called function
-#' @return Boolean stating the status of the pre-execution checks
-check_efast_sampling_netlogo_args <- function(arguments)
-{
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_package_installed("XML",preCheckSuccess)
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMCURVES")
-  preCheckSuccess = check_argument_positive_int(arguments, preCheckSuccess,"EXPERIMENT_REPETITIONS")
-  preCheckSuccess = check_boolean(arguments$RUNMETRICS_EVERYSTEP, preCheckSuccess, "RUNMETRICS_EVERYSTEP")
-  preCheckSuccess = check_text(arguments$NETLOGO_SETUP_FUNCTION, preCheckSuccess, "NETLOGO_SETUP_FUNCTION")
-  preCheckSuccess = check_text(arguments$NETLOGO_RUN_FUNCTION, preCheckSuccess, "NETLOGO_RUN_FUNCTION")
-  preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
-  preCheckSuccess = check_text_list(arguments$PARAMETERS, preCheckSuccess, "PARAMETERS")
-  preCheckSuccess = check_text_list(arguments$MEASURES, preCheckSuccess, "MEASURES")
-
-  return(preCheckSuccess)
-}
-
-#' Pre-execution checks to perform before the spartan efast samplng technique
-#' is executed. Checks all parameter input
-#' @param arguments List of the arguments provided to the called function
-#' @return Boolean stating the status of the pre-execution checks
-check_efast_sampling_args <- function(arguments)
-{
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMSAMPLES")
-  preCheckSuccess = check_argument_positive_int(arguments,preCheckSuccess,"NUMCURVES")
-  preCheckSuccess = check_parameters_and_ranges(arguments, preCheckSuccess, "efast")
-
-  return(preCheckSuccess)
-}
 
 #' Pre-execution checks to perform before the spartan robustness samplng
 #' technique is executed. Checks all parameter input
 #' @param arguments List of the arguments provided to the called function
+#' @param argument_name Null in this case, but keeps auto-called functions consistent
 #' @return Boolean stating the status of the pre-execution checks
-check_robustness_sampling_args <- function(arguments)
+check_robustness_sampling_args <- function(arguments, argument_name)
 {
-  preCheckSuccess = TRUE
-  preCheckSuccess = check_filepath_exists(arguments,preCheckSuccess)
-  preCheckSuccess = check_robustness_range_or_values(arguments,preCheckSuccess)
-
-  # From the above test we know that the user has either specified PARAMVALS
-  # or PMIN,PMAX,INC choice - now we test dependent on that
-  if(is.null(eval(arguments$PARAMVALS)))
+  check = FALSE
+  while(!check)
   {
-    preCheckSuccess = check_robustness_parameter_and_ranges_lengths(arguments, preCheckSuccess)
-    preCheckSuccess = check_numeric_list_values(arguments, "PMIN", "PMAX", preCheckSuccess)
-    preCheckSuccess = check_numeric_list_values(arguments, "PINC", "PMAX", preCheckSuccess)
-    preCheckSuccess = check_robustness_range_contains_baseline(arguments, preCheckSuccess)
-  }
-  else
-  {
-    preCheckSuccess = check_paramvals_length_equals_parameter_length(arguments, preCheckSuccess)
-    preCheckSuccess = check_robustness_paramvals_contains_baseline(arguments, preCheckSuccess)
-  }
+    if(!check_robustness_range_or_values(arguments))
+      break;
 
-  return(preCheckSuccess)
+    # From the above test we know that the user has either specified PARAMVALS
+    # or PMIN,PMAX,INC choice - now we test dependent on that
+    if(is.null(eval(arguments$PARAMVALS)))
+    {
+      if(!check_robustness_parameter_and_ranges_lengths(arguments))
+        break
+      if(!check_numeric_list_values(arguments, "PMIN", "PMAX"))
+        break
+      if(!check_numeric_list_values(arguments, "PINC", "PMAX"))
+        break
+      if(!check_robustness_range_contains_baseline(arguments))
+        break
+    }
+    else
+    {
+      if(!check_paramvals_length_equals_parameter_length(arguments))
+        break
+      if(!check_robustness_paramvals_contains_baseline(arguments))
+        break
+    }
+
+    check = TRUE
+  }
+  return(check)
 }
 
 #' For robustness, check whether using PMIN/PMAX/PINC entry or PARAMVALS
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argument_name Name of the argument being checked.
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_robustness_range_or_values <- function(arguments,preCheckSuccess)
+check_robustness_range_or_values <- function(arguments, argumentName)
 {
   if(is.null(eval(arguments$PARAMVALS)))
   {
@@ -173,7 +253,7 @@ check_robustness_range_or_values <- function(arguments,preCheckSuccess)
       return(FALSE)
     }
     else
-      return(preCheckSuccess)
+      return(TRUE)
   }
   else
   {
@@ -183,22 +263,36 @@ check_robustness_range_or_values <- function(arguments,preCheckSuccess)
       return(FALSE)
     }
     else
-      return(preCheckSuccess)
+      return(TRUE)
   }
+}
+
+#' Checks the netlogo parameters and values are formatted correctly
+#' @param arguments List of the arguments provided to the called function
+#' @return Boolean stating the current status of the pre-execution checks,
+#' or FALSE if this check fails
+check_netlogo_parameters_and_values <- function(arguments, argument_name)
+{
+  ## KA: FOR THE MOMENT, THIS JUST CHECKS XML LIBRARY INSTALLED AND CALLS
+  ## check_paramvals_length_equals_parameter_length: IDEALLY THIS THEN NEEDS
+  ## TO CHECK THE VALUES
+  if(!check_package_installed("XML"))
+    return(FALSE)
+  else
+    return(check_paramvals_length_equals_parameter_length(arguments))
 }
 
 #' Where used in robustness analysis, check that the length of PARAMVALS equals
 # the number of PARAMETERS
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_paramvals_length_equals_parameter_length <- function(arguments, preCheckSuccess)
+check_paramvals_length_equals_parameter_length <- function(arguments)
 {
   tryCatch(
   {
     if(length(eval(arguments$PARAMETERS)) == length(eval(arguments$PARAMVALS)))
-      return(preCheckSuccess)
+      return(TRUE)
     else
     {
       message("Number of entries in PARAMVALS should match the number of parameters")
@@ -220,10 +314,9 @@ check_paramvals_length_equals_parameter_length <- function(arguments, preCheckSu
 #' compared using the robustness analysis approach in Technique 2
 #'
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_robustness_paramvals_contains_baseline <- function(arguments, preCheckSuccess)
+check_robustness_paramvals_contains_baseline <- function(arguments)
 {
   tryCatch(
   {
@@ -242,7 +335,7 @@ check_robustness_paramvals_contains_baseline <- function(arguments, preCheckSucc
         return(FALSE)
       }
     }
-    return(preCheckSuccess)
+    return(TRUE)
   },
   error=function(cond) {
     message("Error in declaring BASELINE or PARAMVALS")
@@ -257,10 +350,9 @@ check_robustness_paramvals_contains_baseline <- function(arguments, preCheckSucc
 #' compared using the robustness analysis approach in Technique 2
 #'
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_robustness_range_contains_baseline <- function(arguments, preCheckSuccess)
+check_robustness_range_contains_baseline <- function(arguments)
 {
   tryCatch(
   {
@@ -285,7 +377,7 @@ check_robustness_range_contains_baseline <- function(arguments, preCheckSuccess)
         return(FALSE)
       }
     }
-    return(preCheckSuccess)
+    return(TRUE)
   },
   error=function(cond) {
     message("Error in declaring BASELINE in range specified by PMIN, PMAX, and PINC")
@@ -299,10 +391,9 @@ check_robustness_range_contains_baseline <- function(arguments, preCheckSuccess)
 #' the same length
 #'
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_robustness_parameter_and_ranges_lengths <- function(arguments, preCheckSuccess)
+check_robustness_parameter_and_ranges_lengths <- function(arguments)
 {
   tryCatch(
   {
@@ -313,7 +404,7 @@ check_robustness_parameter_and_ranges_lengths <- function(arguments, preCheckSuc
 
     # These should be all the same
     if(all(inputLengths[1] == inputLengths))
-      return(preCheckSuccess)
+      return(TRUE)
     else
     {
       message("Number of entries in PARAMETERS, BASELINE, PMIN, PMAX, and PINC should be equal")
@@ -329,59 +420,63 @@ check_robustness_parameter_and_ranges_lengths <- function(arguments, preCheckSuc
 
 }
 
-# NOT UT AS YET
 #' Pre-Check of the parameters and ranges specified for sampling parameter
 #' space
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param method Spartan method being checked
+#' @param argument_name Here for consistency in auto-function calling, but not used
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_parameters_and_ranges <- function(arguments, preCheckSuccess, method)
+check_parameters_and_ranges <- function(arguments, argument_name)
 {
-  preCheckSuccess = check_lengths_parameters_ranges(arguments,preCheckSuccess)
-  preCheckSuccess = check_numeric_list_values(arguments, "PMIN", "PMAX", preCheckSuccess)
+  preCheckSuccess = check_lengths_parameters_ranges(arguments)
+  preCheckSuccess = check_numeric_list_values(arguments, "PMIN", "PMAX")
 
   return(preCheckSuccess)
 }
 
 #' Check that the filepath of required data or output exists
-#' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
+#' @param arguments Input arguments
+#' @param argument_name Name of the argument, as provided by function
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_filepath_exists <- function(arguments,preCheckSuccess)
+check_filepath_exists <- function(arguments, argument_name)
 {
   tryCatch(
     {
-      if(file.exists(eval(arguments$FILEPATH)))
-        return(preCheckSuccess)
+      if(file.exists(eval(arguments[argument_name][[1]])))
+        return(TRUE)
       else
       {
-        message(paste("FILEPATH does not seem to exist:", eval(arguments$FILEPATH)))
+        message(paste("FILEPATH does not seem to exist:", eval(arguments[argument_name][[1]])))
         message("Spartan Function Terminated")
         return(FALSE)
       }
     },
     error=function(cond) {
+      #print(cond)
       message(paste("FILEPATH does not seem to exist"))
       message("Spartan Function Terminated")
       return(FALSE)
     })
 }
 
-#' Check that the chosen lhc sampling algorithm is either normal or optimal
+#' Check that the chosen lhc sampling algorithm is either normal or optimal.
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
+#' @param argument_name Argument name being checked. May be null, but here for consistency
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_lhs_algorithm <- function(arguments,preCheckSuccess)
+check_lhs_algorithm <- function(arguments, argument_name)
 {
   tryCatch(
   {
-    if(tolower(eval(arguments$ALGORITHM)) == "normal" |  tolower(eval(arguments$ALGORITHM)) == "optimal")
-      return(preCheckSuccess)
-    else {
-      message("LHS Algorithm must be either 'normal' or 'optimal'. Terminated")
+    if(!check_package_installed("lhs"))
       return(FALSE)
+    else
+    {
+      if(tolower(eval(arguments$ALGORITHM)) == "normal" |  tolower(eval(arguments$ALGORITHM)) == "optimal")
+        return(TRUE)
+      else {
+        message("LHS Algorithm must be either 'normal' or 'optimal'. Terminated")
+        return(FALSE)
+      }
     }
   },
   error=function(cond) {
@@ -394,14 +489,13 @@ check_lhs_algorithm <- function(arguments,preCheckSuccess)
 
 #' Check that a required package has been installed
 #' @param packageName Name of the package to check for
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating whether the package is installed or not
-check_package_installed <- function(packageName,preCheckSuccess)
+check_package_installed <- function(packageName)
 {
   tryCatch(
   {
     if(requireNamespace(packageName,quietly=TRUE))
-      return(preCheckSuccess)
+      return(TRUE)
     else
       message(paste("Looking for package ",packageName,", which is not installed or does not exist",sep=""))
     return(FALSE)
@@ -414,9 +508,8 @@ check_package_installed <- function(packageName,preCheckSuccess)
 
 #' Check that the lengths of the parameters, minimum values, and maximum values, are equal
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
+check_lengths_parameters_ranges <- function(arguments)
 {
   tryCatch(
     {
@@ -425,7 +518,7 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
       parameters <- get_argument_correct_case(arguments, "PARAMETERS")
 
       if(length(parameters) == length(minCheck) & length(parameters) == length(maxCheck))
-        return(preCheckSuccess)
+        return(TRUE)
       else {
         message("Number of parameters must match the numbers of entries in PMIN and PMAX")
         return(FALSE)
@@ -451,18 +544,19 @@ check_lengths_parameters_ranges <- function(arguments,preCheckSuccess)
 #' @param arguments List of the arguments provided to the called function
 #' @param nameSmall Parameter name of the smaller list, for error reporting
 #' @param nameLarge Parameter name of the larger list, for error reporting
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_numeric_list_values <- function(arguments, nameSmall, nameLarge, preCheckSuccess)
+check_numeric_list_values <- function(arguments, nameSmall, nameLarge)
 {
   #print(arguments)
   tryCatch(
     {
       smallCheck <- get_argument_correct_case(arguments, nameSmall)
+      #print(smallCheck)
       largeCheck <- get_argument_correct_case(arguments, nameLarge)
+      #print(largeCheck)
 
       if(all(smallCheck < largeCheck) & is.numeric(smallCheck) & is.numeric(largeCheck))
-        return(preCheckSuccess)
+        return(TRUE)
       else {
         message(paste(nameSmall, " must be less than ", nameLarge, " for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC",sep=""))
         return(FALSE)
@@ -500,31 +594,32 @@ get_argument_correct_case <- function(arguments, argName)
 
 #' Check that an argument that should be a positive integer has been specified correctly
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param argName Name of the argument, for inclusion in the error message
+#' @param argument_name Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_argument_positive_int <- function(arguments,preCheckSuccess,argName)
+check_argument_positive_int <- function(arguments,argument_name)
 {
   tryCatch(
     {
+      # KA: Taken this out for the moment, given new check method
       # Get the argument. We're going to force to upper case incase the user has specified lower
-      arg <- get_argument_correct_case(arguments, argName)
+      #arg <- get_argument_correct_case(arguments, argName)
+      arg <- eval(arguments[argument_name][[1]])
 
       if(all.equal(arg, as.integer(arg)) & arg > 0)
-        return(preCheckSuccess)
+        return(TRUE)
       else {
-        message(paste(argName, " must be a positive integer. Terminated",sep=""))
+        message(paste(argument_name, " must be a positive integer. Terminated",sep=""))
         return(FALSE)
       }
     },
     error=function(cond) {
-      message(paste(argName, " must be a positive integer. Terminated",sep=""))
+      message(paste(argument_name, " must be a positive integer. Terminated",sep=""))
       message("Spartan Function Terminated")
       # Choose a return value in case of error
       return(FALSE)
     },
     warning=function(cond) {
-      message(paste(argName, " must be a positive integer. Terminated",sep=""))
+      message(paste(argument_name, " must be a positive integer. Terminated",sep=""))
       message("Spartan Function Terminated")
       # Choose a return value in case of error
       return(FALSE)
@@ -532,80 +627,77 @@ check_argument_positive_int <- function(arguments,preCheckSuccess,argName)
 }
 
 #' Check that an argument that should be a boolean has been specified correctly
-#' @param argument Value of the argument to check
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param argName Name of the argument, for inclusion in the error message
+#' @param arguments List of the arguments provided to the called function
+#' @param argument_name Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_boolean <- function(argument, preCheckSuccess, argName)
+check_boolean <- function(arguments, argument_name)
 {
   tryCatch(
     {
-      evaled_arg<-eval(argument)
+      evaled_arg<-eval(arguments[argument_name][[1]])
 
       if(tolower(evaled_arg)=="true" | tolower(evaled_arg)=="false")
-        return(preCheckSuccess)
+        return(TRUE)
       else {
-        message(paste(argName," must be either true or false. Terminated", sep=""))
+        message(paste(argument_name," must be either true or false. Terminated", sep=""))
         return(FALSE)
       }
     },
     error=function(cond) {
-      message(paste(argName, " must be either true or false. Terminated",sep=""))
+      message(paste(argument_name, " must be either true or false. Terminated",sep=""))
       return(FALSE)
     })
 }
 
 #' Check that an argument that should be a text label has been specified correctly
 #'
-#' @param argument Value of the argument to check
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param argName Name of the argument, for inclusion in the error message
+#' @param arguments List of the arguments provided to the called function
+#' @param argument_name Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_text <-function(argument, preCheckSuccess, argName)
+check_text <-function(arguments, argument_name)
 {
   tryCatch(
     {
-      argEvaled <- eval(argument)
+      argEvaled <- eval(arguments[argument_name][[1]])
 
       if((typeof(argEvaled)=="character" | typeof(argEvaled) == "double") & length(argEvaled)>0)
-        return(preCheckSuccess)
+        return(TRUE)
       else {
-        message(paste(argName, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
+        message(paste(argument_name, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
         return(FALSE)
       }
     },
     error=function(cond) {
-      message(paste(argName, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
+      message(paste(argument_name, " must be either a text string or numeric. Error in declaration. Terminated",sep=""))
       return(FALSE)
     })
 }
 
 #' Check that an arguments of a list that should be a text label has been specified correctly
 #'
-#' @param argument Value of the argument to check
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param argName Name of the argument, for inclusion in the error message
+#' @param arguments List of the arguments provided to the called function
+#' @param argument_name Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_text_list <-function(argument, preCheckSuccess, argName)
+check_text_list <-function(arguments, argument_name)
 {
   tryCatch(
     {
       # Get the list
-      arg_list <- eval(argument)
+      arg_list <- eval(arguments[argument_name][[1]])
       for(i in 1:length(arg_list))
       {
-        check = check_text(arg_list[i], preCheckSuccess, argName)
+        check = check_text(arg_list[i], argument_name)
         #print(paste("Check: ",check,sep=""))
         if(!check)
         {
-          message(paste("Error in declaration of ",argName,". Terminated",sep=""))
+          message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
           return(FALSE)
         }
       }
-      return(preCheckSuccess)
+      return(TRUE)
     },
     error=function(cond) {
-      message(paste("Error in declaration of ",argName,". Terminated",sep=""))
+      message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
       return(FALSE)
     })
 }
@@ -613,12 +705,11 @@ check_text_list <-function(argument, preCheckSuccess, argName)
 #' Check that a double argument is within a specified range
 #'
 #' @param argument Value of the argument to check
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param argName Name of the argument, for inclusion in the error message
+#' @param argument_name Name of the argument, for inclusion in the error message
 #' @param range_min Minimum of the range
 #' @param range_max Maximum of the range
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_double_value_in_range <- function(argument, preCheckSuccess, argName, range_min, range_max)
+check_double_value_in_range <- function(argument, argument_name, range_min, range_max)
 {
   tryCatch(
     {
@@ -626,43 +717,44 @@ check_double_value_in_range <- function(argument, preCheckSuccess, argName, rang
       value <- eval(argument)
 
       if(is.numeric(value) & (value >= range_min & value <= range_max))
-        return(preCheckSuccess)
+        return(TRUE)
       else
       {
-        message(paste(argName, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
+        message(paste(argument_name, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
         return(FALSE)
       }
 
     },
     error=function(cond) {
-      message(paste("Error: ", argName, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
+      message(paste("Error: ", argument_name, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
       return(FALSE)
     })
 }
 
 #' Check that all objects of a list are integers
 #'
-#' @param argument Value of the argument to check
-#' @param preCheckSuccess Current status of pre-execution checks
-#' @param argName Name of the argument, for inclusion in the error message
+#' @param arguments List of the arguments provided to the called function
+#' @param argument_name Name of the argument, for inclusion in the error message
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_list_all_integers <- function(argument, preCheckSuccess, argName)
+check_list_all_integers <- function(arguments, argument_name)
 {
   tryCatch(
     {
       # Get the list
-      value_list <- eval(argument)
+      value_list <- eval(arguments[argument_name][[1]])
+      #print(value_list)
 
       if(all(value_list == floor(value_list)) & all(value_list > 0))
-        return(preCheckSuccess)
+        return(TRUE)
       else
       {
-        message(paste(argName," must be a list of positive integers. Terminated",sep=""))
+        message(paste(argument_name," must be a list of positive integers. Terminated",sep=""))
         return(FALSE)
       }
     },
     error=function(cond) {
-      message(paste("Error in declaration of ",argName,". Spartan Terminated",sep=""))
+      #print(cond)
+      message(paste("Error in declaration of ",argument_name,". Spartan Terminated",sep=""))
       return(FALSE)
     })
 }
@@ -671,9 +763,8 @@ check_list_all_integers <- function(argument, preCheckSuccess, argName)
 #'
 #' @param file_root Root directory of the data to analyse
 #' @param sub_dirs List of the subdirectories that should be under the root
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_nested_filepaths <- function(file_root, sub_dirs, preCheckSuccess)
+check_nested_filepaths <- function(file_root, sub_dirs)
 {
   tryCatch(
     {
@@ -688,7 +779,7 @@ check_nested_filepaths <- function(file_root, sub_dirs, preCheckSuccess)
           return(FALSE)
         }
       }
-      return(preCheckSuccess)
+      return(TRUE)
     },
     error=function(cond) {
       message(paste("Error in declaration of file paths to data to analyse. Spartan Terminated",sep=""))
@@ -698,11 +789,10 @@ check_nested_filepaths <- function(file_root, sub_dirs, preCheckSuccess)
 
 #' Check that the user has declared either a file name or an R object
 #' @param arguments List of the arguments provided to the called function
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @param fileArg Name of the argument for which a file should be specified
 #' @param rObjArg Name of the argument for which an R object should be specified
 #' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
-check_consistency_result_type <- function(arguments, preCheckSuccess, fileArg, rObjArg)
+check_consistency_result_type <- function(arguments, fileArg, rObjArg)
 {
   tryCatch(
   {
@@ -721,11 +811,11 @@ check_consistency_result_type <- function(arguments, preCheckSuccess, fileArg, r
       {
         # The user is specifying a results file name
         # Can check this here
-        file_check <- check_text(arguments[fileArg][[1]], preCheckSuccess, fileArg)
+        file_check <- check_text(arguments[fileArg][[1]], fileArg)
         if(file_check)
           # Check the file exists
           if(file.exists(file.path(filepath,file_name)))
-            return(preCheckSuccess)
+            return(TRUE)
           else
           {
             message(paste("File ",file_name, " in argument ",fileArg, " does not exist in ",filepath,sep=""))
@@ -740,7 +830,7 @@ check_consistency_result_type <- function(arguments, preCheckSuccess, fileArg, r
       else
       {
         # Existence of R object will have been checked when evaluated earlier
-        return(preCheckSuccess)
+        return(TRUE)
       }
     }
   },
@@ -773,10 +863,9 @@ check_file_exist <- function(filepath, filename)
 #' @param arguments List of the arguments provided to the called function
 #' @param filepath Evaluated filepath argument
 #' @param resultfile Name of the result file of columns to check
-#' @param preCheckSuccess Current status of pre-execution checks
 #' @return Boolean stating the current status of the pre-execution checks,
 #' or FALSE if this check fails
-check_column_ranges <- function(arguments, filepath, resultfile, preCheckSuccess)
+check_column_ranges <- function(arguments, filepath, resultfile)
 {
   # This opens the first result file and checks the number of columns.
   # The assumption is made all others will be of the same structure
@@ -784,20 +873,18 @@ check_column_ranges <- function(arguments, filepath, resultfile, preCheckSuccess
 
   tryCatch(
   {
-    samplesize <- eval(arguments$SAMPLESIZES)[1]
-
-    if(check_file_exist(paste(filepath,"/",samplesize,sep=""), eval(resultfile))==TRUE)
+    if(check_file_exist(filepath, eval(resultfile)))
     {
 
       # Load it and check number of columns
-      result<-read.csv(file.path(paste(filepath,"/",samplesize,sep=""), eval(resultfile)),header=T)
+      result<-read.csv(file.path(filepath, eval(resultfile)),header=T)
       if(eval(arguments$OUTPUTFILECOLSTART) > 0 &
          eval(arguments$OUTPUTFILECOLSTART) <= ncol(result) &
          eval(arguments$OUTPUTFILECOLEND) > 0 &
          eval(arguments$OUTPUTFILECOLEND) <= ncol(result) &
          eval(arguments$OUTPUTFILECOLEND) >=
          eval(arguments$OUTPUTFILECOLSTART)) {
-        return(preCheckSuccess)
+        return(TRUE)
       } else {
         message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
         return(FALSE)
@@ -805,13 +892,16 @@ check_column_ranges <- function(arguments, filepath, resultfile, preCheckSuccess
     }
     else {
       message(paste("Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
-                    file.path(filepath,resultfile), " does not exist",sep=""))
+                    paste(filepath,"/",resultfile,sep=""), " does not exist",sep=""))
       return(FALSE)
     }
   },
   error=function(cond) {
+    #print(cond)
     message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
     return(FALSE)
   })
 }
+
+
 

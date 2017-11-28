@@ -22,8 +22,11 @@ test_that("getMediansSubset", {
   expect_equal(as.numeric(round(medians,digits=5)),c(4.40000,52.54717))
 
   # Now a file that does not exist
-  expect_message(a<-getMediansSubset(getwd(), 2, c("Velocity","Displacement"),
-                                  "Test_Results_CSV_file.csv", altfilename = NULL, 1, 2),paste("File ", file.path(getwd(),2), " does not exist", sep = ""))
+  # What will happen is the result for set 1 will be processed, the inner method will output a message
+  # showing that a result is missing, but there will not be an error message and the execution
+  # continues. So there should be one result returned
+  expect_equal(nrow(getMediansSubset(getwd(), 2, c("Velocity","Displacement"),
+                                  "Test_Results_CSV_file.csv", altfilename = NULL, 1, 2)),1)
 
   unlink(file.path(getwd(),"1"), recursive = TRUE)
 

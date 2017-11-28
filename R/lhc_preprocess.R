@@ -29,8 +29,9 @@ lhc_generateTimepointFiles <- function(FILEPATH, SPARTAN_PARAMETER_FILE,
 
     # NOW FOR LEISHSIM WE NEED TO DO 168 ROWS, SO:
     for (t in 1:length(TIMEPOINTS)) {
-      TIMEPOINTPROCESSING <- TIMEPOINTS[t]
-      print(paste("Processing Timepoint: ", TIMEPOINTPROCESSING, sep = ""))
+
+      current_timepoint <- TIMEPOINTS[t]
+      print(paste("Processing Timepoint: ", current_timepoint, sep = ""))
       ALL_SIM_RESULTS_FOR_TIMEPOINT <- NULL
 
       for (k in 1:NUMSAMPLES) {

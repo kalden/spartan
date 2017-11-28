@@ -32,14 +32,14 @@
 #' @return LHC generated parameter sets
 #'
 #' @export
-lhc_generate_lhc_sample <- function(FILEPATH=NULL, PARAMETERS, NUMSAMPLES, PMIN,
+lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
                                     PMAX, ALGORITHM) {
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
 
-  if(check_lhc_sampling_args(input_arguments)) {
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
       # PERFORM THE SAMPLING - JUDGING ON USERS CHOICE OF ALGORITHM
       design <- sample_parameter_space(ALGORITHM, NUMSAMPLES, PARAMETERS)

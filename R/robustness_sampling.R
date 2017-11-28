@@ -27,10 +27,9 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
-
-  if(check_robustness_sampling_args(input_arguments)) {
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
     # CONSIDER EACH PARAMETER IN TURN
     for (PARAMOFINT in 1:length(PARAMETERS)) {

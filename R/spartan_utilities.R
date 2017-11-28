@@ -41,9 +41,9 @@ getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
       }
     } else {
       message(paste("File ", fileaddress, " does not exist", sep = ""))
-      return(NULL)
     }
   }
+
   if(!is.null(all_results) & nrow(all_results) > 0)
     colnames(all_results) <- measures
 
@@ -107,6 +107,11 @@ read_model_result_file <- function(fileaddress, resultfilename,
 
     } else if (check_file_extension(resultfilename) == "xml")
       return(XML::xmlToDataFrame(filepath))
+  }
+  else
+  {
+    ## Return an empty dataframe - no rows in result file
+    return(data.frame())
   }
 }
 

@@ -27,12 +27,12 @@ lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
 
   # Version 3.1 of spartan introduces input error checking. This has also been
   # refactored to make better use of the original lhc sampling function
-  input_arguments <- as.list(match.call())
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   #print(paste("FILEPATH IN: ",eval(input_arguments$FILEPATH),sep=""))
   #print(paste("Does this Exist: ",file.exists(eval(input_arguments$FILEPATH)),sep=""))
   # Run if all checks pass:
 
-  if(check_lhc_sampling_netlogo_args(input_arguments)) {
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
       # Get the information and ranges of the parameters being perturbed
       ParameterInfo <- process_netlogo_parameter_range_info(PARAMETERS, PARAMVALS)
