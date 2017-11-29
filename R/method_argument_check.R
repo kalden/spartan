@@ -16,13 +16,23 @@
 #' @return Boolean stating whether the input checks pass or fail
 check_input_args <- function(argNames, arguments)
 {
-  # Generate list of checks
-  check_methods_to_call <- generate_list_of_checks(argNames)
-  # Execute
-  check_result <- execute_checks(check_methods_to_call,
+  # If processing multiple timepoints, the check will already have been done
+  # and no point doing it again, so return TRUE
+  #print(arguments)
+  if(!is.null(eval(arguments$check_done))) {
+    if(eval(arguments$check_done)) {
+      return(TRUE)
+    }
+  }
+  else {
+    # Generate list of checks
+    check_methods_to_call <- generate_list_of_checks(argNames)
+    # Execute
+    check_result <- execute_checks(check_methods_to_call,
                                  arguments, argNames)
 
-  return(check_result)
+    return(check_result)
+  }
 }
 
 #' Defines which functions to call to check an input argument.
@@ -51,7 +61,7 @@ generate_list_of_checks <-function(argNames)
       check_methods_to_call[[list_index]] = check_text_list            # TAKES ALL ARGS FIXED
     else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMSAMPLES","NUMCURVES","EXPERIMENT_REPETITIONS"))
       check_methods_to_call[[list_index]] = check_argument_positive_int      # TAKES ALL ARGS FIXED
-    else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "ALTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION"))
+    else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "ALTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION", "ATESTRESULTFILENAME"))
       check_methods_to_call[[list_index]] = check_text     # TAKES ALL ARGS FIXED
     else if(argNames[arg] == "RUN_METRICS_EVERYSTEP")
       check_methods_to_call[[list_index]] = check_boolean
@@ -96,7 +106,7 @@ execute_checks <- function(check_methods_to_call, input_arguments, function_args
 {
   for(check_method in 1:length(check_methods_to_call))
   {
-    # print(function_args[check_method])
+    #print(function_args[check_method])
     # Need to tailor some methods that cannot be called with the same two arguments, so check these first
     if(identical(check_methods_to_call[[check_method]],check_double_value_in_range))
     {
@@ -178,7 +188,7 @@ check_function_dependent_paramvals <- function(input_arguments, argument_name)
   ## Check for param vals also is dependent on the function called
   if(toString(input_arguments[[1]]) %in% c("lhc_generate_lhc_sample_netlogo","efast_generate_sample_netlogo"))
     return(check_netlogo_parameters_and_values(input_arguments, argument_name))
-  else if(toString(input_arguments[[1]]) %in% c("oat_parameter_sampling","oat_processParamSubsets"))
+  else if(toString(input_arguments[[1]]) %in% c("oat_parameter_sampling","oat_processParamSubsets","oat_csv_result_file_analysis"))
     return(check_robustness_sampling_args(input_arguments, argument_name))
 }
 
@@ -874,27 +884,35 @@ check_column_ranges <- function(arguments, filepath, resultfile)
 
   tryCatch(
   {
-    if(check_file_exist(filepath, eval(resultfile)))
+    if(is.null(eval(arguments$TIMEPOINTS)))
     {
+      if(check_file_exist(filepath, eval(resultfile)))
+      {
 
-      # Load it and check number of columns
-      result<-read.csv(file.path(filepath, eval(resultfile)),header=T)
-      if(eval(arguments$OUTPUTFILECOLSTART) > 0 &
-         eval(arguments$OUTPUTFILECOLSTART) <= ncol(result) &
-         eval(arguments$OUTPUTFILECOLEND) > 0 &
-         eval(arguments$OUTPUTFILECOLEND) <= ncol(result) &
-         eval(arguments$OUTPUTFILECOLEND) >=
-         eval(arguments$OUTPUTFILECOLSTART)) {
-        return(TRUE)
-      } else {
-        message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+        # Load it and check number of columns
+        result<-read.csv(file.path(filepath, eval(resultfile)),header=T)
+        if(eval(arguments$OUTPUTFILECOLSTART) > 0 &
+           eval(arguments$OUTPUTFILECOLSTART) <= ncol(result) &
+           eval(arguments$OUTPUTFILECOLEND) > 0 &
+           eval(arguments$OUTPUTFILECOLEND) <= ncol(result) &
+           eval(arguments$OUTPUTFILECOLEND) >=
+           eval(arguments$OUTPUTFILECOLSTART)) {
+          return(TRUE)
+        } else {
+          message("Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
+          return(FALSE)
+        }
+      }
+      else {
+        message(paste("Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
+                      paste(filepath,"/",resultfile,sep=""), " does not exist",sep=""))
         return(FALSE)
       }
     }
-    else {
-      message(paste("Attempted to check OUTPUTFILECOLSTART and OUTPUTFILECOLEND in first result file, but file ",
-                    paste(filepath,"/",resultfile,sep=""), " does not exist",sep=""))
-      return(FALSE)
+    else
+    {
+      # Timepoints not checked yet - must be added later
+      return(TRUE)
     }
   },
   error=function(cond) {

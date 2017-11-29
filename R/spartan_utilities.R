@@ -447,3 +447,11 @@ write_data_to_csv <- function(outputData, outputFile)
 {
   write.csv(outputData, outputFile, row.names = FALSE, quote = FALSE)
 }
+
+#' To save retyping all options, function to read CSV data
+#' @param filepath Path to CSV file to read
+#' @return Data from CSV file
+read_from_csv <- function(filepath)
+{
+  return(read.csv(filepath, sep = ",", header = TRUE, check.names = FALSE))
+}

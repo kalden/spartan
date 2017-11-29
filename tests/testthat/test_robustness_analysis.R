@@ -135,3 +135,151 @@ test_that("generate_medians_for_param_set" , {
   unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
 
 })
+
+test_that("calculate_atest_score", {
+
+  load(file.path("test_baseline.Rda"))
+  load(file.path("robust_param_test_data.Rda"))
+  a_test_result <- calculate_atest_score(parameter_result, c("0.015","0.2"),
+                                    baseline_result, c("Velocity","Displacement"), "chemoLowerLinearAdjust", 0.015)
+
+  # Now we can test the structure:
+  # In this case should be 6 columns and 1 row
+  expect_true(ncol(a_test_result)==6)
+  expect_true(nrow(a_test_result)==1)
+  # First two columns should have the parameter info
+  expect_equal(a_test_result[1,1][[1]],"0.015")
+  expect_equal(a_test_result[1,2][[1]],"0.2")
+  # Check the scores have been calculated right
+  expect_equal(a_test_result[1,3][[1]],"0.213257877374588")
+  expect_equal(a_test_result[1,4][[1]],"0.786742122625412")
+  expect_equal(a_test_result[1,5][[1]],"0.0102491184165624")
+  expect_equal(a_test_result[1,6][[1]],"0.989750881583438")
+
+
+})
+
+test_that("compare_all_values_of_parameter_to_baseline", {
+
+  exp_params <- as.character(c(0.04, 0.2))
+  load(file.path("Robustness_result_for_test.Rda"))
+  load(file.path("test_baseline.Rda"))
+
+  # List of parameter values for this parameter
+  parameter_value_list <- as.numeric(
+    prepare_parameter_value_list(c(0.015, 0.10), c(0.08, 0.50), c(0.005, 0.05), NULL, 1))
+
+  parameter_results <- compare_all_values_of_parameter_to_baseline(
+    parameter_value_list, c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"), 1, c(0.04, 0.2), robustness_result_for_test,
+    exp_params, baseline_result, c("Velocity","Displacement"), NULL)
+
+  # Check structure
+  expect_true(ncol(parameter_results)==6)
+  expect_true(nrow(parameter_results)==13)
+  # Check parameter columns
+  expect_equal(toString(parameter_results[,1]),"0.015, 0.02, 0.025, 0.03, 0.035, 0.045, 0.05, 0.055, 0.06, 0.065, 0.07, 0.075, 0.08")
+  expect_equal(toString(parameter_results[,2]),"0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2")
+  # Can check the A-Test results never change too, using the same method
+  expect_equal(toString(parameter_results[,3]),"0.213257877374588, 0.304886534533456, 0.344790240398644, 0.418134318273952, 0.484440186831126, 0.558381379217152, 0.622669649515287, 0.652914637157415, 0.677869296996814, 0.679927293064877, 0.697088729770376, 0.707829977628635, 0.717253727309581")
+  expect_equal(toString(parameter_results[,4]),"0.786742122625412, 0.695113465466544, 0.655209759601356, 0.581865681726048, 0.515559813168874, 0.558381379217152, 0.622669649515287, 0.652914637157415, 0.677869296996814, 0.679927293064877, 0.697088729770376, 0.707829977628635, 0.717253727309581")
+  expect_equal(toString(parameter_results[,5]),"0.0102491184165624, 0.0251285044106754, 0.0999416399182959, 0.231847664519616, 0.375974968256848, 0.630726093419215, 0.748333446320024, 0.816536104689008, 0.867025964341401, 0.898266219239374, 0.908655249040426, 0.926498881431767, 0.942322417909103")
+  expect_equal(toString(parameter_results[,6]),"0.989750881583438, 0.974871495589325, 0.900058360081704, 0.768152335480384, 0.624025031743152, 0.630726093419215, 0.748333446320024, 0.816536104689008, 0.867025964341401, 0.898266219239374, 0.908655249040426, 0.926498881431767, 0.942322417909103")
+  expect_false(any(is.na(parameter_results)))
+
+})
+
+test_that("oat_csv_result_file_analysis", {
+  # All internal functions have been tested - now we just need to check that this function produces output
+  load(file.path("Robustness_result_for_test.Rda"))
+  # write out as CSV file so that we can feed this to function
+  write.csv(robustness_result_for_test,file="robustness_result.csv")
+
+  oat_csv_result_file_analysis(getwd(), "robustness_result.csv", c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                               c(0.04, 0.2), c("Velocity", "Displacement"),
+                               "EgSet_ATests.csv",
+                               PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                               PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
+  # Do we have output
+  expect_true(file.exists(file.path(getwd(),"EgSet_ATests.csv")))
+  # read it in
+  result <- read.csv(file.path(getwd(),"EgSet_ATests.csv"),header=T,sep=",",check.names=F)
+
+  expect_true(nrow(result)==38)
+  expect_true(ncol(result)==6)
+  expect_false(any(is.na(result)))
+
+  file.remove("robustness_result.csv")
+  file.remove("EgSet_ATests.csv")
+})
+
+test_that("oat_csv_result_file_analysis_overTime", {
+
+  # Bit of setup involved here
+  load(file.path("Robustness_hour12_data.Rda"))
+  write.csv(robustness_hour12_data,file="robustness_result_12.csv")
+  load(file.path("Robustness_hour36_data.Rda"))
+  write.csv(robustness_hour36_data,file="robustness_result_36.csv")
+
+  oat_csv_result_file_analysis(getwd(), "robustness_result.csv", c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                                        c(0.04, 0.2), c("Velocity", "Displacement"),
+                                        "EgSet_ATests.csv",
+                                        PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                                        PARAMVALS = NULL, TIMEPOINTS = c(12,36),
+                                        TIMEPOINTSCALE="Hours")
+
+  # Check for file output
+  expect_true(file.exists("EgSet_ATests_12.csv"))
+  expect_true(file.exists("EgSet_ATests_36.csv"))
+
+  # Check content
+  result <- read.csv(file.path(getwd(),"EgSet_ATests_12.csv"),header=T,sep=",",check.names=F)
+  expect_true(nrow(result)==38)
+  expect_true(ncol(result)==6)
+  expect_false(any(is.na(result)))
+
+  result <- read.csv(file.path(getwd(),"EgSet_ATests_36.csv"),header=T,sep=",",check.names=F)
+  expect_true(nrow(result)==38)
+  expect_true(ncol(result)==6)
+  expect_false(any(is.na(result)))
+
+  file.remove("robustness_result_12.csv")
+  file.remove("robustness_result_36.csv")
+  file.remove("EgSet_ATests_12.csv")
+  file.remove("EgSet_ATests_36.csv")
+
+})
+
+test_that("oat_processParamSubsets_overTime", {
+
+  setup_multiple_parameter_result_analysis_overTime()
+
+  oat_processParamSubsets(getwd(), c("chemoLowerLinearAdjust","chemoUpperLinearAdjust"),1,
+                          c("Velocity","Displacement"), RESULTFILENAME="Test_Robustness_Result.csv",
+                          ALTERNATIVEFILENAME=NULL, OUTPUTFILECOLSTART=1, OUTPUTFILECOLEND=2, "Test_Summary_File.csv",
+                          c(0.05,2),PMIN=c(0.05,1),PMAX=c(0.1,2),
+                          PINC=c(0.05,1), PARAMVALS=NULL, TIMEPOINTS = c(12,36), TIMEPOINTSCALE = "Hours")
+
+  # Test for file existance
+  expect_true(file.exists("Test_Summary_File_12.csv"))
+  expect_true(file.exists("Test_Summary_File_36.csv"))
+  result <- read.csv(file.path(getwd(),"Test_Summary_File_36.csv"),header=T,sep=",",check.names=F)
+  # Check structure
+  expect_true(nrow(result)==3)
+  expect_true(ncol(result)==4)
+  expect_false(any(is.na(result)))
+  result <- read.csv(file.path(getwd(),"Test_Summary_File_12.csv"),header=T,sep=",",check.names=F)
+  # Check structure
+  expect_true(nrow(result)==3)
+  expect_true(ncol(result)==4)
+  expect_false(any(is.na(result)))
+
+  cleanup()
+  file.remove(file.path(getwd(),"Test_Summary_File_12.csv"))
+  file.remove(file.path(getwd(),"Test_Summary_File_36.csv"))
+
+
+
+})
+
+

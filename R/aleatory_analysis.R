@@ -357,20 +357,21 @@ read_simulation_results <- function(FILEPATH, AA_SIM_RESULTS_FILE,
 }
 
 #' Generates the CSV file header for the A-Test results file
+#' @param pre_measure_info Any header info to put before measure names
 #' @param MEASURES The simulation output responses
 #' @return Header object for CSV file
-generate_a_test_results_header <- function(MEASURES) {
+generate_a_test_results_header <- function(pre_measure_info,measures) {
 
-  ATESTRESULTSHEADER <- cbind("Sample Size", "Sample")
+  atest_results_header <- pre_measure_info
 
-  for (l in 1:length(MEASURES)) {
-    ATESTRESULTSHEADER <- cbind(ATESTRESULTSHEADER,
-                                paste("ATest", MEASURES[l], sep = ""),
-                                paste("ATest", MEASURES[l], "Norm",
+  for (l in 1:length(measures)) {
+    atest_results_header <- cbind(atest_results_header,
+                                paste("ATest", measures[l], sep = ""),
+                                paste("ATest", measures[l], "Norm",
                                       sep = ""))
   }
 
-  return(ATESTRESULTSHEADER)
+  return(atest_results_header)
 }
 
 #' Get the first result set, to which all others are compared
@@ -403,7 +404,8 @@ compare_result_sets_to_comparison_set <- function(NUMSUBSETSPERSAMPLESIZE,
 
     # Add these tests to the results sheets
     SIZE_RESULTS <- rbind(SIZE_RESULTS, ALLATESTRESULTS)
-    colnames(SIZE_RESULTS) <- c(generate_a_test_results_header(MEASURES))
+    colnames(SIZE_RESULTS) <- c(generate_a_test_results_header(
+      cbind("Sample Size", "Sample"),MEASURES))
   }
 
   return(SIZE_RESULTS)
@@ -436,7 +438,8 @@ generate_scores_for_all_sample_sizes <- function(FILEPATH, SAMPLESIZES, RESULT,
     analysis_result<-rbind(analysis_result, SIZE_RESULTS)
   }
 
-  colnames(analysis_result) <- c(generate_a_test_results_header(MEASURES))
+  #print(head(analysis_result))
+  #colnames(analysis_result) <- c(generate_a_test_results_header(c("Sample Size","Sample"),MEASURES))
 
   return(analysis_result)
 }

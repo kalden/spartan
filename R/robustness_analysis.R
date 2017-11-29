@@ -26,6 +26,7 @@
 #' @param PARAMVALS Array containing a list of strings for each parameter, each string containing comma separated values that should be assigned to that parameter. Thus sampling can be performed for specific values for each parameter, rather than a uniform incremented value. This replaces the PMIN, PMAX, and PINC where this method is used
 #' @param TIMEPOINTS Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)
 #' @param TIMEPOINTSCALE Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"
+#' @param check_done Whether the input has been checked (used when doing multiple timepoints)
 #'
 #' @export
 oat_processParamSubsets <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
@@ -34,7 +35,8 @@ oat_processParamSubsets <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE,
                                     OUTPUTFILECOLEND, CSV_FILE_NAME,
                                     BASELINE, PMIN = NULL, PMAX = NULL,
                                     PINC = NULL, PARAMVALS = NULL,
-                                    TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+                                    TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+                                    check_done = FALSE) {
 
   # CREATE THE MEDIAN DISTRIBUTION OVER THE SET OF RUNS FOR EACH PARAMETER SET,
   # FOR EACH PARAMETER (AS THIS IS ONE AT A TIME)
@@ -110,7 +112,8 @@ oat_processParamSubsets_overTime <- function(FILEPATH, PARAMETERS, NUMRUNSPERSAM
     oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,
                             simresultfilename, altfilename_full,
                             OUTPUTCOLSTART, OUTPUTCOLEND, csvfilename_full,
-                            BASELINE, PMIN, PMAX, PINC, PARAMVALS, NULL, NULL)
+                            BASELINE, PMIN, PMAX, PINC, PARAMVALS, NULL, NULL,
+                            check_done = TRUE)
   }
 
 }
@@ -291,6 +294,7 @@ process_parameter_value_if_exists <- function(
 #' @inheritParams oat_processParamSubsets
 #' @param CSV_FILE_NAME Name of the CSV file in which the results of all simulations exist (or have been summarised)
 #' @param ATESTRESULTFILENAME File name of the ATests result summary file that will be created For one timepoint, this could be ATests.csv. For additional timepoints, the time is added to the file name
+#' @param check_done Whether the input has been checked (used when doing multiple timepoints)
 #'
 #' @export
 oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
@@ -298,125 +302,160 @@ oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
                                          ATESTRESULTFILENAME,
                                          PMIN = NULL, PMAX = NULL, PINC = NULL,
                                          PARAMVALS = NULL, TIMEPOINTS = NULL,
-                                         TIMEPOINTSCALE = NULL) {
-  if (is.null(TIMEPOINTS)) {
+                                         TIMEPOINTSCALE = NULL, check_done=FALSE) {
 
-    # NEW TO SPARTAN VERSION 2
-    # READS SIMULATION RESPONSES FROM A CSV FILE, IN THE FORMAT: PARAMETER
-    # VALUES (COLUMNS), SIMULATION OUTPUT MEASURES
-    # IN A CHANGE TO SPARTAN 1, THE FIRST FUNCTION THAT PROCESSES SIMULATION
-    # RESPONSES CREATES THIS FILE, NOT MEDIANS FOR EACH PARAMETER AS IT USED TO
-    # THIS WAY WE ARE NOT DEALING WITH TWO METHODS OF SIMULATION RESULT
-    # SPECIFICATION
-    RESULT <- read.csv(paste(FILEPATH, "/", CSV_FILE_NAME, sep = ""), sep = ",",
-                       header = TRUE, check.names = FALSE)
+  # Version 3.1 - added pre-execution error checks
+  # Get the provided function arguments
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  #print(input_check)
 
-    # FIRSTLY FILTER THE SIMULATION RESULTS WHEN AT BASELINE VALUES
-    BASELINE_RESULT <- subset_results_by_param_value_set(PARAMETERS, RESULT,
-                                                         BASELINE)
+  # If recursively called when doing timepoints, we don't need to do the check again
+  if(check_input_args(input_check$names, input_check$arguments)) {
+      if (is.null(TIMEPOINTS)) {
+        # From Spartan 2 simulation responses read from CSV in format: parameter
+        # values (columns) followed by sim output measures. First function creates
+        # this file if folder structure was used
 
-    if (nrow(BASELINE_RESULT) == 0) {
-      print("No results in the CSV file for simulation at specified baseline
-            values. No analysis performed")
-    } else {
-      # STORE ALL THE A-TEST SCORES FOR ALL EXPERIMENTS
-      ALL_ATEST_SCORES <- NULL
+        result <- read_from_csv(file.path(FILEPATH, CSV_FILE_NAME))
 
-      # DO THE BASELINE A-TEST FIRST - THIS WILL ALWAYS BE NO DIFFERENCE, BUT
-      # NEEDS TO BE LISTED AS A RESULT FOR GRAPHING
-      # THIS ALSO STOPS THE SAME TEST BEING DONE FOR EACH PARAMETER
-      # (AS EACH WILL BE AT BASELINE VALUE AT SOME POINT)
-      ALL_ATEST_SCORES <- rbind(
-        ALL_ATEST_SCORES, perform_aTest_for_all_sim_measures(BASELINE,
-                                                             BASELINE_RESULT,
-                                                             BASELINE_RESULT,
-                                                             MEASURES))
+        # Firstly filter when the simulation results were at baseline values
+        baseline_result <- subset_results_by_param_value_set(PARAMETERS, result,
+                                                           BASELINE)
 
-      # NOW PROCESS EACH PARAMETER
-      for (PARAM in 1:length(PARAMETERS)) {
-        # THE RESULTS OF THE OAT ANALYSIS IS IN ONE PLACE. THUS WE NEED TO
-        # REFER TO THE CORRECT BASELINE RESULT FOR PARAMETERS THAT ARE
-        # NOT BEING CHANGED SO WE USE THE VARIABLE EXP_PARAMS WHEN WE START
-        # A NEW VARIABLE - WE SET THE PARAMS TO THE BASELINE AND THEN ONLY
-        # ALTER THE ONE BEING CHANGED
-        EXP_PARAMS <- as.character(BASELINE)
+        if(nrow(baseline_result) > 0)
+        {
+          # Do baseline A-Test - will always be no difference, but must be in
+          # result file for graphing
+          all_atest_scores <- perform_aTest_for_all_sim_measures(
+            BASELINE, baseline_result, baseline_result, MEASURES)
 
-        # GET THE LIST OF PARAMETER VALUES BEING EXPLORED FOR THIS PARAMETER
-        PARAM_VAL_LIST <- as.numeric(
-          prepare_parameter_value_list(PMIN, PMAX, PINC, PARAMVALS, PARAM))
+          # Now process each parameter
+          for (PARAM in 1:length(PARAMETERS)) {
+            # Exp_params is set as baseline, then the value of the parameter
+            # being analysed is adjusted, thus we have a set of parameters with
+            # which we can subset the result file
+            exp_params <- as.character(BASELINE)
 
-        # NOW WE ITERATE THROUGH THE VALUES IN THIS LIST
-        for (PARAMVAL in 1:length(PARAM_VAL_LIST)) {
-          print(paste("Processing Parameter: ", PARAMETERS[PARAM], " Value: ",
-                      PARAM_VAL_LIST[PARAMVAL], sep = ""))
+            # List of parameter values for this parameter
+            parameter_value_list <- as.numeric(
+              prepare_parameter_value_list(PMIN, PMAX, PINC, PARAMVALS, PARAM))
 
-          # HERE WE STOP THE CASE OF THE BASELINE BEING PROCESSED SEVERAL
-          #TIMES, AS IT WOULD BE FOR EACH PARAMETER
-          if (PARAM_VAL_LIST[PARAMVAL] != BASELINE[PARAM]) {
-
-            # SET THE VALUE OF THIS PARAMETER TO BE THAT WE ARE PROCESSING
-            EXP_PARAMS[PARAM] <- as.character(PARAM_VAL_LIST[PARAMVAL])
-
-            PARAM_RESULT <- subset_results_by_param_value_set(PARAMETERS,
-                                                            RESULT, EXP_PARAMS)
-
-            if (nrow(PARAM_RESULT) > 0) {
-              # NOW WE CAN COMPARE THIS BEHAVIOUR TO THAT AT THE BASELINE
-              # USING THE A-TEST. DO THIS FOR EACH MEASURE
-              ALL_ATEST_SCORES <- rbind(
-                ALL_ATEST_SCORES, perform_aTest_for_all_sim_measures(
-                  EXP_PARAMS, BASELINE_RESULT, PARAM_RESULT, MEASURES))
-            } else {
-              print(paste("No Results for Parameter ", PARAMETERS[PARAM],
-                          " Value: ", PARAM_VAL_LIST[PARAMVAL],
-                          ". No A-Test Calculated", sep = ""))
-            }
+            # Now iterate through the values in this list
+            all_atest_scores <- rbind(all_atest_scores,
+                                      compare_all_values_of_parameter_to_baseline (
+                                        parameter_value_list, PARAMETERS, PARAM, BASELINE, result,
+                                        exp_params, baseline_result, MEASURES, all_atest_scores))
           }
+
+          # label the scores
+          colnames(all_atest_scores) <- generate_a_test_results_header(t(PARAMETERS),MEASURES)
+
+          # Write out the result
+          write_data_to_csv (all_atest_scores, file.path(FILEPATH,ATESTRESULTFILENAME))
+        } else {
+          message("No results in the CSV file for simulation at specified baseline
+              values. No analysis performed")
         }
+      } else {
+        oat_csv_result_file_analysis_overTime(
+          FILEPATH, CSV_FILE_NAME, PARAMETERS, BASELINE, MEASURES,
+          ATESTRESULTFILENAME, PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS,
+          TIMEPOINTSCALE)
       }
-
-      # LABEL THE SCORES
-      LABELS <- NULL
-      for (MEASURE in 1:length(MEASURES)) {
-        LABELS <- cbind(LABELS, paste("ATest", MEASURES[MEASURE], sep = ""),
-                        paste("ATest", MEASURES[MEASURE], "Norm", sep = ""))
-      }
-
-      colnames(ALL_ATEST_SCORES) <- cbind(t(PARAMETERS), LABELS)
-
-      # WRITE THE FILE OUT
-      RESULTSFILE <- paste(FILEPATH, "/", ATESTRESULTFILENAME, sep = "")
-
-      write.csv(ALL_ATEST_SCORES, RESULTSFILE, quote = FALSE,
-                row.names = FALSE)
     }
-  } else {
-    # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
-    for (n in 1:length(TIMEPOINTS)) {
+}
 
-      current_time <- TIMEPOINTS[n]
-      print(paste("Processing Timepoint: ", current_time, sep = ""))
+#' Pre-process analysis settings if multiple timepoints are being considered
+#'
+#' @inheritParams oat_processParamSubsets
+oat_csv_result_file_analysis_overTime <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
+                                         BASELINE, MEASURES,
+                                         ATESTRESULTFILENAME,
+                                         PMIN = NULL, PMAX = NULL, PINC = NULL,
+                                         PARAMVALS = NULL, TIMEPOINTS,
+                                         TIMEPOINTSCALE)
+{
+  # Process each timepoint, amending filenames and calling above function
+  for (n in 1:length(TIMEPOINTS)) {
 
-      CSV_FILE_NAME_FORMAT <- check_file_extension(CSV_FILE_NAME)
-      CSV_FILE_NAME_FULL <- paste(substr(CSV_FILE_NAME, 0,
-                                         nchar(CSV_FILE_NAME) - 4),
-                                  "_", current_time, ".",
-                                  CSV_FILE_NAME_FORMAT,
-                                  sep = "")
+    current_time <- TIMEPOINTS[n]
+    message(paste("Processing Timepoint: ", current_time, sep = ""))
 
-      ATESTRESULTFILENAME_FORMAT <- check_file_extension(ATESTRESULTFILENAME)
-      ATESTRESULTFILENAME_FULL <- paste(substr(ATESTRESULTFILENAME, 0,
-                                               nchar(ATESTRESULTFILENAME) - 4),
-                                        "_", current_time, ".",
-                                        ATESTRESULTFILENAME_FORMAT, sep = "")
+    csvfilename_full <- append_time_to_argument(
+      CSV_FILE_NAME, current_time,
+      check_file_extension(CSV_FILE_NAME))
 
-      oat_csv_result_file_analysis(FILEPATH, CSV_FILE_NAME_FULL, PARAMETERS,
-                                   BASELINE, MEASURES,
-                                   ATESTRESULTFILENAME_FULL, PMIN, PMAX,
-                                   PINC, PARAMVALS, TIMEPOINTS = NULL,
-                                   TIMEPOINTSCALE = NULL)
-    }
+    atestresultfilename_full <- append_time_to_argument(
+      ATESTRESULTFILENAME, current_time,
+      check_file_extension(ATESTRESULTFILENAME))
+
+
+    oat_csv_result_file_analysis(FILEPATH, csvfilename_full, PARAMETERS,
+                                 BASELINE, MEASURES,
+                                 atestresultfilename_full, PMIN, PMAX,
+                                 PINC, PARAMVALS, TIMEPOINTS = NULL,
+                                 TIMEPOINTSCALE = NULL, check_done=TRUE)
   }
 }
 
+#' For one parameter, compare responses for all values with those at baseline
+#' @param parameter_value_list List of values for this parameter
+#' @param parameters Simulation parameters
+#' @param parameter_index Index of the current parameter being analysed
+#' @param baseline Baseline values of all parameters
+#' @param result Simulation results, read in from CSV file, to subset
+#' @param exp_params Current parameter set being analysed
+#' @param baseline_result Simulation result under baseline conditions
+#' @param measures Simulation output measures
+#' @param all_atest_scores Store of output of this analysis, to append to
+#' @return all_atest_scores with resuls for this parameter appended
+compare_all_values_of_parameter_to_baseline <- function(
+  parameter_value_list, parameters, parameter_index, baseline, result,
+  exp_params, baseline_result, measures, all_atest_scores) {
 
+  for (param_val in 1:length(parameter_value_list)) {
+    message(paste("Processing Parameter: ", parameters[parameter_index], " Value: ",
+                  parameter_value_list[param_val], sep = ""))
+
+    # Baseline already processed, so ignore
+    if (parameter_value_list[param_val] != baseline[parameter_index]) {
+
+      # Set value in param list to that we are processing
+      exp_params[parameter_index] <- as.character(parameter_value_list[param_val])
+
+      parameter_result <- subset_results_by_param_value_set(parameters,
+                                                            result, exp_params)
+
+      score <- calculate_atest_score(
+        parameter_result, exp_params,baseline_result, measures,
+        parameters[parameter_index], parameter_value_list[param_val])
+
+      if(ncol(score)>0)
+        all_atest_scores <- rbind(all_atest_scores,score)
+    }
+  }
+  return(all_atest_scores)
+}
+
+#' Calculate the A-Test score for a parameter set in comparison with baseline
+#' @param parameter_result Simulation results under current parameter set
+#' @param exp_params Parameter set that led to this behaviour
+#' @param baseline_result Results obtained at baseline conditions
+#' @param measures Simulation response measures
+#' @param parameter Name of the parameter being processed
+#' @param value Value of the parameter being processsed
+#' @return A-Test scores, or NULL if result not found
+calculate_atest_score <- function(parameter_result, exp_params,
+                                  baseline_result, measures, parameter, value)
+{
+  # Need to do the bind back in the original calling function now
+  if (nrow(parameter_result) > 0) {
+    return(perform_aTest_for_all_sim_measures(
+      exp_params, baseline_result, parameter_result, measures))
+  } else {
+    message(paste("No Results for Parameter ", parameter,
+                " Value: ", value,
+                ". No A-Test Calculated", sep = ""))
+    return(NULL)
+  }
+}
