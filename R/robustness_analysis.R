@@ -291,10 +291,10 @@ process_parameter_value_if_exists <- function(
 #' simulation was run. This method can be performed for a number of simulation
 #' timepoints, producing these statistics for each timepoint taken.
 #'
-#' @inheritParams oat_processParamSubsets
 #' @param CSV_FILE_NAME Name of the CSV file in which the results of all simulations exist (or have been summarised)
 #' @param ATESTRESULTFILENAME File name of the ATests result summary file that will be created For one timepoint, this could be ATests.csv. For additional timepoints, the time is added to the file name
 #' @param check_done Whether the input has been checked (used when doing multiple timepoints)
+#' @inheritParams oat_processParamSubsets
 #'
 #' @export
 oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
@@ -367,7 +367,7 @@ oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
 
 #' Pre-process analysis settings if multiple timepoints are being considered
 #'
-#' @inheritParams oat_processParamSubsets
+#' @inheritParams oat_csv_result_file_analysis
 oat_csv_result_file_analysis_overTime <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
                                          BASELINE, MEASURES,
                                          ATESTRESULTFILENAME,

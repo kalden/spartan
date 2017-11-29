@@ -358,7 +358,7 @@ read_simulation_results <- function(FILEPATH, AA_SIM_RESULTS_FILE,
 
 #' Generates the CSV file header for the A-Test results file
 #' @param pre_measure_info Any header info to put before measure names
-#' @param MEASURES The simulation output responses
+#' @param measures The simulation output responses
 #' @return Header object for CSV file
 generate_a_test_results_header <- function(pre_measure_info,measures) {
 

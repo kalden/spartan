@@ -4,10 +4,12 @@
 \alias{generate_a_test_results_header}
 \title{Generates the CSV file header for the A-Test results file}
 \usage{
-generate_a_test_results_header(MEASURES)
+generate_a_test_results_header(pre_measure_info, measures)
 }
 \arguments{
-\item{MEASURES}{The simulation output responses}
+\item{pre_measure_info}{Any header info to put before measure names}
+
+\item{measures}{The simulation output responses}
 }
 \value{
 Header object for CSV file
