@@ -304,7 +304,7 @@ lhc_generateLHCSummary <- function(FILEPATH, PARAMETERS, MEASURES,
 
 #' Pre-process analysis settings if multiple timepoints are being considered
 #'
-#' @inheritParams lhc_generateLHCSummary_overTime
+#' @inheritParams lhc_generateLHCSummary
 lhc_generateLHCSummary_overTime <- function(
   FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME,
   SPARTAN_PARAMETER_FILE = NULL, TIMEPOINTS, TIMEPOINTSCALE) {
