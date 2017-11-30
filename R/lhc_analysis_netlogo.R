@@ -25,75 +25,68 @@ lhc_process_netlogo_result <- function(FILEPATH, LHCSAMPLE_RESULTFILENAME,
                                        MEASURES, LHC_ALL_SIM_RESULTS_FILE,
                                        TIMESTEP) {
 
-  # READ IN THE SPARTAN PARAMETER FILE
-  LHCTABLE <- read.csv(paste(FILEPATH, "/", SPARTAN_PARAMETER_FILE, sep = ""),
-                       header = TRUE, check.names = FALSE)
+  # Read in the spartan parameter file
+  tryCatch(
+  {
+    lhc_table <- read_from_csv(file.path(FILEPATH,SPARTAN_PARAMETER_FILE))
 
-  # NOW ALL THE MEDIANS ARE HELD TOGETHER, ACCOMPANIED BY THEIR SIMULATION
-  # PARAMETERS BEING ANALYSED
-  ALL_SIM_MEDIAN_RESULTS <- NULL
+    ALL_SIM_MEDIAN_RESULTS <- NULL
 
-  for (SAMPLE in 1:NUMSAMPLES) {
-    if (file.exists(paste(FILEPATH, "/", SAMPLE, "/", LHCSAMPLE_RESULTFILENAME,
-                          SAMPLE, ".csv", sep = ""))) {
-      print(paste("Processing LHC Results for Sample: ", SAMPLE, sep = ""))
+    for (SAMPLE in 1:NUMSAMPLES) {
+        message(paste("Processing LHC Results for Sample: ", SAMPLE, sep = ""))
 
-      # READ IN THE RESULT FILE
-      # SKIP THE FIRST 6 LINES AS NONE OF THIS INFORMATION IS REQUIRED
-      NL_RESULT <- read.csv(paste(FILEPATH, "/", SAMPLE, "/",
-                                  LHCSAMPLE_RESULTFILENAME, SAMPLE,
-                                  ".csv", sep = ""), sep = ",",
-                            skip = 6, check.names = FALSE)
+        # Read in result file, skipping lines 1-6 as this info is not required
+        nl_result <- read.csv(paste(FILEPATH, "/", SAMPLE, "/",
+                                    LHCSAMPLE_RESULTFILENAME, SAMPLE,
+                                    ".csv", sep = ""), sep = ",",
+                              skip = 6, check.names = FALSE)
 
-      # ORDER IT BY RUN FOR EFFICIENCY LATER
-      NL_RESULT_ORDERED <- NL_RESULT[order(NL_RESULT[, 1]), ]
+        # ORDER IT BY RUN FOR EFFICIENCY LATER
+        nl_result_ordered <- nl_result[order(nl_result[, 1]), ]
 
-      TIMESTEP_RESULTS <- subset(NL_RESULT_ORDERED,
-                                 NL_RESULT_ORDERED["[step]"] == TIMESTEP)
+        TIMESTEP_RESULTS <- subset(nl_result_ordered,
+                                   nl_result_ordered["[step]"] == TIMESTEP)
 
-      # NOW TO CREATE THE RESULTS FOR THIS SAMPLE SET
-      # NETLOGO DOES GIVE THE OPTION OF RUNNING REPLICATES OF THE SAME
-      # EXPERIMENT. SO THERE MAY BE A FEW ROWS HERE. THE SUMMARY METHOD
-      # WILL TAKE CARE OF THESE REPLICATES
-      # FIRST LETS SET UP THE NUMBER OF PARAMETER ROWS
-      param_set <- LHCTABLE[SAMPLE, ]
+        # Create results for sample
+        # As Netlogo gives option for replicates there may be more than 1 result
+        # Summary method takes care of that
+        # Set up number of parameter rows:
+        param_set <- lhc_table[SAMPLE, ]
 
-      # Make duplicates of the parameters to match the number of replicate runs
-      PARAMS <- NULL
-      for (paramval in 1:ncol(param_set)) {
-        PARAMS <- cbind(PARAMS, param_set[[paramval]])
-      }
+        # Make duplicates of the parameters to match the number of replicate runs
+        PARAMS <- NULL
+        for (paramval in 1:ncol(param_set)) {
+          PARAMS <- cbind(PARAMS, param_set[[paramval]])
+        }
 
-      DUP_PARAMS <- NULL
-      for (r in 1:nrow(TIMESTEP_RESULTS) - 1) {
-        DUP_PARAMS <- rbind(DUP_PARAMS, PARAMS)
-      }
+        DUP_PARAMS <- NULL
+        for (r in 1:nrow(TIMESTEP_RESULTS) - 1) {
+          DUP_PARAMS <- rbind(DUP_PARAMS, PARAMS)
+        }
 
-      # NOW WE CAN ADD THE RESULTS FOR EACH NETLOGO RUN
-      for (RESPONSE in 1:length(MEASURES)) {
-        DUP_PARAMS <- cbind(DUP_PARAMS,
-                            TIMESTEP_RESULTS[MEASURES[RESPONSE]][, 1])
-      }
+        # Now add results for each netlogo run
+        for (RESPONSE in 1:length(MEASURES)) {
+          DUP_PARAMS <- cbind(DUP_PARAMS,
+                              TIMESTEP_RESULTS[MEASURES[RESPONSE]][, 1])
+        }
 
-      ALL_SIM_MEDIAN_RESULTS <- rbind(ALL_SIM_MEDIAN_RESULTS, DUP_PARAMS)
-
-    } else  {
-      print(paste("ERROR: Results for Sample ", SAMPLE, " not found",
-                  sep = ""))
-
+        ALL_SIM_MEDIAN_RESULTS <- rbind(ALL_SIM_MEDIAN_RESULTS, DUP_PARAMS)
     }
-  }
-  # NOW OUTPUT ALL THE MEDIAN RESULTS TO THE SPECIFIED FILEPATH
-  colnames(ALL_SIM_MEDIAN_RESULTS) <- cbind(t(names(LHCTABLE)),
-                                            t(MEASURES))
 
-  # OUTPUT IF THE RESULTS ARE NOT BLANK
-  if (!is.null(ALL_SIM_MEDIAN_RESULTS)) {
-    RESULTSFILE <- paste(FILEPATH, "/", LHC_ALL_SIM_RESULTS_FILE,
-                         sep = "")
-    print(paste("Writing Median Results to CSV File: ", RESULTSFILE,
-                sep = ""))
-    write.csv(ALL_SIM_MEDIAN_RESULTS, RESULTSFILE, quote = FALSE,
-              row.names = FALSE)
-  }
+    # Output if results not blank
+    if (!is.null(ALL_SIM_MEDIAN_RESULTS)) {
+      colnames(ALL_SIM_MEDIAN_RESULTS) <- cbind(t(names(lhc_table)),
+                                                t(MEASURES))
+      write_data_to_csv(ALL_SIM_MEDIAN_RESULTS, file.path(FILEPATH, LHC_ALL_SIM_RESULTS_FILE))
+      message(paste("Writing Median Results to CSV File: ", file.path(FILEPATH, LHC_ALL_SIM_RESULTS_FILE), sep = ""))
+    }
+  },
+  error=function(cond) {
+    message("Error in finding files required for Spartan Netlogo Analysis")
+    message("Spartan Function Terminated")
+  },
+  warning=function(cond) {
+    message("Error in finding files required for Spartan Netlogo Analysis")
+    message("Spartan Function Terminated")
+  })
 }

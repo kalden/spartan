@@ -235,114 +235,112 @@ summarise_lhc_sweep_responses <- function(
 #' @param TIMEPOINTSCALE Implemented so this method can be used when analysing
 #'  multiple simulation timepoints. Sets the scale of the timepoints being
 #'  analysed, e.g. "Hours"
+#' @param check_done If using multiple timepoints, whether data entry has been
+#' checked
 #'
 #' @export
 lhc_generateLHCSummary <- function(FILEPATH, PARAMETERS, MEASURES,
                                    LHC_ALL_SIM_RESULTS_FILE,
                                    LHCSUMMARYFILENAME,
                                    SPARTAN_PARAMETER_FILE = NULL,
-                                   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+                                   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done=FALSE) {
 
-  # SPARTAN 2.0 - READS THIS INFORMATION FROM A SINGLE FILE, NOT ONE PER
-  # PARAMETER SET AS IN PREVIOUS VERSIONS THEN PRODUCES A SUMMARY FILE
-  # WITH THE PARAMETERS USED AND THE MEDIAN OF EACH MEASURE OVER THE
-  # NUMBER OF REPLICATE RUNS
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  # Run if all checks pass:
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
-  if (is.null(TIMEPOINTS)) {
-    if (file.exists(FILEPATH)) {
-      # LHCSUMMARYFILENAME IS LHCSummary.csv for 1 timepoint
-      # READ IN THE LHC DESIGN TABLE - NEED TO REFER TO THIS LATER AS
-      # PARAMETERS ARE LISTED WITH THE MEDIAN RESULT SET
-      print(join_strings_space(c("Generating LHC summary file from median",
-            "simulation results (lhc_generateLHCSummary)")))
+    if (is.null(TIMEPOINTS)) {
 
-      # SUMMARY TABLE WILL STORE THE PARAMETERS USED IN THE RUN SET,
-      # AND THE MEDIAN OUTPUT MEASURES, FOR EACH SET
-      SUMMARYTABLE <- NULL
+      message("Generating LHC summary file from median simulation results (lhc_generateLHCSummary)")
 
-      # READ IN THE RESULT FILE - EITHER PROVIDED OR CONSTRUCTED BY THE FIRST
-      # LHC METHOD IN SPARTAN
-      LHC_ALL_SIM_RESULTS <- read.csv(paste(FILEPATH, "/",
-                                            LHC_ALL_SIM_RESULTS_FILE,
-                                            sep = ""),
-                                      header = TRUE, check.names = FALSE)
+      # Stores parameters used and their median output responses, for all sets
+      summary_table <- NULL
 
-      # NOW WE ARE PROCESSING A FILE WITH MULTIPLE RUNS OF THE SAME PARAMETER
-      # SET. TO SAVE IMPORTING THE PARAMETER FILE (AS THIS MAY NOT ALWAYS BE
-      # AVAILABLE), THIS READS THE PARAMETERS IN. THUS WE PUT A CHECK IN TO
-      # MAKE SURE WE DO NOT PROCESS THE SAME SET OF PARAMETERS TWICE (WHICH
-      # WE ASSUME ARE IN ORDER). WE DO THIS BY COMPARING THE SET WE HAVE JUST
-      # PROCESSED TO THE ONE IN THE NEXT ROW, THUS IT IS IMPORTANT THIS FILE
-      # IS IN ORDER
+      # Read in LHC result file
+      lhc_all_sim_results = read_from_csv(file.path(FILEPATH,LHC_ALL_SIM_RESULTS_FILE))
+
+      # Reads parameters from result file rather than the spartan file, incase
+      # this is not available. Assumes ordered, in that when a different parameter
+      # set is found, the assumption is made that all the simulations under those
+      # conditions have been processed.
       string_last_params_seen <- ""
 
-      # NOW PROCESS EACH ROW OF THE RESULTS FILE
-      for (row in 1:nrow(LHC_ALL_SIM_RESULTS)) {
-        # GET THE PARAMETERS FROM THE RESULT FILE - length parameters
-        # put in such that the output measures are not included
-        SIM_PARAMS <- LHC_ALL_SIM_RESULTS[row, 1:length(PARAMETERS)]
-        # CONVERT TO A STRING TO DO THE COMPARISON DISCUSSED ABOVE
-        STRING_SIM_PARAMS <- paste(SIM_PARAMS, collapse = " ")
+      # Now process each row of the result file
+      for (row in 1:nrow(lhc_all_sim_results)) {
+        # Get the parameters from the result file
+        sim_params <- lhc_all_sim_results[row, 1:length(PARAMETERS)]
+        # Convert to string so comparison can be made:
+        sim_params_string <- paste(sim_params, collapse = " ")
 
-        if (STRING_SIM_PARAMS != string_last_params_seen) {
-          string_last_params_seen <- STRING_SIM_PARAMS
+        # Process if a new parameter set
+        if (sim_params_string != string_last_params_seen) {
+          string_last_params_seen <- sim_params_string
 
-          # CONSTRUCTING A ROW, SO ADD THE PARAMETERS TO BEGIN THIS
-          SUMMARY_SIM_ROW <- SIM_PARAMS
+          # Subset the results to just this set of parameters
+          param_result <- subset_results_by_param_value_set(
+            PARAMETERS, lhc_all_sim_results, sim_params)
 
-          # NOW TO SUBSET THE RESULTS (WHICH CONTAIN MULTIPLE SIM RESULTS
-          # FOR THIS SET OF PARAMETERS) TO CALC MEDIANS
-          PARAM_RESULT <- subset_results_by_param_value_set(
-            PARAMETERS, LHC_ALL_SIM_RESULTS, SIM_PARAMS)
-
-          # NOW WE CAN CALCULATE MEDIANS FOR EACH MEASURE
-          for (l in 1:length(MEASURES)) {
-            SUMMARY_SIM_ROW <- cbind(SUMMARY_SIM_ROW,
-                                     median(PARAM_RESULT[[MEASURES[l]]]))
-
-          }
-          # NOW ADD THE ROW TO THE SET FOR ALL SIMULATIONS
-          SUMMARYTABLE <- rbind(SUMMARYTABLE, SUMMARY_SIM_ROW)
+          # Now calculate medians for each measure and bind to result set
+          summary_table <- rbind(summary_table,
+                                 calculate_medians_for_all_measures(
+                                   sim_params, param_result, MEASURES))
         }
       }
       # NOW ADD HEADERS TO THIS INFORMATION AND WRITE TO FILE
-      colnames(SUMMARYTABLE) <- c(PARAMETERS, MEASURES)
+      colnames(summary_table) <- c(PARAMETERS, MEASURES)
 
-      SUMMARYRESULTSFILE <- paste(FILEPATH, "/", LHCSUMMARYFILENAME, sep = "")
-      write.csv(SUMMARYTABLE, SUMMARYRESULTSFILE, quote = FALSE,
-                row.names = FALSE)
+      write_data_to_csv(summary_table, file.path(FILEPATH, LHCSUMMARYFILENAME))
 
-      print(paste("LHC Summary file output to ", SUMMARYRESULTSFILE, sep = ""))
+      message(paste("LHC Summary file output to ", file.path(FILEPATH, LHCSUMMARYFILENAME), sep = ""))
     } else {
-      print("The directory specified in FILEPATH does not exist.
-            No analysis performed")
-    }
-  } else {
-    # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
-    for (n in 1:length(TIMEPOINTS)) {
-      current_time <- TIMEPOINTS[n]
-      print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
-
-      lhc_all_sim_results_format <- check_file_extension(
-        LHC_ALL_SIM_RESULTS_FILE)
-      LHC_ALL_SIM_RESULTS_FULL <- paste(substr(
-        LHC_ALL_SIM_RESULTS_FILE, 0, nchar(LHC_ALL_SIM_RESULTS_FILE) - 4),
-        "_", current_time, ".", lhc_all_sim_results_format, sep = "")
-
-      lhc_summary_format <- check_file_extension(LHCSUMMARYFILENAME)
-      LHCSUMMARYFILENAME_FULL <- paste(substr(LHCSUMMARYFILENAME, 0,
-                                              nchar(LHCSUMMARYFILENAME) - 4),
-                                       "_", current_time, ".",
-                                       lhc_summary_format, sep = "")
-
-      lhc_generateLHCSummary(FILEPATH, PARAMETERS, MEASURES,
-                             LHC_ALL_SIM_RESULTS_FULL,
-                             LHCSUMMARYFILENAME_FULL,
-                             SPARTAN_PARAMETER_FILE,
-                             NULL, NULL)
-
+    # Process each timepoint
+    lhc_generateLHCSummary_overTime(
+      FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE,
+      LHCSUMMARYFILENAME, SPARTAN_PARAMETER_FILE = NULL, TIMEPOINTS,
+      TIMEPOINTSCALE)
     }
   }
+}
+
+#' Pre-process analysis settings if multiple timepoints are being considered
+#'
+#' @inheritParams lhc_generateLHCSummary_overTime
+lhc_generateLHCSummary_overTime <- function(
+  FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME,
+  SPARTAN_PARAMETER_FILE = NULL, TIMEPOINTS, TIMEPOINTSCALE) {
+
+  for (n in 1:length(TIMEPOINTS)) {
+    current_time <- TIMEPOINTS[n]
+    message(paste("Processing Timepoint: ", current_time, sep = ""))
+
+    lhc_allsim_results_full <- append_time_to_argument(
+      LHC_ALL_SIM_RESULTS_FILE, current_time,
+      check_file_extension(LHC_ALL_SIM_RESULTS_FILE))
+
+    lhc_summaryfilename_full <- append_time_to_argument(
+      LHCSUMMARYFILENAME, current_time,
+      check_file_extension(LHCSUMMARYFILENAME))
+
+    lhc_generateLHCSummary(
+      FILEPATH, PARAMETERS, MEASURES, lhc_allsim_results_full,
+      lhc_summaryfilename_full, SPARTAN_PARAMETER_FILE, NULL, NULL,
+      check_done=TRUE)
+  }
+}
+
+#' Calculate medians for all measures for a simulation parameter result
+#' @param sim_params Current parameter set
+#' @param param_result Set of results under those conditions
+#' @param measures Simulation output responses
+#' @return Summary statistics for this set of parameters (with parameter values)
+calculate_medians_for_all_measures <- function(sim_params, param_result,
+                                               measures) {
+  summary_sim_row <- sim_params
+  for (l in 1:length(measures)) {
+    summary_sim_row <- cbind(summary_sim_row,
+                             median(param_result[[measures[l]]]))
+  }
+  return(summary_sim_row)
 }
 
 

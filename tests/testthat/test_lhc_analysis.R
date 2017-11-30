@@ -196,3 +196,159 @@ test_that("lhc_generatePRCoEffs", {
   file.remove(file.path(getwd(),"LHC_Results.csv"))
   file.remove(file.path(getwd(),"Prcc_Out.csv"))
 })
+
+test_that("calculate_medians_for_all_measures", {
+
+  load(file.path("LHC_Param_Result_For_Testing.Rda"))
+
+  # Check medians calculated correctly
+  medians <- calculate_medians_for_all_measures(cbind(63.88703,0.738688,0.1504622,0.0299383,0.8666869,0.5691602), param_result,
+                                                 c("Velocity","Displacement"))
+
+  # Check structure
+  expect_true(nrow(medians)==1)
+  expect_true(ncol(medians)==8)
+  expect_false(any(is.na(medians)))
+
+  # Check data
+  expect_equal(toString(medians[1,]),"63.88703, 0.738688, 0.1504622, 0.0299383, 0.8666869, 0.5691602, 1.08958863106698, 27.9770280485774")
+
+})
+
+test_that("lhc_generateLHCSummary", {
+
+  # All internal functions checked - need to now check that we get output
+  # Setup - data contains a few samples - the complete 500 sets of 500 runs was too big for an R package
+  load("LHC_Sim_Data_For_Test.Rda")
+  # write this so it can be read in
+  write.csv(lhc_sim_data_for_test,file="LHC_Sim_Data_For_Test.csv",row.names=F, quote=F)
+
+  lhc_generateLHCSummary(getwd(), c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
+                                                "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope"),
+                                     c("Velocity","Displacement"), "LHC_Sim_Data_For_Test.csv", "LHC_Summary.csv")
+
+  # Check structure
+  expect_true(file.exists("LHC_Summary.csv"))
+  result<-read.csv("LHC_Summary.csv",header=T,sep=",")
+  expect_true(nrow(result)==3)
+  expect_true(ncol(result)==8)
+  expect_false(any(is.na(result)))
+
+  # Check data
+  expect_equal(toString(result[1,]),"63.8870291068684, 0.738687975020334, 0.150462160198018, 0.0299383036779426, 0.866686868487718, 0.569160230072564, 1.08958863106698, 27.9770280485774")
+  expect_equal(toString(result[2,]),"97.4719759861007, 0.241536056525633, 0.127347518739663, 0.070033726479502, 0.725104774672724, 3.19126452945347, 1.79095368197744, 28.9958618811378")
+  expect_equal(toString(result[3,]),"12.400164475292, 0.713222049494088, 0.324178139681555, 0.0531356689167907, 0.65061536949831, 4.91505450518127, 2.86249336792086, 36.2925556443294")
+
+  file.remove(file.path(getwd(),"LHC_Summary.csv"))
+  file.remove(file.path(getwd(),"LHC_Sim_Data_For_Test.csv"))
+
+})
+
+test_that("lhc_generateLHCSummary_overTime", {
+
+  # Setup:
+  # Going to use the test dataset as hour 12
+  load("LHC_Sim_Data_For_Test.Rda")
+  write.csv(lhc_sim_data_for_test,file="LHC_Sim_Data_For_Test_12.csv",row.names=F, quote=F)
+  # Then we have an hour 36 dataset
+  load("LHC_Sim_Data_For_Test_36.Rda")
+  write.csv(lhc_sim_data_for_test_36,file="LHC_Sim_Data_For_Test_36.csv",row.names=F, quote=F)
+
+  lhc_generateLHCSummary(getwd(), c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
+                                    "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope"),
+                         c("Velocity","Displacement"), "LHC_Sim_Data_For_Test.csv", "LHC_Summary.csv",TIMEPOINTS=c(12,36),
+                         TIMEPOINTSCALE="Hours")
+
+  # Check structure
+  expect_true(file.exists("LHC_Summary_12.csv"))
+  result<-read.csv("LHC_Summary_12.csv",header=T,sep=",")
+  expect_true(nrow(result)==3)
+  expect_true(ncol(result)==8)
+  expect_false(any(is.na(result)))
+
+  # Check data
+  expect_equal(toString(result[1,]),"63.8870291068684, 0.738687975020334, 0.150462160198018, 0.0299383036779426, 0.866686868487718, 0.569160230072564, 1.08958863106698, 27.9770280485774")
+  expect_equal(toString(result[2,]),"97.4719759861007, 0.241536056525633, 0.127347518739663, 0.070033726479502, 0.725104774672724, 3.19126452945347, 1.79095368197744, 28.9958618811378")
+  expect_equal(toString(result[3,]),"12.400164475292, 0.713222049494088, 0.324178139681555, 0.0531356689167907, 0.65061536949831, 4.91505450518127, 2.86249336792086, 36.2925556443294")
+
+  expect_true(file.exists("LHC_Summary_36.csv"))
+  result<-read.csv("LHC_Summary_36.csv",header=T,sep=",")
+  expect_true(nrow(result)==3)
+  expect_true(ncol(result)==8)
+  expect_false(any(is.na(result)))
+
+  # Check data
+  expect_equal(toString(result[1,]),"63.8870291068684, 0.738687975020334, 0.150462160198018, 0.0299383036779426, 0.866686868487718, 0.569160230072564, 1.91462180475669, 28.5928070217056")
+  expect_equal(toString(result[2,]),"97.4719759861007, 0.241536056525633, 0.127347518739663, 0.070033726479502, 0.725104774672724, 3.19126452945347, 2.05418836664286, 26.3628999199738")
+  expect_equal(toString(result[3,]),"12.400164475292, 0.713222049494088, 0.324178139681555, 0.0531356689167907, 0.65061536949831, 4.91505450518127, 3.18666366897408, 31.010721896747")
+
+  file.remove(file.path(getwd(),"LHC_Summary_12.csv"))
+  file.remove(file.path(getwd(),"LHC_Summary_36.csv"))
+  file.remove(file.path(getwd(),"LHC_Sim_Data_For_Test_12.csv"))
+  file.remove(file.path(getwd(),"LHC_Sim_Data_For_Test_36.csv"))
+})
+
+test_that("lhc_process_netlogo_result", {
+  # Check that some summary output is achieved from netlogo analysis
+
+  # Need to create some output - say 3 samples
+  dir.create(file.path(getwd(),"1"))
+  dir.create(file.path(getwd(),"2"))
+  dir.create(file.path(getwd(),"3"))
+  # Setup the files
+  # Analysis skips the first 6 lines, so need to have some data in there that can be skipped
+  skip_line<-cbind(0,0,0,0,0,0,0,0,0,0)
+  samp1<-rbind(skip_line,skip_line,skip_line,skip_line,skip_line)
+  samp2<-rbind(skip_line,skip_line,skip_line,skip_line,skip_line)
+  samp3<-rbind(skip_line,skip_line,skip_line,skip_line,skip_line)
+  samp1<-rbind(samp1,cbind("[run number]","people","infectiousness","chance-recover","duration","[step]","death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"))
+  samp2<-rbind(samp2,cbind("[run number]","people","infectiousness","chance-recover","duration","[step]","death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"))
+  samp3<-rbind(samp3,cbind("[run number]","people","infectiousness","chance-recover","duration","[step]","death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"))
+  samp1<-rbind(samp1,cbind("1","150","84.6993822547048","63.6780966711044","29.6453358204709","5200","17513","30722","44","59"))
+  samp2<-rbind(samp2,cbind("1","150","22.6519469891489","13.7841268616915","24.1213734486513","5200","42758","6773","316","1314"))
+  samp3<-rbind(samp3,cbind("1","150","49.9834824550524","26.2489275322109","13.6645698722941","5200","58969","20596","67","33"))
+
+  # Write to file
+  write.csv(samp1,file=file.path(getwd(),"1","lhcResult1.csv"),row.names=F)
+  write.csv(samp1,file=file.path(getwd(),"2","lhcResult2.csv"))
+  write.csv(samp1,file=file.path(getwd(),"3","lhcResult3.csv"))
+  # Parameter file
+  param_file<-rbind(cbind(84.6993822547048,63.6780966711044,29.6453358204709),
+                    cbind(22.6519469891489,13.7841268616915,24.1213734486513),
+                    cbind(49.9834824550524,26.2489275322109,13.6645698722941))
+  colnames(param_file) <- c("infectiousness","chance-recover","duration")
+  write.csv(param_file,file="Netlogo_Spartan_Param_File.csv",row.names=F,quote=F)
+
+  # Now for the analysis
+  lhc_process_netlogo_result(getwd(), "lhcResult",
+                             "Netlogo_Spartan_Param_File.csv", 3,
+                              c("death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"), "Virus_LHCSummary_Medians.csv",
+                                         5200)
+
+  # Check existence and structure
+  expect_true(file.exists("Virus_LHCSummary_Medians.csv"))
+  result<-read.csv("Virus_LHCSummary_Medians.csv",header=T,sep=",")
+  expect_true(nrow(result)==3)
+  expect_true(ncol(result)==7)
+  expect_false(any(is.na(result)))
+
+  # Check values to known results
+  expect_equal(toString(result[1,]),"84.6993822547048, 63.6780966711044, 29.6453358204709, 17513, 30722, 44, 59")
+  expect_equal(toString(result[2,]),"22.6519469891489, 13.7841268616915, 24.1213734486513, 17513, 30722, 44, 59")
+  expect_equal(toString(result[3,]),"49.9834824550524, 26.2489275322109, 13.6645698722941, 17513, 30722, 44, 59")
+
+  # Teardown
+  unlink(file.path(getwd(),"1"),recursive = TRUE)
+  unlink(file.path(getwd(),"2"),recursive = TRUE)
+  unlink(file.path(getwd(),"3"),recursive = TRUE)
+  file.remove(file.path(getwd(),"Virus_LHCSummary_Medians.csv"))
+  file.remove(file.path(getwd(),"Netlogo_Spartan_Param_File.csv"))
+
+  # What if file doesn't exist
+  expect_message(lhc_process_netlogo_result(getwd(), "lhcResult",
+                                            "Netlogo_Spartan_Param_File.csv", 1,
+                                            c("death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"), "Virus_LHCSummary_Medians.csv",
+                                            5200),"Error in finding files required for Spartan Netlogo Analysis")
+
+  })
+
