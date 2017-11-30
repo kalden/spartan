@@ -61,7 +61,8 @@ generate_list_of_checks <-function(argNames)
       check_methods_to_call[[list_index]] = check_text_list            # TAKES ALL ARGS FIXED
     else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMSAMPLES","NUMCURVES","EXPERIMENT_REPETITIONS"))
       check_methods_to_call[[list_index]] = check_argument_positive_int      # TAKES ALL ARGS FIXED
-    else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "ALTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION", "ATESTRESULTFILENAME"))
+    else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION", "ATESTRESULTFILENAME",
+                                 "SPARTAN_PARAMETER_FILE","LHC_ALL_SIM_RESULTS_FILE", "LHCSUMMARYFILENAME", "CORCOEFFSOUTPUTFILE"))
       check_methods_to_call[[list_index]] = check_text     # TAKES ALL ARGS FIXED
     else if(argNames[arg] == "RUN_METRICS_EVERYSTEP")
       check_methods_to_call[[list_index]] = check_boolean
@@ -80,7 +81,7 @@ generate_list_of_checks <-function(argNames)
     # To deal with AA_SIM_RESULTS_OBJECT, and OUTPUTFILECOLEND, which are checked by FILE and START respectively,
     # and PMAX, BASELINE, PINC, that are checked in PMIN/PARAMVALS checks,we put in an ignore, and detect this later
     # This needs to be done to keep the function list referenced to the argument names
-    else if(argNames[arg] %in% c("AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE"))
+    else if(argNames[arg] %in% c("AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE","ALTFILENAME"))
       check_methods_to_call[[list_index]] = NULL
 
     list_index = list_index + 1

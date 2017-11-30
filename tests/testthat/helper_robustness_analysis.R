@@ -68,9 +68,46 @@ setup_multiple_parameter_result_analysis_overTime <- function()
   make_test_sim_result_file(paste(getwd(),"/chemoUpperLinearAdjust/2/1/Test_Robustness_Result_36.csv",sep=""),2)
 }
 
+setup_lhc_result_analysis <- function()
+{
+  # Some setup here
+  dir.create(file.path(getwd(),"1"))
+  dir.create(file.path(getwd(),"1","1"))
+  dir.create(file.path(getwd(),"1","2"))
+  make_test_sim_result_file(paste(getwd(),"/1/1/Test_LHC_Result.csv",sep=""),1)
+  make_test_sim_result_file(paste(getwd(),"/1/2/Test_LHC_Result.csv",sep=""),2)
+  dir.create(file.path(getwd(),"2"))
+  dir.create(file.path(getwd(),"2","1"))
+  dir.create(file.path(getwd(),"2","2"))
+  make_test_sim_result_file(paste(getwd(),"/2/1/Test_LHC_Result.csv",sep=""),2)
+  make_test_sim_result_file(paste(getwd(),"/2/2/Test_LHC_Result.csv",sep=""),3)
+
+}
+
+setup_lhc_result_analysis_overtime <- function()
+{
+  # Some setup here
+  dir.create(file.path(getwd(),"1"))
+  dir.create(file.path(getwd(),"1","1"))
+  dir.create(file.path(getwd(),"1","2"))
+  make_test_sim_result_file(paste(getwd(),"/1/1/Test_LHC_Result_12.csv",sep=""),1)
+  make_test_sim_result_file(paste(getwd(),"/1/1/Test_LHC_Result_36.csv",sep=""),2)
+  make_test_sim_result_file(paste(getwd(),"/1/2/Test_LHC_Result_12.csv",sep=""),2)
+  make_test_sim_result_file(paste(getwd(),"/1/2/Test_LHC_Result_36.csv",sep=""),3)
+  dir.create(file.path(getwd(),"2"))
+  dir.create(file.path(getwd(),"2","1"))
+  dir.create(file.path(getwd(),"2","2"))
+  make_test_sim_result_file(paste(getwd(),"/2/1/Test_LHC_Result_12.csv",sep=""),2)
+  make_test_sim_result_file(paste(getwd(),"/2/1/Test_LHC_Result_36.csv",sep=""),3)
+  make_test_sim_result_file(paste(getwd(),"/2/2/Test_LHC_Result_12.csv",sep=""),3)
+  make_test_sim_result_file(paste(getwd(),"/2/2/Test_LHC_Result_36.csv",sep=""),1)
+
+}
+
 
 cleanup <- function()
 {
   unlink(paste(getwd(),"/chemoLowerLinearAdjust/",sep=""), recursive = TRUE)
   unlink(paste(getwd(),"/chemoUpperLinearAdjust/",sep=""), recursive = TRUE)
 }
+

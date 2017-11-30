@@ -443,9 +443,10 @@ join_strings_nospace <- function(string_list) {
 #' Shortcut function for writing data to CSV file
 #' @param outputData Data to write to CSV file
 #' @param outputFile Name of the output file
-write_data_to_csv <- function(outputData, outputFile)
+#' @param row_names Boolean as to whether to print row names
+write_data_to_csv <- function(outputData, outputFile, row_names = FALSE)
 {
-  write.csv(outputData, outputFile, row.names = FALSE, quote = FALSE)
+  write.csv(outputData, outputFile, row.names = row_names, quote = FALSE)
 }
 
 #' To save retyping all options, function to read CSV data
