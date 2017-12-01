@@ -456,3 +456,39 @@ read_from_csv <- function(filepath)
 {
   return(read.csv(filepath, sep = ",", header = TRUE, check.names = FALSE))
 }
+
+#' Check whether a file exists
+#' @param filepath File path to check
+#' @return Boolean stating whether this file exists or not
+check_file_exists <- function(filepath) {
+  if(file.exists(filepath))
+    return(TRUE)
+  else
+  {
+    message(paste(filepath, " does not exist",sep=""))
+    return(FALSE)
+  }
+}
+
+#' Output a ggplot graph in the requested formats
+#' @param GRAPHFILE Path and name of the file to output
+#' @param OUTPUT_TYPE List of the output types to produce
+#' @param output_graph Graph to output
+output_ggplot_graph <-function(GRAPHFILE, OUTPUT_TYPE, output_graph) {
+  for (file_type in 1:length(OUTPUT_TYPE)) {
+    # Save the graphs in the requested format
+    if (OUTPUT_TYPE[file_type] == "PDF") {
+      ggsave(paste(GRAPHFILE, ".pdf", sep = ""),
+             plot = output_graph, width = 4, height = 4)
+    } else if (OUTPUT_TYPE[file_type] == "PNG") {
+      ggsave(paste(GRAPHFILE, ".png", sep = ""),
+             plot = output_graph, width = 4, height = 4)
+    } else if (OUTPUT_TYPE[file_type] == "TIFF") {
+      ggsave(paste(GRAPHFILE, ".tiff", sep = ""),
+             plot = output_graph, width = 4, height = 4)
+    } else if (OUTPUT_TYPE[file_type] == "BMP") {
+      ggsave(paste(GRAPHFILE, ".bmp", sep = ""),
+             plot = output_graph, width = 4, height = 4)
+    }
+  }
+}

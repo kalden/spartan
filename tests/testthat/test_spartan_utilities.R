@@ -185,3 +185,9 @@ test_that("get_median_results_for_all_measures", {
   expect_equal(round(medians,digits=5),cbind(4.49823, 54.81939))
 })
 
+test_that("check_file_exists" , {
+
+  expect_true(check_file_exists(getwd()))
+  expect_message(check_file_exists(paste(getwd(),"/Folder",sep="")),paste(getwd(),"/Folder does not exist",sep=""))
+})
+

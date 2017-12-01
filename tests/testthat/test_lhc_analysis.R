@@ -94,7 +94,7 @@ test_that("lhc_process_sample_run_subsets_overTime", {
 test_that("calculate_prcc_for_all_measures", {
 
   load(file.path("Coeff_data_for_test.Rda"))
-  load(file.path("LHC_Result_for_Test.Rda"))
+  load(file.path("LHC_Summary.Rda"))
   PARAMETERS<- c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
                  "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope")
   COEFFPARAMCOL <- LHCRESULTFILE[, PARAMETERS[1]]
@@ -110,7 +110,7 @@ test_that("calculate_prcc_for_all_measures", {
 
 test_that("calculate_prccs_all_parameters", {
 
-  load(file.path("LHC_Result_for_Test.Rda"))
+  load(file.path("LHC_Summary.Rda"))
   PARAMETERS<- c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
                  "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope")
   results <- calculate_prccs_all_parameters(PARAMETERS, LHCRESULTFILE, c("Velocity","Displacement"))
@@ -130,10 +130,10 @@ test_that("calculate_prccs_all_parameters", {
 test_that("lhc_generatePRCoEffs_overTime", {
 
   # Setup:
-  load(file.path("LHC_Result_Hour12.Rda"))
-  load(file.path("LHC_Result_Hour36.Rda"))
-  write.csv(lhc_result_hour12,file="LHC_Results_12.csv",row.names=T,quote=F)
-  write.csv(lhc_result_hour36,file="LHC_Results_36.csv",row.names=T,quote=F)
+  load(file.path("LHC_Summary.Rda"))
+  load(file.path("LHC_Summary_36.Rda"))
+  write.csv(LHCRESULTFILE,file="LHC_Results_12.csv",row.names=T,quote=F)
+  write.csv(LHCRESULTFILE_36,file="LHC_Results_36.csv",row.names=T,quote=F)
 
   # All internal functions have been checked - we now just need to check output
   lhc_generatePRCoEffs(
@@ -170,7 +170,7 @@ test_that("lhc_generatePRCoEffs_overTime", {
 test_that("lhc_generatePRCoEffs", {
 
   # Setup:
-  load(file.path("LHC_Result_for_Test.Rda"))
+  load(file.path("LHC_Summary.Rda"))
   # Write to file so can be read in
   write.csv(LHCRESULTFILE,file="LHC_Results.csv",row.names=T,quote=F)
 

@@ -57,7 +57,7 @@ generate_list_of_checks <-function(argNames)
       check_methods_to_call[[list_index]] = check_filepath_exists  # TAKES ALL ARGS FIXED
     else if(argNames[arg] == "SAMPLESIZES")
       check_methods_to_call[[list_index]] = check_list_all_integers   # TAKES ALL ARGS FIXED
-    else if(argNames[arg] %in% c("PARAMETERS","MEASURES"))
+    else if(argNames[arg] %in% c("PARAMETERS","MEASURES","MEASURE_SCALE"))
       check_methods_to_call[[list_index]] = check_text_list            # TAKES ALL ARGS FIXED
     else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMSAMPLES","NUMCURVES","EXPERIMENT_REPETITIONS"))
       check_methods_to_call[[list_index]] = check_argument_positive_int      # TAKES ALL ARGS FIXED
@@ -78,6 +78,8 @@ generate_list_of_checks <-function(argNames)
       check_methods_to_call[[list_index]] = check_function_dependent_paramvals
     else if(argNames[arg] == "ALGORITHM")
       check_methods_to_call[[list_index]] = check_lhs_algorithm
+    else if(argNames[arg] == "OUTPUT_TYPE")
+      check_methods_to_call[[list_index]] = check_graph_output_type
     # To deal with AA_SIM_RESULTS_OBJECT, and OUTPUTFILECOLEND, which are checked by FILE and START respectively,
     # and PMAX, BASELINE, PINC, that are checked in PMIN/PARAMVALS checks,we put in an ignore, and detect this later
     # This needs to be done to keep the function list referenced to the argument names
@@ -208,7 +210,23 @@ check_global_param_sampling_args <- function(input_arguments, argument_name)
 
 }
 
-
+#' Check the requested graph types are correct (PDF, PNG, TIFF, BMP)
+#' @param input_arguments List of the arguments provided to the called function
+#' @param argument_name Null in this case, but keeps auto-called functions consistent
+#' @return Boolean stating the status of the pre-execution checks
+check_graph_output_type <- function(input_arguments, argument_name)
+{
+  outputs_requested <- eval(input_arguments$OUTPUT_TYPE)
+  for(out in 1:length(outputs_requested))
+  {
+    if(!outputs_requested[out] %in% c("PDF","PNG","TIFF","BMP"))
+    {
+      message("Graph types can only be PDF, PNG, TIFF, BMP")
+      return(FALSE)
+    }
+  }
+  return(TRUE)
+}
 
 #' Pre-execution checks to perform before the spartan robustness samplng
 #' technique is executed. Checks all parameter input

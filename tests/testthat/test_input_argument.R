@@ -513,3 +513,12 @@ test_that("check_aa_summariseReplicateRuns", {
   unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
 })
 
+test_that("check_graph_output_type", {
+  input_check <- make_input_arguments_object(OUTPUT_TYPE=c("PDF","PNG"))
+  expect_true(check_graph_output_type(input_check$input,"OUTPUT_TYPE"))
+
+  input_check <- make_input_arguments_object(OUTPUT_TYPE=c("PDF","R"))
+  expect_message(check_graph_output_type(input_check$input,"OUTPUT_TYPE"),"Graph types can only be PDF, PNG, TIFF, BMP")
+
+})
+
