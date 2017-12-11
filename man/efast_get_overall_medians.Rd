@@ -6,7 +6,8 @@
 replicates)}
 \usage{
 efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES,
-  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, current_time = NULL,
+  check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found, in folders
@@ -31,6 +32,10 @@ e.g. c(12,36,48,60)}
 
 \item{TIMEPOINTSCALE}{Sets the scale of the timepoints being analysed,
 e.g. "Hours"}
+
+\item{current_time}{If multiple timepoints, the current timepoint being processed}
+
+\item{check_done}{If multiple timepoints, whether the input has been checked}
 }
 \description{
 This method produces a summary of the results for a particular resampling

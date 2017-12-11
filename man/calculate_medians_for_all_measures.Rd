@@ -4,7 +4,8 @@
 \alias{calculate_medians_for_all_measures}
 \title{Calculate medians for all measures for a simulation parameter result}
 \usage{
-calculate_medians_for_all_measures(sim_params, param_result, measures)
+calculate_medians_for_all_measures(sim_params, param_result, measures,
+  bind_params = TRUE)
 }
 \arguments{
 \item{sim_params}{Current parameter set}
@@ -12,6 +13,8 @@ calculate_medians_for_all_measures(sim_params, param_result, measures)
 \item{param_result}{Set of results under those conditions}
 
 \item{measures}{Simulation output responses}
+
+\item{bind_params}{Whether to bind the parameter values to the output}
 }
 \value{
 Summary statistics for this set of parameters (with parameter values)

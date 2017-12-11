@@ -399,11 +399,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
             dev.off()
           }
         }
-      } else {
-        print("Cannot find Partial Rank Correlation Coefficients File.
-              Are you sure you have run the method to generate it?")
       }
-
     }
   } else {
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION

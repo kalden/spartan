@@ -172,6 +172,24 @@ test_that("plotPRCCSFromTimepointFiles", {
   file.remove("chemoLowerLinearAdjust_OverTime.pdf")
   file.remove("maxVCAMeffectProbabilityCutoff_OverTime.pdf")
   file.remove("vcamSlope_OverTime.pdf")
+
+  plotPRCCSFromTimepointFiles(getwd(), c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
+                                         "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope"),
+                              c("Velocity","Displacement"), "Test_Cor_Coeffs.csv", c(12,36),"Hours", DISPLAYPVALS = TRUE)
+
+  expect_true(file.exists("thresholdBindProbability_OverTime.pdf"))
+  expect_true(file.exists("chemoThreshold_OverTime.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_OverTime.pdf"))
+  expect_true(file.exists("chemoLowerLinearAdjust_OverTime.pdf"))
+  expect_true(file.exists("maxVCAMeffectProbabilityCutoff_OverTime.pdf"))
+  expect_true(file.exists("vcamSlope_OverTime.pdf"))
+
+  file.remove("thresholdBindProbability_OverTime.pdf")
+  file.remove("chemoThreshold_OverTime.pdf")
+  file.remove("chemoUpperLinearAdjust_OverTime.pdf")
+  file.remove("chemoLowerLinearAdjust_OverTime.pdf")
+  file.remove("maxVCAMeffectProbabilityCutoff_OverTime.pdf")
+  file.remove("vcamSlope_OverTime.pdf")
   file.remove("Test_Cor_Coeffs_12.csv")
   file.remove("Test_Cor_Coeffs_36.csv")
 

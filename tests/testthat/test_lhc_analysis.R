@@ -24,6 +24,34 @@ test_that("summarise_lhc_sweep_responses", {
 
 })
 
+test_that("summarise_replicate_runs", {
+  # Setup:
+  setup_lhc_result_analysis()
+  lhctable <- rbind(cbind(63.8870291068684,0.738687975020334,0.150462160198018,0.0299383036779426,0.866686868487718,0.569160230072564),
+                    cbind(97.4719759861007,0.241536056525633,0.127347518739663,0.070033726479502,0.725104774672724,3.19126452945347))
+  colnames(lhctable) <-c("thresholdBindProbability","chemoThreshold","chemoUpperLinearAdjust","chemoLowerLinearAdjust","maxVCAMeffectProbabilityCutoff","vcamSlope")
+  write.csv(lhctable,"Test_Param_File.csv",quote=F,row.names=F)
+
+
+  summary_stats <- lhc_process_sample_run_subsets(getwd(), "Test_Param_File.csv",  c("thresholdBindProbability","chemoThreshold","chemoUpperLinearAdjust","chemoLowerLinearAdjust","maxVCAMeffectProbabilityCutoff","vcamSlope"),
+                                                  2,2,c("Velocity","Displacement"),"Test_LHC_Result.csv",NULL,1,2,"LHC_Summary_File.csv")
+
+  summary_stats <- read_from_csv(file.path(getwd(),"LHC_Summary_File.csv"))
+
+  # Now can run the summary method:
+  summary_table <- summarise_replicate_runs(summary_stats, c("thresholdBindProbability","chemoThreshold","chemoUpperLinearAdjust","chemoLowerLinearAdjust","maxVCAMeffectProbabilityCutoff","vcamSlope"), c("Velocity","Displacement"))
+
+  expect_true(nrow(summary_table)==2)
+  expect_true(ncol(summary_table)==8)
+  expect_equal(toString(summary_table[1,]),"63.8870291068684, 0.738687975020334, 0.150462160198018, 0.0299383036779426, 0.866686868487718, 0.569160230072564, 2.129339007525, 43.64098720975")
+  expect_equal(toString(summary_table[2,]),"97.4719759861007, 0.241536056525633, 0.127347518739663, 0.070033726479502, 0.725104774672724, 3.19126452945347, 3.15687041465, 36.9342375117")
+
+  unlink(file.path(getwd(),"1"),recursive = TRUE)
+  unlink(file.path(getwd(),"2"),recursive = TRUE)
+  file.remove(file.path(getwd(),"Test_Param_File.csv"))
+  file.remove(file.path(getwd(),"LHC_Summary_File.csv"))
+})
+
 test_that("lhc_process_sample_run_subsets", {
 
   # All input has already been checked and those functions tested. The internal functions have been tested

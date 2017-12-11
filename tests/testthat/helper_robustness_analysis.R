@@ -104,6 +104,148 @@ setup_lhc_result_analysis_overtime <- function()
 
 }
 
+setup_efast_result_analysis <- function(overTime=FALSE)
+{
+  # Some setup here
+  # Curves:
+  dir.create(file.path(getwd(),"1"))
+  dir.create(file.path(getwd(),"2"))
+  # Parameters:
+  dir.create(file.path(getwd(),"1","1"))
+  dir.create(file.path(getwd(),"1","2"))
+  dir.create(file.path(getwd(),"2","1"))
+  dir.create(file.path(getwd(),"2","2"))
+  # Set
+  dir.create(file.path(getwd(),"1","1","1"))
+  dir.create(file.path(getwd(),"1","1","2"))
+  dir.create(file.path(getwd(),"1","2","1"))
+  dir.create(file.path(getwd(),"1","2","2"))
+  dir.create(file.path(getwd(),"2","1","1"))
+  dir.create(file.path(getwd(),"2","1","2"))
+  dir.create(file.path(getwd(),"2","2","1"))
+  dir.create(file.path(getwd(),"2","2","2"))
+  # Replicate
+  dir.create(file.path(getwd(),"1","1","1","1"))
+  dir.create(file.path(getwd(),"1","1","1","2"))
+  dir.create(file.path(getwd(),"1","1","2","1"))
+  dir.create(file.path(getwd(),"1","1","2","2"))
+  dir.create(file.path(getwd(),"1","2","1","1"))
+  dir.create(file.path(getwd(),"1","2","1","2"))
+  dir.create(file.path(getwd(),"1","2","2","1"))
+  dir.create(file.path(getwd(),"1","2","2","2"))
+  dir.create(file.path(getwd(),"2","1","1","1"))
+  dir.create(file.path(getwd(),"2","1","1","2"))
+  dir.create(file.path(getwd(),"2","1","2","1"))
+  dir.create(file.path(getwd(),"2","1","2","2"))
+  dir.create(file.path(getwd(),"2","2","1","1"))
+  dir.create(file.path(getwd(),"2","2","1","2"))
+  dir.create(file.path(getwd(),"2","2","2","1"))
+  dir.create(file.path(getwd(),"2","2","2","2"))
+
+  # Results:
+  if(!overTime)
+  {
+    make_test_sim_result_file(paste(getwd(),"/1/1/1/1/Test_eFAST_Result.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/1/1/1/2/Test_eFAST_Result.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/1/2/1/Test_eFAST_Result.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/1/2/2/Test_eFAST_Result.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/2/1/1/Test_eFAST_Result.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/2/1/2/Test_eFAST_Result.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/1/2/2/1/Test_eFAST_Result.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/2/2/2/Test_eFAST_Result.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/2/1/1/1/Test_eFAST_Result.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/1/1/2/Test_eFAST_Result.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/1/2/1/Test_eFAST_Result.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/2/1/2/2/Test_eFAST_Result.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/2/1/1/Test_eFAST_Result.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/2/1/2/Test_eFAST_Result.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/2/2/1/Test_eFAST_Result.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/2/2/2/Test_eFAST_Result.csv",sep=""),3)
+  }
+  else
+  {
+    make_test_sim_result_file(paste(getwd(),"/1/1/1/1/Test_eFAST_Result_12.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/1/1/1/2/Test_eFAST_Result_12.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/1/1/1/Test_eFAST_Result_36.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/1/1/2/Test_eFAST_Result_36.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/1/2/1/Test_eFAST_Result_12.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/1/2/2/Test_eFAST_Result_12.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/1/2/1/Test_eFAST_Result_36.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/1/2/2/Test_eFAST_Result_36.csv",sep=""),1)
+
+    make_test_sim_result_file(paste(getwd(),"/1/2/1/1/Test_eFAST_Result_12.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/1/2/1/2/Test_eFAST_Result_12.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/1/2/1/1/Test_eFAST_Result_36.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/2/1/2/Test_eFAST_Result_36.csv",sep=""),3)
+
+    make_test_sim_result_file(paste(getwd(),"/1/2/2/1/Test_eFAST_Result_12.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/2/2/2/Test_eFAST_Result_12.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/1/2/2/1/Test_eFAST_Result_36.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/1/2/2/2/Test_eFAST_Result_36.csv",sep=""),2)
+
+    make_test_sim_result_file(paste(getwd(),"/2/1/1/1/Test_eFAST_Result_12.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/1/1/2/Test_eFAST_Result_12.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/1/1/1/Test_eFAST_Result_36.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/1/1/2/Test_eFAST_Result_36.csv",sep=""),1)
+
+    make_test_sim_result_file(paste(getwd(),"/2/1/2/1/Test_eFAST_Result_12.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/2/1/2/2/Test_eFAST_Result_12.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/1/2/1/Test_eFAST_Result_36.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/2/1/2/2/Test_eFAST_Result_36.csv",sep=""),3)
+
+    make_test_sim_result_file(paste(getwd(),"/2/2/1/1/Test_eFAST_Result_12.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/2/1/2/Test_eFAST_Result_12.csv",sep=""),2)
+    make_test_sim_result_file(paste(getwd(),"/2/2/1/1/Test_eFAST_Result_36.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/2/1/2/Test_eFAST_Result_36.csv",sep=""),1)
+
+    make_test_sim_result_file(paste(getwd(),"/2/2/2/1/Test_eFAST_Result_12.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/2/2/2/Test_eFAST_Result_12.csv",sep=""),3)
+    make_test_sim_result_file(paste(getwd(),"/2/2/2/1/Test_eFAST_Result_36.csv",sep=""),1)
+    make_test_sim_result_file(paste(getwd(),"/2/2/2/2/Test_eFAST_Result_36.csv",sep=""),2)
+  }
+
+  # Param files, need one for each curve / parameter
+  params <- rbind(cbind(63.8870291068684,0.738687975020334),
+                    cbind(97.4719759861007,0.241536056525633))
+  write_data_to_csv(params,"Curve1_Param1.csv")
+  params <- rbind(cbind(0.571237586152129,0.513502848532337),
+                  cbind(25.1866222015367,0.488887463916953))
+  write_data_to_csv(params,"Curve1_Param2.csv")
+  params <- rbind(cbind(49.8020068169214,0.464272079301568),
+                  cbind(74.417391432306,0.439656694686184))
+  write_data_to_csv(params,"Curve2_Param1.csv")
+  params <- rbind(cbind(76.3518393369248,0.390425925455414),
+                  cbind(51.7364547215402,0.36581054084003))
+  write_data_to_csv(params,"Curve2_Param2.csv")
+}
+
+cleanup_efast <- function(overTime=FALSE)
+{
+  unlink(file.path(getwd(),"1"),recursive = TRUE)
+  unlink(file.path(getwd(),"2"),recursive = TRUE)
+  file.remove("Curve1_Param1.csv")
+  file.remove("Curve2_Param1.csv")
+  file.remove("Curve1_Param2.csv")
+  file.remove("Curve2_Param2.csv")
+  if(!overTime)
+  {
+    file.remove("Curve1_Parameter1_Results.csv")
+    file.remove("Curve1_Parameter2_Results.csv")
+    file.remove("Curve2_Parameter1_Results.csv")
+    file.remove("Curve2_Parameter2_Results.csv")
+  }
+  else
+  {
+    file.remove("Curve1_Parameter1_Results_12.csv")
+    file.remove("Curve1_Parameter2_Results_12.csv")
+    file.remove("Curve2_Parameter1_Results_12.csv")
+    file.remove("Curve2_Parameter2_Results_12.csv")
+    file.remove("Curve1_Parameter1_Results_36.csv")
+    file.remove("Curve1_Parameter2_Results_36.csv")
+    file.remove("Curve2_Parameter1_Results_36.csv")
+    file.remove("Curve2_Parameter2_Results_36.csv")
+  }
+}
 
 cleanup <- function()
 {

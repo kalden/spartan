@@ -194,7 +194,7 @@ summarise_lhc_sweep_responses <- function(
     all_sim_median_results <- rbind(all_sim_median_results, param_result)
   }
 
-  colnames(all_sim_median_results) <- cbind(t(parameters), t(measures))
+  colnames(all_sim_median_results) <- c(parameters, measures)
 
   return(all_sim_median_results)
 }
@@ -253,45 +253,16 @@ lhc_generateLHCSummary <- function(FILEPATH, PARAMETERS, MEASURES,
 
       message("Generating LHC summary file from median simulation results (lhc_generateLHCSummary)")
 
-      # Stores parameters used and their median output responses, for all sets
-      summary_table <- NULL
-
       # Read in LHC result file
       lhc_all_sim_results = read_from_csv(file.path(FILEPATH,LHC_ALL_SIM_RESULTS_FILE))
 
-      # Reads parameters from result file rather than the spartan file, incase
-      # this is not available. Assumes ordered, in that when a different parameter
-      # set is found, the assumption is made that all the simulations under those
-      # conditions have been processed.
-      string_last_params_seen <- ""
-
-      # Now process each row of the result file
-      for (row in 1:nrow(lhc_all_sim_results)) {
-        # Get the parameters from the result file
-        sim_params <- lhc_all_sim_results[row, 1:length(PARAMETERS)]
-        # Convert to string so comparison can be made:
-        sim_params_string <- paste(sim_params, collapse = " ")
-
-        # Process if a new parameter set
-        if (sim_params_string != string_last_params_seen) {
-          string_last_params_seen <- sim_params_string
-
-          # Subset the results to just this set of parameters
-          param_result <- subset_results_by_param_value_set(
-            PARAMETERS, lhc_all_sim_results, sim_params)
-
-          # Now calculate medians for each measure and bind to result set
-          summary_table <- rbind(summary_table,
-                                 calculate_medians_for_all_measures(
-                                   sim_params, param_result, MEASURES))
-        }
-      }
-      # NOW ADD HEADERS TO THIS INFORMATION AND WRITE TO FILE
-      colnames(summary_table) <- c(PARAMETERS, MEASURES)
+      # Stores parameters used and their median output responses, for all sets
+      summary_table <- summarise_replicate_runs(lhc_all_sim_results, PARAMETERS, MEASURES)
 
       write_data_to_csv(summary_table, file.path(FILEPATH, LHCSUMMARYFILENAME))
 
       message(paste("LHC Summary file output to ", file.path(FILEPATH, LHCSUMMARYFILENAME), sep = ""))
+
     } else {
     # Process each timepoint
     lhc_generateLHCSummary_overTime(
@@ -328,14 +299,68 @@ lhc_generateLHCSummary_overTime <- function(
   }
 }
 
+#' Summarises replicate runs of a parameter set. Used by LHC and eFAST
+#'
+#' @param lhc_all_sim_results All sim results for all parameter sets
+#' @param PARAMETERS Array containing the names of the parameters of which
+#' parameter samples will be generated
+#' @param MEASURES Array containing the names of the output measures which are
+#' used to analyse the simulation
+#' @param bind_params Whether to include the parameter values in the set of results
+#' (eFAST doesn't)
+#' @return Summary of responses under each parameter set
+summarise_replicate_runs <- function(lhc_all_sim_results, PARAMETERS, MEASURES, bind_params=TRUE)
+{
+  # Reads parameters from result file rather than the spartan file, incase
+  # this is not available. Assumes ordered, in that when a different parameter
+  # set is found, the assumption is made that all the simulations under those
+  # conditions have been processed.
+  string_last_params_seen <- ""
+  summary_table <- NULL
+
+  # Now process each row of the result file
+  for (row in 1:nrow(lhc_all_sim_results)) {
+    # Get the parameters from the result file
+    sim_params <- lhc_all_sim_results[row, 1:length(PARAMETERS)]
+    # Convert to string so comparison can be made:
+    sim_params_string <- paste(sim_params, collapse = " ")
+
+    # Process if a new parameter set
+    if (sim_params_string != string_last_params_seen) {
+      string_last_params_seen <- sim_params_string
+
+      # Subset the results to just this set of parameters
+      param_result <- subset_results_by_param_value_set(
+        PARAMETERS, lhc_all_sim_results, sim_params)
+
+      # Now calculate medians for each measure and bind to result set
+      summary_table <- rbind(summary_table,
+                             calculate_medians_for_all_measures(
+                               sim_params, param_result, MEASURES, bind_params))
+    }
+  }
+  # NOW ADD HEADERS TO THIS INFORMATION AND WRITE TO FILE
+  if(bind_params)
+    colnames(summary_table) <- c(PARAMETERS, MEASURES)
+
+  return(summary_table)
+
+
+}
+
 #' Calculate medians for all measures for a simulation parameter result
 #' @param sim_params Current parameter set
 #' @param param_result Set of results under those conditions
 #' @param measures Simulation output responses
+#' @param bind_params Whether to bind the parameter values to the output
 #' @return Summary statistics for this set of parameters (with parameter values)
 calculate_medians_for_all_measures <- function(sim_params, param_result,
-                                               measures) {
-  summary_sim_row <- sim_params
+                                               measures, bind_params = TRUE) {
+  if(bind_params)
+    summary_sim_row <- sim_params
+  else
+    summary_sim_row <- NULL
+
   for (l in 1:length(measures)) {
     summary_sim_row <- cbind(summary_sim_row,
                              median(param_result[[measures[l]]]))

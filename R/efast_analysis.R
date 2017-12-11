@@ -42,115 +42,86 @@
 #' e.g. c(12,36,48,60)
 #' @param TIMEPOINTSCALE Sets the scale of the timepoints being analysed,
 #' e.g. "Hours"
+#' @param check_done If multiple timepoints, whether the input has been checked
+#' @param current_time If multiple timepoints, the current timepoint being processed
 #'
 #' @export
 efast_generate_medians_for_all_parameter_subsets  <-
   function(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE,
            MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
-           OUTPUTCOLEND, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+           OUTPUTCOLEND, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+           check_done = FALSE, current_time = NULL) {
 
-  if (is.null(TIMEPOINTS))  {
-    if (file.exists(FILEPATH)) {
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  # Run if all checks pass:
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
-      print("Generating Simulation Median Response Sets
-            (efast_generate_medians_for_all_parameter_subsets)")
+    if (is.null(TIMEPOINTS))  {
+
+      message("Generating Simulation Median Response Sets for eFAST")
 
       for (CURVE in 1:NUMCURVES) {
-        # NOW LOOK AT EACH PARAMETER OF INTEREST
+        # Now look at this parameter of interest
         for (PARAM in 1:length(PARAMETERS)) {
-          print(join_strings(c("Generating Median Simulation Results for
-                               Curve", CURVE, " Parameter: ", PARAM), ""))
+          message(paste("Generating Summary Results for Curve ", CURVE, " Parameter: ", PARAM, sep=""))
 
           # Open the parameter file
-          params <- read.csv(paste(FILEPATH, "/Curve", CURVE, "_Param",
-                                   PARAM, ".csv", sep = ""),
-                             header = TRUE, check.names = FALSE)
+          params <- read_from_csv(file.path(FILEPATH, paste("Curve",CURVE,"_Param",PARAM,".csv",sep="")))
 
-          CURVE_PARAM_RESULT <- NULL
-
-          for (j in 1:NUMSAMPLES) {
-
-            SAMPLEFILEDIR <- make_path(c(FILEPATH, CURVE, PARAM, j))
-
-            medians <- getMediansSubset(SAMPLEFILEDIR, NUMRUNSPERSAMPLE,
-                                        MEASURES, RESULTFILENAME,
-                                        ALTERNATIVEFILENAME,
-                                        OUTPUTCOLSTART, OUTPUTCOLEND)
-
-            if (!is.null(medians)) {
-
-              # GET THE ROW OF PARAMETERS FROM THE FILE
-              param_set <- params[j, ]
-
-              # Make duplicates of the parameters to match number of replicates
-              PARAMS <- NULL
-              for (paramval in 1:ncol(param_set)) {
-                PARAMS <- cbind(PARAMS, param_set[[paramval]])
-              }
-
-              DUP_PARAMS <- NULL
-              for (r in 1:nrow(medians) - 1) {
-                DUP_PARAMS <- rbind(DUP_PARAMS, PARAMS)
-              }
-
-              # Now combine medians with paramters
-              RESULT <- cbind(DUP_PARAMS, medians)
-
-              # ADD TO THE LIST OF ALL 65 RESULTS
-              CURVE_PARAM_RESULT <- rbind(CURVE_PARAM_RESULT, RESULT)
-            } else {
-              print(join_strings(c(CURVE, PARAM), " "))
-            }
-          }
-
-          colnames(CURVE_PARAM_RESULT) <- c(colnames(params), MEASURES)
+          # Can use the LHC function to summarise the responses
+          curve_param_result <- summarise_lhc_sweep_responses(
+            file.path(FILEPATH,CURVE,PARAM), NUMRUNSPERSAMPLE, PARAMETERS, MEASURES,
+            RESULTFILENAME, ALTERNATIVEFILENAME, NUMSAMPLES, params, OUTPUTCOLSTART, OUTPUTCOLEND)
 
           # Write this file out to the FILEPATH
-          RESULTSFILE <- paste(FILEPATH, "/Curve", CURVE, "_Parameter", PARAM,
-                              "_Results.csv", sep = "")
-          write.csv(CURVE_PARAM_RESULT, RESULTSFILE, quote = FALSE,
-                    row.names = FALSE)
-
+          if(is.null(current_time))
+            write_data_to_csv(curve_param_result, file.path(
+              FILEPATH, paste("Curve", CURVE, "_Parameter", PARAM, "_Results.csv", sep = "")))
+          else
+            write_data_to_csv(curve_param_result, file.path(
+              FILEPATH, paste("Curve", CURVE, "_Parameter", PARAM, "_Results_",current_time,".csv", sep = "")))
         }
       }
     } else {
-      print("The directory specified in FILEPATH does not exist.
-            No analysis completed")
+    efast_generate_medians_for_all_parameter_subsets_overTime(
+      FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE,
+      MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+      OUTPUTCOLEND, TIMEPOINTS, TIMEPOINTSCALE)
     }
-  } else {
-    # PROCESS EACH TIMEPOINT,  BY AMENDING THE FILENAMES
+  }
+  }
+
+#' Pre-process analysis settings if multiple timepoints are being considered
+#'
+#' @inheritParams efast_generate_medians_for_all_parameter_subsets
+efast_generate_medians_for_all_parameter_subsets_overTime <-
+  function(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE,
+           MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART,
+           OUTPUTCOLEND, TIMEPOINTS, TIMEPOINTSCALE) {
+
+    # Process each timepoint
     for (n in 1:length(TIMEPOINTS)) {
 
       current_time <- TIMEPOINTS[n]
-      print(join_strings(c("PROCESSING TIMEPOINT:", current_time, " ")))
+      message(paste("Processing Timepoint:", current_time, sep=" "))
 
-      resultfileformat <- check_file_extension(RESULTFILENAME)
-      SIMRESULTFILENAME <- paste(substr(RESULTFILENAME, 0,
-                                        nchar(RESULTFILENAME) - 4),
-                                 "_", current_time, ".", resultfileformat,
-                                 sep = "")
+      simresultfilename <- append_time_to_argument(
+        RESULTFILENAME, current_time,
+        check_file_extension(RESULTFILENAME))
 
-      if (!is.null(ALTERNATIVEFILENAME)) {
-        ALTERNATIVEFILENAMEFULL <- paste(
-          substr(ALTERNATIVEFILENAME, 0, nchar(ALTERNATIVEFILENAME) - 4),
-          "_", current_time, ".", resultfileformat, sep = "")
-      } else {
-        ALTERNATIVEFILENAMEFULL <- ALTERNATIVEFILENAME
-      }
+      altfilename_full <- NULL
+      if (!is.null(ALTERNATIVEFILENAME))
+        altfilename_full <- append_time_to_argument(
+          ALTERNATIVEFILENAME, current_time,
+          check_file_extension(ALTERNATIVEFILENAME))
 
-      efast_generate_medians_for_all_parameter_subsets(FILEPATH, NUMCURVES,
-                                                       PARAMETERS, NUMSAMPLES,
-                                                       NUMRUNSPERSAMPLE,
-                                                       MEASURES,
-                                                       SIMRESULTFILENAME,
-                                                       ALTERNATIVEFILENAMEFULL,
-                                                       OUTPUTCOLSTART,
-                                                       OUTPUTCOLEND,
-                                                       TIMEPOINTS = NULL,
-                                                       TIMEPOINTSCALE = NULL)
+      efast_generate_medians_for_all_parameter_subsets(
+        FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,NUMRUNSPERSAMPLE, MEASURES,
+        simresultfilename, altfilename_full, OUTPUTCOLSTART, OUTPUTCOLEND,
+        TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done = TRUE,
+        current_time = current_time)
     }
   }
-}
 
 #' Calculates the summary stats for each parameter set (median of any
 #' replicates)
@@ -176,126 +147,86 @@ efast_generate_medians_for_all_parameter_subsets  <-
 #' @inheritParams efast_generate_medians_for_all_parameter_subsets
 #'
 #' @export
-efast_get_overall_medians  <-  function(FILEPATH, NUMCURVES, PARAMETERS,
-                                        NUMSAMPLES, MEASURES,
-                                        TIMEPOINTS=NULL, TIMEPOINTSCALE=NULL) {
+efast_get_overall_medians  <-  function(
+  FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES, TIMEPOINTS=NULL,
+  TIMEPOINTSCALE=NULL, current_time=NULL, check_done=FALSE) {
 
-  if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
-    if (file.exists(FILEPATH)) {
-      print(join_strings_space(c("Calculating overall medians responses for ",
-                                 "each parameter set ",
-                                 "(efast_get_overall_medians)")))
+  # Again we can use the LHC methods here not rewrite, once input checked
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  # Run if all checks pass:
+  if(check_input_args(input_check$names, input_check$arguments)) {
+
+    if (is.null(TIMEPOINTS)) {
+      message("Calculating overall medians responses for each parameter set (efast_get_overall_medians)")
+
+      results_file_end <- "_Results.csv"
+      output_file_end <- "_Results_Summary.csv"
+      if(!is.null(current_time))
+      {
+        results_file_end <- paste("_Results_",current_time,".csv",sep="")
+        output_file_end <- paste("_Results_Summary_",current_time,".csv",sep="")
+      }
 
       for (CURVE in 1:NUMCURVES) {
 
-        print(paste("Generating results summary for Curve ", CURVE, sep = ""))
+        message(paste("Generating results summary for Curve ", CURVE, sep = ""))
 
-        # SUMMARY TABLE WILL STORE THE PARAMETERS USED IN THE RUN SET,
-        # AND THE MEDIAN OUTPUT MEASURES,  FOR EACH SET
-        SUMMARYTABLE <- NULL
+        summary_table <- NULL
 
         for (PARAM in 1:length(PARAMETERS)) {
-          # PARAM SUMMARY WILL BE A COLUMN FOR EACH PARAMETER,
-          # THAT IS THEN BOUND TO SUMMARY TABLE
-          PARAM_SUMMARY <- NULL
 
-          # READ IN THE CSV FILE FOR THIS CURVE AND PARAMETER
-          # CONSTRUCT FILE NAME,  TAKING TIMEPOINT INTO ACCOUNT
-          if (is.null(TIMEPOINTS)) {
-            SIM_RESPONSES <- read.csv(paste(FILEPATH, "/Curve", CURVE,
-                                            "_Parameter", PARAM,
-                                            "_Results.csv", sep = ""),
-                                      header = TRUE, check.names = FALSE)
-          } else {
-            SIM_RESPONSES <- read.csv(paste(FILEPATH, "/Curve", CURVE,
-                                            "_Parameter", PARAM, "_",
-                                            TIMEPOINTS, "_Results.csv",
-                                            sep = ""),
-                                      header = TRUE, check.names = FALSE)
-          }
+          # Read result
+          sim_responses <- read_from_csv(
+            file.path(FILEPATH, paste("Curve", CURVE, "_Parameter", PARAM,
+                                      results_file_end, sep = "")))
 
-          # NOW WE ARE PROCESSING A FILE WITH MULTIPLE RUNS OF THE SAME
-          # PARAMETER SET. TO SAVE IMPORTING THE PARAMETER FILE (AS THIS
-          # MAY NOT ALWAYS BE AVAILABLE),  THIS READS THE PARAMETERS IN.
-          # THUS WE PUT A CHECK IN TO MAKE SURE WE DO  NOT PROCESS THE
-          # SAME SET OF PARAMETERS TWICE (WHICH WE ASSUME ARE IN ORDER)
-          # WE DO THIS BY COMPARING THE SET WE HAVE JUST PROCESSED TO
-          # THE ONE IN THE NEXT ROW THUS IT IS IMPORTANT THIS FILE IS
-          # IN ORDER
-          string_params_last_checked <- ""
+          # Summarise
+          param_results <- summarise_replicate_runs(sim_responses, PARAMETERS, MEASURES, bind_params=FALSE)
 
-          for (row in 1:nrow(SIM_RESPONSES)) {
-
-            SIM_PARAMS <- SIM_RESPONSES[row, 1:length(PARAMETERS)]
-            # CONVERT TO A STRING TO DO THE COMPARISON DISCUSSED ABOVE
-            STRING_SIM_PARAMS <- paste(SIM_PARAMS, collapse = " ")
-
-            if (STRING_SIM_PARAMS != string_params_last_checked) {
-
-              string_params_last_checked <- STRING_SIM_PARAMS
-
-              # NOW TO SUBSET THE RESULTS (WHICH CONTAIN MULTIPLE SIM RESULTS
-              #FOR THIS SET OF PARAMETERS) TO CALC MEDIANS
-              PARAM_RESULT <- subset_results_by_param_value_set(PARAMETERS,
-                                                                SIM_RESPONSES,
-                                                                SIM_PARAMS)
-
-              SUMMARY_SIM_ROW <- NULL
-
-              # NOW WE CAN CALCULATE MEDIANS FOR EACH MEASURE
-              for (l in 1:length(MEASURES)) {
-                SUMMARY_SIM_ROW <- cbind(SUMMARY_SIM_ROW,
-                                         median(PARAM_RESULT[[MEASURES[l]]]))
-              }
-
-              PARAM_SUMMARY <- rbind(PARAM_SUMMARY, SUMMARY_SIM_ROW)
-            }
-          }
-
-          COLUMNNAMES <- NULL
-          # SET COLUMN NAMES BEFORE MOVING ON TO NEXT PARAMETER
+          column_names <- NULL
           for (l in 1:length(MEASURES)) {
-            COLUMNNAMES <- cbind(COLUMNNAMES, paste(PARAMETERS[PARAM],
-                                                    "_Median", MEASURES[l],
-                                                    sep = ""))
+              column_names <- c(column_names,paste(PARAMETERS[PARAM],"_Median",MEASURES[l],sep=""))
           }
-          colnames(PARAM_SUMMARY) <- COLUMNNAMES
+          colnames(param_results) <- column_names
 
           # NOW TO BIND THIS COLUMN ONTO THE RESULTS FOR ALL PARAMETERS
-          SUMMARYTABLE <- cbind(SUMMARYTABLE, PARAM_SUMMARY)
+          summary_table <- cbind(summary_table, param_results)
         }
 
-        # WRITE THE CURVE RESULTS TO THE FILE
-        if (is.null(TIMEPOINTS)) {
-          SUMMARYRESULTSFILE <- paste(FILEPATH, "/Curve", CURVE,
-                                      "_Results_Summary.csv", sep = "")
-        } else {
-          SUMMARYRESULTSFILE <- paste(FILEPATH, "/Curve", CURVE, "_",
-                                      TIMEPOINTS, "_Results_Summary.csv",
-                                      sep = "")
-        }
-        write.csv(SUMMARYTABLE, SUMMARYRESULTSFILE, quote = FALSE,
-                  row.names = FALSE)
+        # Write curve result to file
+        write_data_to_csv(summary_table, file.path(
+          FILEPATH,paste("Curve", CURVE, output_file_end , sep = "")))
 
-        print(paste("eFAST Summary file output to ", SUMMARYRESULTSFILE,
-                    sep = ""))
+        message(paste("eFAST Summary file output to ", file.path(
+          FILEPATH,paste("Curve", CURVE, output_file_end , sep = "")), sep = ""))
 
       }
     } else {
-      print("The directory specified in FILEPATH does not exist.
-            No analysis completed")
-    }
-  } else {
-    # PROCESS EACH TIMEPOINT,  AMENDING FILENAMES AND RECALLING THIS FUNCTION
-    for (n in 1:length(TIMEPOINTS)) {
-      current_time <- TIMEPOINTS[n]
-      print(join_strings(c("PROCESSING TIMEPOINT:", current_time), " "))
 
-      efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,
-                                MEASURES, TIMEPOINTS = current_time,
-                                TIMEPOINTSCALE = NULL)
+      efast_get_overall_medians_overTime(
+        FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES, TIMEPOINTS,
+        TIMEPOINTSCALE)
 
     }
+  }
+}
+
+#' Pre-process analysis settings if multiple timepoints are being considered
+#'
+#' @inheritParams efast_get_overall_medians
+efast_get_overall_medians_overTime  <-  function(
+    FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES, TIMEPOINTS,
+    TIMEPOINTSCALE) {
+
+  for (n in 1:length(TIMEPOINTS)) {
+    current_time <- TIMEPOINTS[n]
+    message(join_strings(c("Processing Timepoint:", current_time), " "))
+
+    efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,
+                              MEASURES, TIMEPOINTS = NULL,
+                              TIMEPOINTSCALE = NULL, current_time = current_time,
+                              check_done=TRUE)
+
   }
 }
 
