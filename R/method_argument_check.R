@@ -62,12 +62,14 @@ generate_list_of_checks <-function(argNames)
     else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMSAMPLES","NUMCURVES","EXPERIMENT_REPETITIONS"))
       check_methods_to_call[[list_index]] = check_argument_positive_int      # TAKES ALL ARGS FIXED
     else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION", "ATESTRESULTFILENAME",
-                                 "SPARTAN_PARAMETER_FILE","LHC_ALL_SIM_RESULTS_FILE", "LHCSUMMARYFILENAME", "CORCOEFFSOUTPUTFILE"))
+                                 "SPARTAN_PARAMETER_FILE","LHC_ALL_SIM_RESULTS_FILE", "LHCSUMMARYFILENAME", "CORCOEFFSOUTPUTFILE","EFASTRESULTFILENAME"))
       check_methods_to_call[[list_index]] = check_text     # TAKES ALL ARGS FIXED
-    else if(argNames[arg] == "RUN_METRICS_EVERYSTEP")
+    else if(argNames[arg] %in% c("RUN_METRICS_EVERYSTEP","GRAPH_FLAG"))
       check_methods_to_call[[list_index]] = check_boolean
     else if(argNames[arg] == "LARGEDIFFINDICATOR")
       check_methods_to_call[[list_index]] = check_double_value_in_range
+    else if(argNames[arg] == "TTEST_CONF_INT")
+      check_methods_to_call[[list_index]] = check_confidence_interval
     else if(argNames[arg] == "AA_SIM_RESULTS_FILE")
       check_methods_to_call[[list_index]] = check_consistency_result_type
     else if(argNames[arg] == "OUTPUTFILECOLSTART")
@@ -83,7 +85,7 @@ generate_list_of_checks <-function(argNames)
     # To deal with AA_SIM_RESULTS_OBJECT, and OUTPUTFILECOLEND, which are checked by FILE and START respectively,
     # and PMAX, BASELINE, PINC, that are checked in PMIN/PARAMVALS checks,we put in an ignore, and detect this later
     # This needs to be done to keep the function list referenced to the argument names
-    else if(argNames[arg] %in% c("AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE","ALTFILENAME"))
+    else if(argNames[arg] %in% c("AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE","ALTFILENAME","OUTPUTMEASURES_TO_TTEST"))
       check_methods_to_call[[list_index]] = NULL
 
     list_index = list_index + 1
@@ -107,13 +109,22 @@ generate_list_of_checks <-function(argNames)
 #' @return Boolean stating whether the input checks pass or fail
 execute_checks <- function(check_methods_to_call, input_arguments, function_args)
 {
+  out<-NULL
+
   for(check_method in 1:length(check_methods_to_call))
   {
+    #out<-rbind(out,function_args[check_method])
+    #write_data_to_csv(out, "outlog.csv")
     #print(function_args[check_method])
     # Need to tailor some methods that cannot be called with the same two arguments, so check these first
     if(identical(check_methods_to_call[[check_method]],check_double_value_in_range))
     {
       if(!check_double_value_in_range(input_arguments$LARGEDIFFINDICATOR, "LARGEDIFFINDICATOR",0,0.5))   # This will need changing if we use this method for any other arguments
+        return(FALSE)
+    }
+    else if(identical(check_methods_to_call[[check_method]],check_confidence_interval))
+    {
+      if(!check_confidence_interval(input_arguments$TTEST_CONF_INT, "TTEST_CONF_INT",0,1))
         return(FALSE)
     }
     else if(identical(check_methods_to_call[[check_method]],check_consistency_result_type))
@@ -753,6 +764,42 @@ check_double_value_in_range <- function(argument, argument_name, range_min, rang
         message(paste(argument_name, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
         return(FALSE)
       }
+
+    },
+    error=function(cond) {
+      message(paste("Error: ", argument_name, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
+      return(FALSE)
+    })
+}
+
+#' Check that a confidence interval is within a specified range
+#'
+#' @param argument Value of the argument to check
+#' @param argument_name Name of the argument, for inclusion in the error message
+#' @param range_min Minimum of the range
+#' @param range_max Maximum of the range
+#' @return Boolean stating the current status of the pre-execution checks, or FALSE if this check fails
+check_confidence_interval <- function(argument, argument_name, range_min, range_max)
+{
+  tryCatch(
+    {
+      # Get the list
+      value <- eval(argument)
+      #h<-c(value, range_min,range_max)
+
+
+      if(is.numeric(value) & (value >= range_min & value <= range_max))
+      {
+        #h<-c(h,"TRUE")
+        return(TRUE)
+      }
+      else
+      {
+        #h<-c(h,"FALSE")
+        message(paste(argument_name, " must be between ",range_min," and ", range_max,". Spartan terminated",sep=""))
+        return(FALSE)
+      }
+      #write_data_to_csv(h,"Values.csv")
 
     },
     error=function(cond) {

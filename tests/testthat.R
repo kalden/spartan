@@ -1,4 +1,5 @@
+Sys.setenv("R_TESTS"="")
 library(testthat)
 library(spartan)
-
-test_check("spartan")
+options(warn = 2)
+test_check("spartan", report="summary")

@@ -119,7 +119,7 @@ efast_sd <- function(RESULTSARRAY, omi, MI, OUTMEASURES, NUMPARAMS, NUMCURVES) {
           na.omit(RESULTSARRAY[, (((PARAMNUM * OUTMEASURES) - OUTMEASURES) +
                                     MEASURE), CURVENUM])
         MEASURE_RESULTS_FOR_PARAM <- MEASURE_RESULTS_FOR_PARAM -
-          t(mean(MEASURE_RESULTS_FOR_PARAM))
+          as.vector(mean(MEASURE_RESULTS_FOR_PARAM))
 
         # Fourier coeff. at [1:omi / 2].
         # GET THE NUMBER OF SAMPLES FOR THIS OUTPUT

@@ -271,201 +271,216 @@ efast_get_overall_medians_overTime  <-  function(
 #' e.g. c(12,36,48,60)
 #' @param TIMEPOINTSCALE Sets the scale of the timepoints being analysed,
 #' e.g. "Hours"
+#' @param check_done If using multiple timepoints, whether data entry has been
+#' checked
 #'
 #' @export
 #'
-efast_run_Analysis  <-  function(FILEPATH, MEASURES, PARAMETERS, NUMCURVES,
-                                 NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
-                                 TTEST_CONF_INT, GRAPH_FLAG,
-                                 EFASTRESULTFILENAME, TIMEPOINTS = NULL,
-                                 TIMEPOINTSCALE = NULL, GRAPHTIME = NULL) {
+efast_run_Analysis  <-  function(
+  FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
+  TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE) {
 
-  if (is.null(TIMEPOINTS)) {
-    if (file.exists(FILEPATH)) {
+  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  # Run if all checks pass:
+  if(check_input_args(input_check$names, input_check$arguments)) {
 
-      NUMPARAMS <- length(PARAMETERS)
-
-      NUMOUTMEASURES <- length(MEASURES)
-
-      # maximum number of fourier coefficients
-      # that may be retained in calculating the partial
-      # variances without interferences between the
+    if (is.null(TIMEPOINTS)) {
+      # maximum number of fourier coefficients that may be retained in
+      # calculating the partial variances without interferences between the
       # assigned frequencies
       MI <- 4
       # wanted no. of sample points
-      wanted_n <- NUMSAMPLES * NUMPARAMS * NUMCURVES
-      omi <- floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / NUMPARAMS)
+      wanted_n <- NUMSAMPLES * length(PARAMETERS) * NUMCURVES
+      omi <- floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
 
-      # READ IN THE MEDIAN RESULT SETS
+      message("Producing eFAST Analysis (efast_run_analysis)")
 
-      print("Producing eFAST Analysis (efast_run_analysis)")
+      efast_sim_results <- read_all_curve_results(FILEPATH, GRAPHTIME, NUMCURVES,
+                                                  NUMSAMPLES,  MEASURES, PARAMETERS)
 
-      # CONSTRUCT THE FILE NAME,  TAKING ANY TIMEPOINT INTO ACCOUNT
-      if (is.null(GRAPHTIME)) {
-        CURVE1RESULTSFILENAME <- paste(FILEPATH,
-                                       "/Curve1_Results_Summary.csv", sep = "")
-      }
-      else {
-        CURVE1RESULTSFILENAME <- paste(FILEPATH, "/Curve1_", GRAPHTIME,
-                                       "_Results_Summary.csv", sep = "")
-        print(CURVE1RESULTSFILENAME)
-      }
+      # Sensitivity Indexes
+      sensitivities <- generate_sensitivity_indices(efast_sim_results, omi, MI,
+                                                      MEASURES, PARAMETERS, NUMCURVES)
 
-
-      # READ IN THE FIRST CURVE
-      if (file.exists(CURVE1RESULTSFILENAME)) {
-        RESULTS <- read.csv(CURVE1RESULTSFILENAME, sep = ",",
-                            header = TRUE, check.names = FALSE)
-
-        # NOW READ IN ANY FURTHER CURVES
-        if (NUMCURVES > 1) {
-          for (CURVE in 2:NUMCURVES) {
-            # CONSTRUCT THE FILE NAME
-            if (is.null(GRAPHTIME))
-              CURVERESULTSFILENAME <- paste(FILEPATH, "/Curve", CURVE,
-                                            "_Results_Summary.csv",
-                                            sep = "")
-            else
-              CURVERESULTSFILENAME <- paste(FILEPATH, "/Curve", CURVE,
-                                            "_", GRAPHTIME,
-                                            "_Results_Summary.csv", sep = "")
-
-            if (file.exists(CURVERESULTSFILENAME)) {
-              CURVERESULTS <- read.csv(CURVERESULTSFILENAME, sep = ",",
-                                       header = TRUE, check.names = FALSE)
-              # NOTE THIS ASSUMES THAT THE RESULTS HAVE BEEN GENERATED WITH
-              # THE FIRST COLUMN CONTAINING NO SAMPLE COUNT
-              # ADD TO THE PREVIOUS CURVES
-              RESULTS <- cbind(RESULTS, CURVERESULTS[1:length(CURVERESULTS)])
-            } else {
-              print(paste("No summary file for Curve ", CURVE, sep = ""))
-            }
-          }
-        }
-
-        # CONVERT THE RESULTS FILE FOR EASE OF PROCESSING LATER
-        RESULTS <- as.matrix(RESULTS)
-        # PUT IN MULTI DIMENSIONAL ARRAY
-        # EACH DIMENSION CONTAINS ONE CURVE
-        RESULTSARRAY <- array(RESULTS, dim = c(NUMSAMPLES,
-                                             (NUMPARAMS * NUMOUTMEASURES),
-                                             NUMCURVES))
-
-        # NOW GENERATE THE SENSITIVITY INDEXES
-        # efast_sd IS WITHIN efast_sd.R
-        print("Generating Sensitivity Indexes")
-        result_list <- efast_sd(RESULTSARRAY, omi, MI, NUMOUTMEASURES,
-                               NUMPARAMS, NUMCURVES)
-
-        # GET THE COEFFICIENTS OF VARIANCE
-        cv_si_coeff_results <- NULL
-        cv_sti_coeff_results <- NULL
-        errors_si <- NULL
-        errors_sti <- NULL
-
-        for (OUTPUTMEASURE in 1:NUMOUTMEASURES) {
-          # efast_cvmethod is within CVmethod.R
-          output_measure_cvs  <-  efast_cvmethod(result_list$si,
-                                               result_list$range_si,
-                                               result_list$sti,
-                                               result_list$range_sti,
-                                               OUTPUTMEASURE, NUMPARAMS,
-                                               NUMCURVES, NUMOUTMEASURES)
-
-          cv_si_coeff_results  <-  rbind(cv_si_coeff_results,
-                                       output_measure_cvs$cv_si)
-          cv_sti_coeff_results  <-  rbind(cv_sti_coeff_results,
-                                        output_measure_cvs$cv_sti)
-          errors_si  <-  cbind(errors_si, output_measure_cvs$error_si)
-          errors_sti  <-  cbind(errors_sti, output_measure_cvs$error_sti)
-        }
-
-        # TRANSPOSE SO THAT THE OUTPUT ORDERING IS IN THE SAME FORMAT AS THE
-        # REST OF THE RESULTS (MEASURES ARE COLUMNS,  PARAMETERS ARE ROWS)
-        cv_si_coeff_results <- t(cv_si_coeff_results)
-        cv_sti_coeff_results <- t(cv_sti_coeff_results)
-
-        # NOW DO THE T-TEST TO GET THE P-VALUES AGAINST THE DUMMY PARAMETER
-        # efast_ttest IS WITHIN efast_ttest.R
-
-        print("Generating measures of statistical significance")
-        t_tests  <-  efast_ttest(result_list$si, result_list$range_si,
-                                 result_list$sti, result_list$range_sti,
-                                 OUTPUTMEASURES_TO_TTEST, NUMPARAMS,
+      # T-Test to get P-Values against dummy parameter
+      message("Generating measures of statistical significance")
+      t_tests  <-  efast_ttest(sensitivities$si, sensitivities$range_si,
+                               sensitivities$sti, sensitivities$range_sti,
+                                 OUTPUTMEASURES_TO_TTEST, length(PARAMETERS),
                                  NUMCURVES, TTEST_CONF_INT)
 
-        # NOW GET THE OUTPUT IN A FORMAT WHICH CAN BE OUTPUT TO CSV FILE
+      formatted_results <- format_efast_result_for_output(
+        sensitivities, t_tests, OUTPUTMEASURES_TO_TTEST, MEASURES, PARAMETERS)
 
-        formatted_results <- NULL
-        for (MEASURE in seq(OUTPUTMEASURES_TO_TTEST)) {
-          # OUTPUT FORMAT
-          # COLUMNS ORDERED BY MEASURE
-          # 5 COLUMNS PER MEASURE: Si, Si P Val, STi, STi P Val, SCi
+      # Output
+      write_data_to_csv(formatted_results,file.path(FILEPATH, EFASTRESULTFILENAME), row_names=TRUE)
 
-          measure_results <- cbind(result_list$si[, , MEASURE],
-                                  t_tests$p_si[, , MEASURE],
-                                  result_list$sti[, , MEASURE],
-                                  t_tests$p_sti[, , MEASURE],
-                                  (1 - result_list$sti[, , MEASURE]),
-                                  cv_si_coeff_results[, MEASURE],
-                                  cv_sti_coeff_results[, MEASURE],
-                                  errors_si[, MEASURE], errors_sti[, MEASURE])
-
-          colnames(measure_results) <- c(
-            join_strings(c(MEASURES[MEASURE], "_Si"), ""),
-            join_strings(c(MEASURES[MEASURE], "_Si_PVal"), ""),
-            join_strings(c(MEASURES[MEASURE], "_STi"), ""),
-            join_strings(c(MEASURES[MEASURE], "_STi_PVal"), ""),
-            join_strings(c(MEASURES[MEASURE], "_SCi"), ""),
-            join_strings(c(MEASURES[MEASURE], "_Si_CoEff_of_Var"), ""),
-            join_strings(c(MEASURES[MEASURE], "_STi_CoEff_of_Var"), ""),
-            join_strings(c(MEASURES[MEASURE], "_Si_ErrorBar"), ""),
-            join_strings(c(MEASURES[MEASURE], "_STi_ErrorBar"), ""))
-
-          formatted_results <- cbind(formatted_results, measure_results)
-        }
-
-        rownames(formatted_results) <- c(PARAMETERS)
-
-        # OUTPUT THE SUMMARY RESULTS FILES
-        # A - FILE WITH THE AMOUNT OF VARIANCE ACCOUNTED FOR BY EACH PARAMETER
-        RESULTSFILE <- paste(FILEPATH, "/", EFASTRESULTFILENAME, sep = "")
-        write.csv(formatted_results, RESULTSFILE, quote = FALSE)
-
-        print(paste("eFAST Results file generated. Output to ",
-                    RESULTSFILE, sep = ""))
+      message(paste("eFAST Results file generated. Output to",
+                    file.path(FILEPATH, EFASTRESULTFILENAME)))
 
         # GRAPH THE RESULTS IF REQUIRED
-        if (GRAPH_FLAG) {
-          print("Graphing Results")
-          efast_graph_Results(FILEPATH, PARAMETERS, result_list$si,
-                              result_list$sti, errors_si, errors_sti,
-                              MEASURES, GRAPHTIME, TIMEPOINTSCALE)
-        }
-      } else {
-        print("No summary file for Curve 1. Are you sure you have run the
-              method to generate it?")
-      }
+        if (GRAPH_FLAG)
+          efast_graph_Results(
+            FILEPATH, PARAMETERS, sensitivities$si, sensitivities$sti, sensitivities$errors_si,
+            sensitivities$errors_sti, MEASURES, GRAPHTIME, TIMEPOINTSCALE)
+
+
     } else {
-      print("The directory specified in FILEPATH does not exist.
-            No eFAST Graphs Created")
-    }
-  } else {
-    # PROCESS EACH TIMEPOINT,  AMENDING FILENAMES AND RECALLING THIS FUNCTION
-    for (n in 1:length(TIMEPOINTS)) {
-      current_time <- TIMEPOINTS[n]
-      print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
+      efast_run_Analysis_overTime(
+        FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
+        TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
 
-      efast_resultfileformat <- check_file_extension(EFASTRESULTFILENAME)
-      EFASTRESULTFILENAME_FULL <- paste(substr(EFASTRESULTFILENAME, 0,
-                                               nchar(EFASTRESULTFILENAME) - 4),
-                                        "_", current_time, ".",
-                                        efast_resultfileformat, sep = "")
-
-      efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES,
-                         OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, GRAPH_FLAG,
-                         EFASTRESULTFILENAME_FULL, TIMEPOINTS = NULL,
-                         TIMEPOINTSCALE, GRAPHTIME = current_time)
     }
   }
+}
+
+#' Pre-process analysis settings if multiple timepoints are being considered
+#'
+#' @inheritParams efast_run_Analysis
+efast_run_Analysis_overTime  <- function(
+  FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
+  TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE,
+  GRAPHTIME = NULL) {
+
+  for (n in 1:length(TIMEPOINTS)) {
+    current_time <- TIMEPOINTS[n]
+    message(paste("Processing Timepoint: ", current_time, sep = ""))
+
+    efastresultfile_full <- append_time_to_argument(
+      EFASTRESULTFILENAME, current_time,
+      check_file_extension(EFASTRESULTFILENAME))
+
+    efast_run_Analysis(
+      FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
+      TTEST_CONF_INT, GRAPH_FLAG, efastresultfile_full, TIMEPOINTS = NULL,
+      TIMEPOINTSCALE, GRAPHTIME = current_time, check_done=TRUE)
+  }
+}
+
+#' Reads results from each curve into a multi-dimensional array
+#' @inheritParams efast_run_Analysis
+read_all_curve_results <- function(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES,
+                                   MEASURES, PARAMETERS) {
+  # read in curve 1
+  results <- read_from_csv(construct_result_filename(FILEPATH, "Curve1_Results_Summary.csv",
+                                                     timepoint=GRAPHTIME))
+  # Now read in any further curves
+  if (NUMCURVES > 1) {
+    for (CURVE in 2:NUMCURVES) {
+      curve_results_file <- construct_result_filename(
+        FILEPATH, paste("Curve",CURVE,"_Results_Summary.csv",sep=""), timepoint=GRAPHTIME)
+
+      if (file.exists(curve_results_file)) {
+        curve_results <- read_from_csv(curve_results_file)
+        # Add to previous curves:
+        results <- cbind(results, curve_results[1:length(curve_results)])
+      } else {
+        message(paste("No summary file for Curve ", CURVE, sep = ""))
+      }
+    }
+  }
+
+  # Convert to multi-dimensional array for ease of processing later
+  # Each dimension contains one curve
+  results <- as.matrix(results)
+  return(array(results, dim = c(NUMSAMPLES, (length(PARAMETERS) * length(MEASURES)),
+                                NUMCURVES)))
+
+}
+
+#' Generate eFAST Sensitivity Indices
+#' @param results_array Results for all eFAST resample curves
+#' @param omi floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
+#' @param MI maximum number of fourier coefficients, always 4
+#' @inheritParams efast_run_Analysis
+#' @return List of SI and STI coefficients and error bars
+generate_sensitivity_indices <- function(results_array, omi, MI, MEASURES, PARAMETERS, NUMCURVES) {
+
+  message("Generating Sensitivity Indexes")
+  result_list <- efast_sd(results_array, omi, MI, length(MEASURES),
+                          length(PARAMETERS), NUMCURVES)
+
+  # Calculate coeffiecients of variance
+  cv_si_coeff_results <- NULL
+  cv_sti_coeff_results <- NULL
+  errors_si <- NULL
+  errors_sti <- NULL
+
+  for (OUTPUTMEASURE in 1:length(MEASURES)) {
+    # efast_cvmethod is within CVmethod.R
+    output_measure_cvs  <-  efast_cvmethod(
+      result_list$si, result_list$range_si, result_list$sti, result_list$range_sti,
+      OUTPUTMEASURE, length(PARAMETERS), NUMCURVES, length(MEASURES))
+
+    cv_si_coeff_results  <-  rbind(cv_si_coeff_results,
+                                   output_measure_cvs$cv_si)
+    cv_sti_coeff_results  <-  rbind(cv_sti_coeff_results,
+                                    output_measure_cvs$cv_sti)
+    errors_si  <-  cbind(errors_si, output_measure_cvs$error_si)
+    errors_sti  <-  cbind(errors_sti, output_measure_cvs$error_sti)
+  }
+
+  # Transpose such that output order is same as rest of results
+  # (measures columns, parameters rows)
+  cv_si_coeff_results <- t(cv_si_coeff_results)
+  cv_sti_coeff_results <- t(cv_sti_coeff_results)
+
+  return(list("si"=result_list$si,"range_si"=result_list$range_si,"sti"=result_list$sti, "range_sti"=result_list$range_sti, "cv_si_coeffs"=cv_si_coeff_results,
+              "cv_sti_coeffs"=cv_sti_coeff_results,
+              "errors_si"=errors_si,"errors_sti"=errors_sti))
+}
+
+#' Joins the various results objects into an output ready format
+#' @inheritParams efast_run_Analysis
+#' @param efast_analysis_stats Sensitivity indices
+#' @param t_tests T-Test scores for output measures
+#' @return formatted results for output to csv file
+format_efast_result_for_output <- function(efast_analysis_stats, t_tests, OUTPUTMEASURES_TO_TTEST, MEASURES, PARAMETERS) {
+
+  formatted_results <- NULL
+  labels <- c("_Si", "_Si_PVal", "_STi", "_STi_PVal", "_SCi",
+              "_Si_CoEff_of_Var", "_STi_CoEff_of_Var",
+              "_Si_ErrorBar", "_STi_ErrorBar")
+  final_labels <- NULL
+
+  for (MEASURE in seq(OUTPUTMEASURES_TO_TTEST)) {
+    # OUTPUT FORMAT
+    # COLUMNS ORDERED BY MEASURE
+    # 5 COLUMNS PER MEASURE: Si, Si P Val, STi, STi P Val, SCi
+
+    measure_results <- cbind(efast_analysis_stats$si[, , MEASURE],
+                             t_tests$p_si[, , MEASURE],
+                             efast_analysis_stats$sti[, , MEASURE],
+                             t_tests$p_sti[, , MEASURE],
+                             (1 - efast_analysis_stats$sti[, , MEASURE]),
+                             efast_analysis_stats$cv_si_coeffs[, MEASURE],
+                             efast_analysis_stats$cv_sti_coeffs[, MEASURE],
+                             efast_analysis_stats$errors_si[, MEASURE],
+                             efast_analysis_stats$errors_sti[, MEASURE])
+
+    formatted_results <- cbind(formatted_results, measure_results)
+
+    final_labels <- c(final_labels,paste(rep(MEASURES[MEASURE],9),labels,sep=""))
+  }
+
+  colnames(formatted_results) <- final_labels
+  rownames(formatted_results) <- c(PARAMETERS)
+
+  return(formatted_results)
+}
+
+#' Appends the time to an eFAST argument, if processing multiple timepoints
+#' @param filepath Working directory
+#' @param filename Name of the file to append time to (or not)
+#' @param timepoint Timepoint being processed (if any)
+#' @return Path to file with timepoint added if necessary
+construct_result_filename <- function(filepath, filename, timepoint=NULL)
+{
+  if(is.null(timepoint))
+    return(file.path(filepath,filename))
+  else
+    return(file.path(filepath,append_time_to_argument(
+      filename, timepoint,
+      check_file_extension(filename))))
 }
