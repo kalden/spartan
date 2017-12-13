@@ -282,4 +282,122 @@ test_that("oat_processParamSubsets_overTime", {
 
 })
 
+test_that("oat_graphATestsForSampleSize", {
 
+  # Setup:
+  load(file.path("Robustness_result_for_test.Rda"))
+  # write out as CSV file so that we can feed this to function
+  write.csv(robustness_result_for_test,file="robustness_result.csv")
+
+  oat_csv_result_file_analysis(getwd(), "robustness_result.csv", c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                               c(0.04, 0.2), c("Velocity", "Displacement"),
+                               "EgSet_ATests.csv",
+                               PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                               PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
+  oat_graphATestsForSampleSize(getwd(), c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                               c("Velocity", "Displacement"),0.23, "EgSet_ATests.csv",
+                               c(0.04, 0.2), PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                               PARAMVALS = NULL)
+
+  # Now see if we have any plots
+  expect_true(file.exists("chemoLowerLinearAdjust.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust.pdf"))
+
+  file.remove("robustness_result.csv")
+  file.remove("EgSet_ATests.csv")
+  file.remove("chemoLowerLinearAdjust.pdf")
+  file.remove("chemoUpperLinearAdjust.pdf")
+
+})
+
+test_that("oat_graphATestsForSampleSize_overTime", {
+  # Bit of setup involved here
+  load(file.path("Robustness_hour12_data.Rda"))
+  write.csv(robustness_hour12_data,file="robustness_result_12.csv")
+  load(file.path("Robustness_hour36_data.Rda"))
+  write.csv(robustness_hour36_data,file="robustness_result_36.csv")
+
+  oat_csv_result_file_analysis(getwd(), "robustness_result.csv", c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                               c(0.04, 0.2), c("Velocity", "Displacement"),
+                               "EgSet_ATests.csv",
+                               PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                               PARAMVALS = NULL, TIMEPOINTS = c(12,36),
+                               TIMEPOINTSCALE="Hours")
+
+  oat_graphATestsForSampleSize(getwd(), c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                               c("Velocity", "Displacement"),0.23, "EgSet_ATests.csv",
+                               c(0.04, 0.2), PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                               PARAMVALS = NULL, TIMEPOINTS = c(12,36), TIMEPOINTSCALE = "Hours")
+
+  expect_true(file.exists("chemoLowerLinearAdjust_12.pdf"))
+  expect_true(file.exists("chemoLowerLinearAdjust_36.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_12.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_36.pdf"))
+  file.remove("robustness_result_12.csv")
+  file.remove("robustness_result_36.csv")
+  file.remove("EgSet_ATests_12.csv")
+  file.remove("EgSet_ATests_36.csv")
+  file.remove("chemoLowerLinearAdjust_12.pdf")
+  file.remove("chemoLowerLinearAdjust_36.pdf")
+  file.remove("chemoUpperLinearAdjust_12.pdf")
+  file.remove("chemoUpperLinearAdjust_36.pdf")
+})
+
+test_that("oat_plotResultDistribution", {
+
+  # Setup:
+  load(file.path("Robustness_result_for_test.Rda"))
+  # write out as CSV file so that we can feed this to function
+  write.csv(robustness_result_for_test,file="robustness_result.csv")
+
+  oat_plotResultDistribution(getwd(), c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                             c("Velocity", "Displacement"), c("microns/min","microns"), "robustness_result.csv", c(0.04, 0.2), PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                             PARAMVALS = NULL)
+
+  expect_true(file.exists("chemoLowerLinearAdjust_Displacement_BP.pdf"))
+  expect_true(file.exists("chemoLowerLinearAdjust_Velocity_BP.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_Displacement_BP.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_Velocity_BP.pdf"))
+
+  file.remove("robustness_result.csv")
+  file.remove("chemoLowerLinearAdjust_Displacement_BP.pdf")
+  file.remove("chemoLowerLinearAdjust_Velocity_BP.pdf")
+  file.remove("chemoUpperLinearAdjust_Displacement_BP.pdf")
+  file.remove("chemoUpperLinearAdjust_Velocity_BP.pdf")
+
+
+})
+
+test_that("oat_plotResultDistribution_overTime", {
+
+  load(file.path("Robustness_hour12_data.Rda"))
+  write.csv(robustness_hour12_data,file="robustness_result_12.csv")
+  load(file.path("Robustness_hour36_data.Rda"))
+  write.csv(robustness_hour36_data,file="robustness_result_36.csv")
+
+  oat_plotResultDistribution(getwd(), c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
+                             c("Velocity", "Displacement"), c("microns/min","microns"), "robustness_result.csv", c(0.04, 0.2), PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                             PARAMVALS = NULL, TIMEPOINTS<-c(12,36), TIMEPOINTSCALE="Hours")
+
+  expect_true(file.exists("chemoLowerLinearAdjust_Displacement_BP_12.pdf"))
+  expect_true(file.exists("chemoLowerLinearAdjust_Velocity_BP_12.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_Displacement_BP_12.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_Velocity_BP_12.pdf"))
+  expect_true(file.exists("chemoLowerLinearAdjust_Displacement_BP_36.pdf"))
+  expect_true(file.exists("chemoLowerLinearAdjust_Velocity_BP_36.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_Displacement_BP_36.pdf"))
+  expect_true(file.exists("chemoUpperLinearAdjust_Velocity_BP_36.pdf"))
+
+  file.remove("robustness_result_12.csv")
+  file.remove("robustness_result_36.csv")
+  file.remove("chemoLowerLinearAdjust_Displacement_BP_12.pdf")
+  file.remove("chemoLowerLinearAdjust_Velocity_BP_12.pdf")
+  file.remove("chemoUpperLinearAdjust_Displacement_BP_12.pdf")
+  file.remove("chemoUpperLinearAdjust_Velocity_BP_12.pdf")
+  file.remove("chemoLowerLinearAdjust_Displacement_BP_36.pdf")
+  file.remove("chemoLowerLinearAdjust_Velocity_BP_36.pdf")
+  file.remove("chemoUpperLinearAdjust_Displacement_BP_36.pdf")
+  file.remove("chemoUpperLinearAdjust_Velocity_BP_36.pdf")
+
+})
