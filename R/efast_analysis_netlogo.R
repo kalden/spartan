@@ -7,11 +7,9 @@ efast_netlogo_get_overall_medians <-
   function(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES,
            TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
 
+    #message("Now Deprecated. Use efast_get_overall_medians instead")
     .Deprecated("efast_get_overall_medians")
 
-  # Call the spartan function
-  efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,
-                            MEASURES, TIMEPOINTS, TIMEPOINTSCALE)
 }
 
 #' Deprecated: Use \code{efast_run_Analysis}
@@ -25,11 +23,6 @@ efast_netlogo_run_Analysis <-
            EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE) {
 
     .Deprecated("efast_run_Analysis")
-
-  # Call the spartan function
-  efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES,
-                     OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, GRAPH_FLAG,
-                     EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
 }
 
 #' Analyses Netlogo simulation data for parameter sets generated for eFAST
@@ -71,12 +64,12 @@ efast_process_netlogo_result <-
   for (CURVENUM in 1:NUMCURVES) {
     for (PARAMNUM in 1:length(PARAMETERS)) {
 
-      print(paste("Processing Curve: ", CURVENUM, " Parameter: ",
+      message(paste("Processing Curve: ", CURVENUM, " Parameter: ",
                   PARAMETERS[PARAMNUM], sep = ""))
       # Open the parameter file
-      params <- read.csv(paste(FILEPATH, "/Curve", CURVENUM, "_",
-                             PARAMETERS[PARAMNUM], ".csv", sep = ""),
-                       header = TRUE, check.names = FALSE)
+      params <- read_from_csv(file.path(
+        FILEPATH, paste("Curve", CURVENUM, "_", PARAMETERS[PARAMNUM], ".csv",
+                        sep = "")))
 
       CURVE_PARAM_RESULT <- NULL
 
@@ -85,7 +78,7 @@ efast_process_netlogo_result <-
                              "/", SAMPLE, "/", EFASTSAMPLE_RESULTFILENAME,
                              SAMPLE, ".csv", sep = ""))) {
 
-          print(paste("Processing EFAST Results for Curve: ", CURVENUM,
+         message(paste("Processing EFAST Results for Curve: ", CURVENUM,
                       " Parameter: ", PARAMNUM, " Value Sample: ", SAMPLE,
                       sep = ""))
 
@@ -129,22 +122,17 @@ efast_process_netlogo_result <-
           }
 
           CURVE_PARAM_RESULT <- rbind(CURVE_PARAM_RESULT, DUP_PARAMS)
-        } else {
-          print(paste("ERROR: Results for Curve ", CURVENUM, " Parameter ",
-                      PARAMNUM, " Sample ", SAMPLE, " not found", sep = ""))
         }
       }
 
       colnames(CURVE_PARAM_RESULT) <- c(colnames(params), MEASURES)
 
       # Write this file out to the FILEPATH
-      RESULTSFILE <- paste(FILEPATH, "/Curve", CURVENUM, "_Parameter",
-                           PARAMNUM, "_Results.csv", sep = "")
-      write.csv(CURVE_PARAM_RESULT, RESULTSFILE, quote = FALSE,
-                row.names = FALSE)
+      write_data_to_csv(CURVE_PARAM_RESULT, file.path(
+        FILEPATH, paste("Curve",CURVENUM,"_Parameter",PARAMNUM,"_Results.csv",sep="")))
     }
 
-    print(paste("Analysis of Netlogo Results for Curve ", CURVENUM,
+    message(paste("Analysis of Netlogo Results for Curve ", CURVENUM,
                 " Complete", sep = ""))
   }
 }

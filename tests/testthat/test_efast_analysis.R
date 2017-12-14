@@ -409,5 +409,40 @@ test_that("efast_run_Analysis", {
 
 })
 
+test_that("efast_netlogo_get_overall_medians", {
+  expect_warning(efast_netlogo_get_overall_medians(getwd(), 3, c("A"), 2, c("B")),"'efast_netlogo_get_overall_medians' is deprecated");
+})
+
+test_that("efast_netlogo_run_Analysis", {
+  expect_warning(efast_netlogo_run_Analysis(getwd(), c("A"),c("B","C"), 3, 2, 1:2, 0.95, GRAPH_FLAG=TRUE, "NoResult.csv", TIMEPOINTS=NULL, TIMEPOINTSCALE=NULL));
+})
+
+test_that("efast_process_netlogo_result", {
+  unzip(file.path(getwd(),"netlogo_efast.zip"))
+  params <- rbind(cbind(75.243533999874,20.8659777539209),
+                  cbind(72.7819955383356,19.7890546769978))
+  write.csv(params,file.path(getwd(),"test_data","Curve1_duration.csv"))
+  params <- rbind(cbind(60.9800740342874,17.0678570512324),
+                  cbind(58.5185355727489,18.1447801281555))
+  write.csv(params,file.path(getwd(),"test_data","Curve1_infectiousness.csv"))
+
+  params <- rbind(cbind(28.9835400518316,13.8958840938643),
+                  cbind(26.5220015902932,12.8189610169412))
+  write.csv(params,file.path(getwd(),"test_data","Curve2_duration.csv"))
+  params <- rbind(cbind(83.0367824074167,32.0177571749888),
+                  cbind(80.5752439458783,33.0946802519119))
+  write.csv(params,file.path(getwd(),"test_data","Curve2_infectiousness.csv"))
+  efast_process_netlogo_result(file.path(getwd(),"test_data"), "efast_result_set", c("infectiousness","duration"), 2,
+             2, c("death-thru-sickness","death-but-immune","death-old-age","death-old-and-sick"), "ParamValResponses", 5200)
+
+  expect_true(file.exists(file.path(getwd(),"test_data","Curve1_Parameter1_Results.csv")))
+  expect_true(file.exists(file.path(getwd(),"test_data","Curve1_Parameter2_Results.csv")))
+  expect_true(file.exists(file.path(getwd(),"test_data","Curve2_Parameter1_Results.csv")))
+  expect_true(file.exists(file.path(getwd(),"test_data","Curve2_Parameter2_Results.csv")))
+
+  unlink(file.path(getwd(),"test_data"),recursive = TRUE)
+
+})
+
 
 
