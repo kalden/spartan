@@ -240,7 +240,7 @@ visualise_data_distribution <- function(dataset, measure, graphname,
 
 check_data_partitions <-function(train,test,validate)
 {
-  if(train+test+validate == 100)
+  if((train+test+validate) == 100)
     return(TRUE)
   else
     return(FALSE)

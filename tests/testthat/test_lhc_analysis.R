@@ -132,7 +132,7 @@ test_that("calculate_prcc_for_all_measures", {
   expect_true(ncol(prccs)==4)
   expect_true(nrow(prccs)==1)
   # In this case we know what the result should be, so we can check:
-  expect_equal(toString(prccs[1,]),"-0.612573243351365, 1.04590080937115e-65, -0.496004647238542, 1.66467817317124e-36")
+  expect_equal(toString(round(prccs,digits=5)),"-0.61257, 0, -0.496, 0")
 
 })
 
@@ -149,10 +149,10 @@ test_that("calculate_prccs_all_parameters", {
   expect_false(any(is.na(results)))
 
   # We can check the data to known results
-  expect_equal(toString(results[,1]),"-0.612573243351365, -0.23544238910024, -0.0352194687577137, -0.38036610430444, -0.965612015969247, -0.105381260719843")
-  expect_equal(toString(results[,2]),"1.04590080937115e-65, 8.72122168326143e-08, 0.436270488971339, 1.03259665068273e-19, 0, 0.0192330437767813")
-  expect_equal(toString(results[,3]),"-0.496004647238542, -0.675884592581191, 0.016675452545702, -0.790094708254836, -0.820138812445728, -0.064631794993301")
-  expect_equal(toString(results[,4]),"1.66467817317124e-36, 2.98004421745699e-91, 0.712557093834158, 2.50135510062331e-178, 4.74933607297012e-220, 0.15250059663425")
+  expect_equal(toString(round(results[,1],digits=5)),"-0.61257, -0.23544, -0.03522, -0.38037, -0.96561, -0.10538")
+  expect_equal(toString(round(results[,2],digits=5)),"0, 0, 0.43627, 0, 0, 0.01923")
+  expect_equal(toString(round(results[,3],digits=5)),"-0.496, -0.67588, 0.01668, -0.79009, -0.82014, -0.06463")
+  expect_equal(toString(round(results[,4],digits=5)),"0, 0, 0.71256, 0, 0, 0.1525")
 })
 
 test_that("lhc_generatePRCoEffs_overTime", {
@@ -216,10 +216,10 @@ test_that("lhc_generatePRCoEffs", {
   expect_false(any(is.na(resultIn)))
 
   # We can check the data to known results
-  expect_equal(toString(resultIn[,2]),"-0.612573243351365, -0.23544238910024, -0.0352194687577137, -0.38036610430444, -0.965612015969247, -0.105381260719843")
-  expect_equal(toString(resultIn[,3]),"1.04590080937115e-65, 8.72122168326143e-08, 0.436270488971339, 1.03259665068273e-19, 0, 0.0192330437767813")
-  expect_equal(toString(resultIn[,4]),"-0.496004647238542, -0.675884592581191, 0.016675452545702, -0.790094708254836, -0.820138812445728, -0.064631794993301")
-  expect_equal(toString(resultIn[,5]),"1.66467817317124e-36, 2.98004421745699e-91, 0.712557093834158, 2.50135510062331e-178, 4.74933607297012e-220, 0.15250059663425")
+  expect_equal(toString(round(resultIn[,2],digits=5)),"-0.61257, -0.23544, -0.03522, -0.38037, -0.96561, -0.10538")
+  expect_equal(toString(round(resultIn[,3],digits=5)),"0, 0, 0.43627, 0, 0, 0.01923")
+  expect_equal(toString(round(resultIn[,4],digits=5)),"-0.496, -0.67588, 0.01668, -0.79009, -0.82014, -0.06463")
+  expect_equal(toString(round(resultIn[,5],digits=5)),"0, 0, 0.71256, 0, 0, 0.1525")
 
   file.remove(file.path(getwd(),"LHC_Results.csv"))
   file.remove(file.path(getwd(),"Prcc_Out.csv"))
