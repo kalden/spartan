@@ -6,7 +6,7 @@
 \usage{
 aa_summariseReplicateRuns_overTime(FILEPATH, SAMPLESIZES, MEASURES,
   RESULTFILENAME, ALTFILENAME = NULL, OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-  SUMMARYFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
+  SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE, TIMEPOINTS, TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -24,6 +24,8 @@ aa_summariseReplicateRuns_overTime(FILEPATH, SAMPLESIZES, MEASURES,
 \item{OUTPUTFILECOLEND}{Column number in the simulation results file where the last output measure is.}
 
 \item{SUMMARYFILENAME}{Name of the file generated that lists the maximum and median A-Test results for each sample size.}
+
+\item{NUMSUBSETSPERSAMPLESIZE}{Number of subsets of simulation runs for each sample size. Defaults to 20}
 
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 

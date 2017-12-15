@@ -7,7 +7,7 @@
 aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
   ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = NULL,
   AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  GRAPHNAME = NULL)
+  GRAPHNAME = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -31,6 +31,8 @@ aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}
 
 \item{GRAPHNAME}{Used internally by the getATestResults method when producing graphs for multiple timepoints. Should not be set in function call.}
+
+\item{check_done}{If multiple timepoints, has the input been checked}
 }
 \description{
 Examines the summary CSV file produced either by the method

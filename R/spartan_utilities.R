@@ -122,8 +122,6 @@ read_model_result_file <- function(fileaddress, resultfilename,
 get_median_results_for_all_measures <- function(model_result, measures) {
 
   medians_all_measures <- NULL
-  #print(measures)
-  #print(model_result)
 
   # Calculate the median response for each measure
   for (q in 1:length(measures)) {

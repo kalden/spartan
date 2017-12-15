@@ -6,7 +6,8 @@
 \usage{
 aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME,
   ALTFILENAME = NULL, OUTPUTFILECOLSTART, OUTPUTFILECOLEND, SUMMARYFILENAME,
-  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+  NUMSUBSETSPERSAMPLESIZE = 20, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+  check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -25,9 +26,13 @@ aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME,
 
 \item{SUMMARYFILENAME}{Name of the file generated that lists the maximum and median A-Test results for each sample size.}
 
+\item{NUMSUBSETSPERSAMPLESIZE}{Number of subsets of simulation runs for each sample size. Defaults to 20}
+
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}
+
+\item{check_done}{If multiple timepoints, whether the input has been checked}
 }
 \description{
 Only to be applied in cases where simulation responses are supplied in the

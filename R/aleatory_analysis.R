@@ -20,15 +20,17 @@
 #' @param OUTPUTFILECOLSTART Column number in the simulation results file where output begins - saves (a) reading in unnecessary data, and (b) errors where the first column is a label, and therefore could contain duplicates.
 #' @param OUTPUTFILECOLEND Column number in the simulation results file where the last output measure is.
 #' @param SUMMARYFILENAME Name of the file generated that lists the maximum and median A-Test results for each sample size.
+#' @param NUMSUBSETSPERSAMPLESIZE Number of subsets of simulation runs for each sample size. Defaults to 20
 #' @param TIMEPOINTS Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)
 #' @param TIMEPOINTSCALE Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"
+#' @param check_done If multiple timepoints, whether the input has been checked
 #'
 #' @export
 aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
                                       RESULTFILENAME, ALTFILENAME = NULL,
                                       OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-                                      SUMMARYFILENAME, TIMEPOINTS = NULL,
-                                      TIMEPOINTSCALE = NULL) {
+                                      SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE=20, TIMEPOINTS = NULL,
+                                      TIMEPOINTSCALE = NULL, check_done=FALSE) {
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
@@ -42,16 +44,11 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
 
       for (SAMPLESIZE in 1:length(SAMPLESIZES)) {
         subset_medians <- get_medians_for_size_subsets(
-          FILEPATH, 20, SAMPLESIZE, MEASURES, RESULTFILENAME,
+          FILEPATH, NUMSUBSETSPERSAMPLESIZE, SAMPLESIZE, MEASURES, RESULTFILENAME,
           ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND)
 
-        if(!is.null(SAMPLE_SIZE_RESULTS))
+        if(!is.null(subset_medians))
           SAMPLE_SIZE_RESULTS <- rbind(SAMPLE_SIZE_RESULTS, subset_medians)
-        else
-        {
-          message("Error Processing Results. Spartan Terminated.")
-          return(NULL)
-        }
 
       }
 
@@ -66,22 +63,18 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
       aa_summariseReplicateRuns_overTime(FILEPATH, SAMPLESIZES, MEASURES,
                                          RESULTFILENAME, ALTFILENAME,
                                          OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-                                         SUMMARYFILENAME, TIMEPOINTS,
-                                         TIMEPOINTSCALE)
+                                         SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE,
+                                         TIMEPOINTS, TIMEPOINTSCALE)
     }
   }
 }
 
 #' Calculate summary responses for consistency analysis simulations at multiple timepoints
 #' @inheritParams aa_summariseReplicateRuns
-aa_summariseReplicateRuns_overTime <- function(FILEPATH, SAMPLESIZES, MEASURES,
-                                               RESULTFILENAME,
-                                               ALTFILENAME = NULL,
-                                               OUTPUTFILECOLSTART,
-                                               OUTPUTFILECOLEND,
-                                               SUMMARYFILENAME,
-                                               TIMEPOINTS,
-                                               TIMEPOINTSCALE) {
+aa_summariseReplicateRuns_overTime <- function(
+  FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME, ALTFILENAME = NULL,
+  OUTPUTFILECOLSTART, OUTPUTFILECOLEND, SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE,
+  TIMEPOINTS, TIMEPOINTSCALE) {
 
   for (n in 1:length(TIMEPOINTS)) {
     current_time <- TIMEPOINTS[n]
@@ -101,11 +94,11 @@ aa_summariseReplicateRuns_overTime <- function(FILEPATH, SAMPLESIZES, MEASURES,
       SUMMARYFILENAME, current_time,
       check_file_extension(SUMMARYFILENAME))
 
-    aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES,
-                              simresultfilename, altfilename_full,
-                              OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-                              summaryfilename_full,
-                              TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+    aa_summariseReplicateRuns(
+      FILEPATH, SAMPLESIZES, MEASURES, simresultfilename, altfilename_full,
+      OUTPUTFILECOLSTART, OUTPUTFILECOLEND, summaryfilename_full,
+      NUMSUBSETSPERSAMPLESIZE, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+      check_done=TRUE)
 
   }
 }
@@ -132,6 +125,7 @@ aa_summariseReplicateRuns_overTime <- function(FILEPATH, SAMPLESIZES, MEASURES,
 #' @param GRAPHNAME Used internally by the getATestResults method when producing graphs for multiple timepoints. Should not be set in function call.
 #' @param AA_SIM_RESULTS_FILE The name of the CSV file containing the simulation responses, if reading from a CSV file
 #' @param AA_SIM_RESULTS_OBJECT The name of the R object containing the simulation responses, if not reading from a CSV file
+#' @param check_done If multiple timepoints, has the input been checked
 #'
 #' @export
 #'
@@ -141,7 +135,7 @@ aa_getATestResults <- function(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
                                LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = NULL,
                                AA_SIM_RESULTS_OBJECT = NULL,
                                TIMEPOINTS = NULL,
-                               TIMEPOINTSCALE = NULL, GRAPHNAME = NULL) {
+                               TIMEPOINTSCALE = NULL, GRAPHNAME = NULL, check_done=FALSE) {
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
@@ -194,7 +188,7 @@ aa_getATestResults_overTime <- function(
 
   for (n in 1:length(TIMEPOINTS)) {
     current_time <- TIMEPOINTS[n]
-    print(join_strings_space(c("Processing Timepoint:",
+    message(join_strings_space(c("Processing Timepoint:",
                                current_time)))
 
     aa_sim_results_full <- append_time_to_argument(
@@ -212,7 +206,7 @@ aa_getATestResults_overTime <- function(
       MEASURES, atest_results_full, LARGEDIFFINDICATOR,
       AA_SIM_RESULTS_FILE = aa_sim_results_full,
       AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
-      TIMEPOINTSCALE = NULL, GRAPHNAME = graph_output_name)
+      TIMEPOINTSCALE = NULL, GRAPHNAME = graph_output_name, check_done=TRUE)
   }
 }
 
@@ -237,7 +231,7 @@ aa_getATestResults_overTime <- function(
 aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
                                  SUMMARYFILENAME, ATESTRESULTS_FILE = NULL,
                                  ATESTRESULTS_OBJECT = NULL,
-                                 TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+                                 TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done=FALSE) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
@@ -251,7 +245,7 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
                                                         ATESTRESULTS_OBJECT)
       # These were checked in pre-execution check, so should exist
 
-      print("Producing Analysis Summary (aa_sampleSizeSummary)")
+      message("Producing Analysis Summary (aa_sampleSizeSummary)")
       atest_summary <- produce_atest_score_summary(
         SAMPLESIZES, allSubset_ATest_Scores, MEASURES)
 
@@ -262,13 +256,13 @@ aa_sampleSizeSummary <- function(FILEPATH, SAMPLESIZES, MEASURES,
                              FILEPATH, "/", SUMMARYFILENAME), ""))
 
       return(atest_summary)
-    }
-  } else {
+    } else {
 
     aa_sampleSizeSummary_overTime(FILEPATH, SAMPLESIZES, MEASURES,
                                   SUMMARYFILENAME, ATESTRESULTS_FILE,
                                   ATESTRESULTS_OBJECT,
                                   TIMEPOINTS, TIMEPOINTSCALE)
+    }
   }
 }
 
@@ -293,8 +287,8 @@ aa_sampleSizeSummary_overTime <- function(FILEPATH, SAMPLESIZES, MEASURES,
       check_file_extension(SUMMARYFILENAME))
 
     aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES,
-                         atestresultsfilename_full, summaryfilename_full,
-                         TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+                         summaryfilename_full, ATESTRESULTS_FILE = atestresultsfilename_full,
+                         TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done=TRUE)
 
   }
 }

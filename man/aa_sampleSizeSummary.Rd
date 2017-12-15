@@ -6,7 +6,7 @@
 \usage{
 aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME,
   ATESTRESULTS_FILE = NULL, ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL)
+  TIMEPOINTSCALE = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
@@ -26,6 +26,8 @@ results calculated by aa_getATestResults, if not reading from a CSV file}
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}
+
+\item{check_done}{If multiple timepoints, whether the input has been checked}
 }
 \description{
 This takes each sample size to be examined in turn, and iterates through all

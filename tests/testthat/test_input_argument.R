@@ -462,11 +462,14 @@ test_that("check_aaSampleSizeSummary", {
 
 test_that("check_aa_summariseReplicateRuns", {
   # This joins many input functions that have already been tested - we need to check the output is correct
-  dir.create(file.path(getwd(),"1"))
-  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"1","ATestSummary.csv"), quote=F, row.names=F)
-  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"1","AltResult.csv"), quote=F, row.names=F)
+  dir.create(file.path(getwd(),"AA"))
+  dir.create(file.path(getwd(),"AA","1"))
+  dir.create(file.path(getwd(),"AA","1","1"))
+  dir.create(file.path(getwd(),"AA","1","1","1"))
+  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"AA","1","1","1","ATestSummary.csv"), quote=F, row.names=F)
+  write.csv(rbind(seq(1,4,1)), file=file.path(getwd(),"AA","1","1","1","AltResult.csv"), quote=F, row.names=F)
 
-  input_check <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1),
+  input_check <- make_input_arguments_object(FILEPATH=file.path(getwd(),"AA"), SAMPLESIZES=c(1),
                                                  MEASURES=c("Velocity","Displacement"),
                                                  RESULTFILENAME="ATestSummary.csv",
                                                  ALTFILENAME="AltResult.csv",
@@ -482,7 +485,7 @@ test_that("check_aa_summariseReplicateRuns", {
   #expect_true(check_aa_summariseReplicateRuns(input_arguments))
 
   # Introduce some errors
-  input_check <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(A,1),
+  input_check <- make_input_arguments_object(FILEPATH=file.path(getwd(),"AA"), SAMPLESIZES=c(A,1),
                                                  MEASURES=c("Velocity","Displacement"),
                                                  RESULTFILENAME="ATestSummary.csv",
                                                  ALTFILENAME="AltResult.csv",
@@ -491,7 +494,7 @@ test_that("check_aa_summariseReplicateRuns", {
                                                  SUMMARYFILENAME="SummaryFile.csv")
   input_check$input[[1]]="aa_summariseReplicateRuns"
   expect_message(check_input_args(input_check$names, input_check$input),"Error in declaration of SAMPLESIZES. Spartan Terminated")
-  input_check <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1),
+  input_check <- make_input_arguments_object(FILEPATH=file.path(getwd(),"AA"), SAMPLESIZES=c(1),
                                                  MEASURES=c("Velocity","Displacement"),
                                                  RESULTFILENAME="ATestSummary.csv",
                                                  ALTFILENAME="AltResult.csv",
@@ -500,7 +503,7 @@ test_that("check_aa_summariseReplicateRuns", {
                                                  SUMMARYFILENAME="SummaryFile.csv")
   input_check$input[[1]]="aa_summariseReplicateRuns"
   expect_message(check_input_args(input_check$names, input_check$input),"Error in declaring either OUTPUTFILECOLSTART or OUTPUTFILECOLEND. Spartan Terminated")
-  input_check <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1),
+  input_check <- make_input_arguments_object(FILEPATH=file.path(getwd(),"AA"), SAMPLESIZES=c(1),
                                                  MEASURES=c("Velocity","Displacement"),
                                                  RESULTFILENAME="ATestSummary.csv",
                                                  ALTFILENAME="AltResult.csv",
@@ -510,7 +513,7 @@ test_that("check_aa_summariseReplicateRuns", {
   input_check$input[[1]]="aa_summariseReplicateRuns"
   expect_message(check_input_args(input_check$names, input_check$input),"SUMMARYFILENAME must be either a text string or numeric. Error in declaration. Terminated")
 
-  unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
+  unlink(paste(getwd(),"/AA/",sep=""), recursive = TRUE)
 })
 
 test_that("check_graph_output_type", {

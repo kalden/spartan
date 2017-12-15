@@ -126,29 +126,7 @@ test_that("generate_scores_for_all_sample_sizes", {
   file.remove(file.path(getwd(),"/50Samples.pdf"))
 })
 
-test_that("aa_getATestResults", {
 
-  # Overarching call to many of the above methods
-  # Inputs are checked, we just need to check CSV is output and the results returned
-  data("tutorial_consistency_set")
-  scores <- aa_getATestResults(getwd(), c(1,50), 20, c("Velocity","Displacement"),
-                                 "AA_A_Test_Summary.csv", 0.23,
-                                 AA_SIM_RESULTS_FILE = NULL,
-                                 AA_SIM_RESULTS_OBJECT = tutorial_consistency_set,
-                                 TIMEPOINTS = NULL,
-                                 TIMEPOINTSCALE = NULL, GRAPHNAME = NULL)
-
-  expect_equal(nrow(scores),38)
-  expect_equal(ncol(scores),6)
-  expect_true(file.exists(file.path(getwd(),"AA_A_Test_Summary.csv")))
-  expect_true(file.exists(file.path(getwd(),"/50Samples.pdf")))
-  expect_true(file.exists(file.path(getwd(),"/1Samples.pdf")))
-
-  file.remove(file.path(getwd(),"AA_A_Test_Summary.csv"))
-  file.remove(file.path(getwd(),"/1Samples.pdf"))
-  file.remove(file.path(getwd(),"/50Samples.pdf"))
-
-})
 
 test_that("read_model_result_file", {
 
@@ -245,3 +223,226 @@ test_that("generate_headers_for_atest_file", {
   expect_equal(toString(colnames(a)),
   "samplesize, VelocityMaxA, VelocityMedianA, DisplacementMaxA, DisplacementMedianA")
 })
+
+test_that("aa_getATestResults", {
+
+  # Overarching call to many of the above methods
+  # Inputs are checked, we just need to check CSV is output and the results returned
+  data("tutorial_consistency_set")
+  scores <- aa_getATestResults(getwd(), c(1,50), 20, c("Velocity","Displacement"),
+                               "AA_A_Test_Summary.csv", 0.23,
+                               AA_SIM_RESULTS_FILE = NULL,
+                               AA_SIM_RESULTS_OBJECT = tutorial_consistency_set,
+                               TIMEPOINTS = NULL,
+                               TIMEPOINTSCALE = NULL, GRAPHNAME = NULL)
+
+  expect_equal(nrow(scores),38)
+  expect_equal(ncol(scores),6)
+  expect_true(file.exists(file.path(getwd(),"AA_A_Test_Summary.csv")))
+  expect_true(file.exists(file.path(getwd(),"/50Samples.pdf")))
+  expect_true(file.exists(file.path(getwd(),"/1Samples.pdf")))
+
+  file.remove(file.path(getwd(),"AA_A_Test_Summary.csv"))
+  file.remove(file.path(getwd(),"/1Samples.pdf"))
+  file.remove(file.path(getwd(),"/50Samples.pdf"))
+
+  # By file:
+  setup_aleatory_analysis_tests()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2)
+
+  aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"), "ATests.csv", 0.23,
+                     AA_SIM_RESULTS_FILE = "AA_Summary.csv", AA_SIM_RESULTS_OBJECT = NULL)
+
+  expect_true(file.exists(file.path(getwd(),"AA","ATests.csv")))
+  expect_true(file.exists(file.path(getwd(),"AA","2Samples.pdf")))
+  expect_true(file.exists(file.path(getwd(),"AA","1Samples.pdf")))
+
+  unlink(file.path(getwd(),"AA"),recursive = TRUE)
+
+})
+
+test_that("aa_getATestResults_overTime", {
+
+  setup_aleatory_analysis_overTime()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2, TIMEPOINTS=c(12,36), TIMEPOINTSCALE="Hours")
+
+  aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"), "ATests.csv", 0.23,
+                     AA_SIM_RESULTS_FILE = "AA_Summary.csv", AA_SIM_RESULTS_OBJECT = NULL,TIMEPOINTS=c(12,36), TIMEPOINTSCALE="Hours")
+
+  expect_true(file.exists(file.path(getwd(),"AA","ATests_12.csv")))
+  expect_true(file.exists(file.path(getwd(),"AA","ATests_36.csv")))
+  expect_true(file.exists(file.path(getwd(),"AA","2Samples_12.pdf")))
+  expect_true(file.exists(file.path(getwd(),"AA","1Samples_12.pdf")))
+  expect_true(file.exists(file.path(getwd(),"AA","2Samples_36.pdf")))
+  expect_true(file.exists(file.path(getwd(),"AA","1Samples_36.pdf")))
+
+  unlink(file.path(getwd(),"AA"),recursive = TRUE)
+
+})
+
+test_that("aa_summariseReplicateRuns", {
+
+  setup_aleatory_analysis_tests()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2)
+
+  expect_true(file.exists(file.path(getwd(),"AA","AA_Summary.csv")))
+  # Check structure
+  result<-read_from_csv(file.path(getwd(),"AA","AA_Summary.csv"))
+  expect_true(ncol(result)==4)
+  expect_true(nrow(result)==6)
+  expect_true(nrow(subset(result, result$SampleSize==1))==2)
+  expect_true(nrow(subset(result, result$SampleSize==2))==4)
+  expect_false(any(is.na(result)))
+
+  unlink(file.path(getwd(),"AA"),recursive=TRUE)
+})
+
+test_that("aa_summariseReplicateRuns_overTime", {
+
+  setup_aleatory_analysis_overTime()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2,TIMEPOINTS=c(12,36),
+                            TIMEPOINTSCALE="Hours")
+
+  expect_true(file.exists(file.path(getwd(),"AA","AA_Summary_12.csv")))
+  # Check structure
+  result<-read_from_csv(file.path(getwd(),"AA","AA_Summary_12.csv"))
+  expect_true(ncol(result)==4)
+  expect_true(nrow(result)==6)
+  expect_true(nrow(subset(result, result$SampleSize==1))==2)
+  expect_true(nrow(subset(result, result$SampleSize==2))==4)
+  expect_false(any(is.na(result)))
+
+  expect_true(file.exists(file.path(getwd(),"AA","AA_Summary_36.csv")))
+  # Check structure
+  result<-read_from_csv(file.path(getwd(),"AA","AA_Summary_36.csv"))
+  expect_true(ncol(result)==4)
+  expect_true(nrow(result)==6)
+  expect_true(nrow(subset(result, result$SampleSize==1))==2)
+  expect_true(nrow(subset(result, result$SampleSize==2))==4)
+  expect_false(any(is.na(result)))
+
+  unlink(file.path(getwd(),"AA"),recursive=TRUE)
+
+
+
+})
+
+test_that("aa_sampleSizeSummary", {
+
+    # File:
+    setup_aleatory_analysis_tests()
+
+    aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2)
+
+    scores <- aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"),
+                                 "AA_A_Test_Summary.csv", 0.23,
+                                 AA_SIM_RESULTS_FILE = "AA_Summary.csv",
+                                 AA_SIM_RESULTS_OBJECT = NULL,
+                                 TIMEPOINTS = NULL,
+                                 TIMEPOINTSCALE = NULL, GRAPHNAME = NULL)
+
+    aa_sampleSizeSummary(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"), "Sample_Summary.csv", ATESTRESULTS_FILE = "AA_A_Test_Summary.csv",
+                                     ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
+    expect_true(file.exists(file.path(getwd(),"AA","Sample_Summary.csv")))
+
+    # Check structure:
+    result<-read_from_csv(file.path(getwd(),"AA","Sample_Summary.csv"))
+    expect_true(nrow(result)==2)
+    expect_true(ncol(result)==5)
+    expect_false(any(is.na(result)))
+
+    unlink(file.path(getwd(),"AA"),recursive=TRUE)
+
+    # Object
+    dir.create(file.path(getwd(),"AA"))
+    data("tutorial_consistency_set")
+    scores <- aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"),
+                                 "AA_A_Test_Summary.csv", 0.23,
+                                 AA_SIM_RESULTS_FILE = NULL,
+                                 AA_SIM_RESULTS_OBJECT = tutorial_consistency_set,
+                                 TIMEPOINTS = NULL,
+                                 TIMEPOINTSCALE = NULL, GRAPHNAME = NULL)
+
+    aa_sampleSizeSummary(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"), "Sample_Summary.csv", ATESTRESULTS_FILE = NULL,
+                         ATESTRESULTS_OBJECT = scores, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
+    expect_true(file.exists(file.path(getwd(),"AA","Sample_Summary.csv")))
+
+    # Check structure:
+    result<-read_from_csv(file.path(getwd(),"AA","Sample_Summary.csv"))
+    expect_true(nrow(result)==2)
+    expect_true(ncol(result)==5)
+    expect_false(any(is.na(result)))
+
+    unlink(file.path(getwd(),"AA"),recursive=TRUE)
+})
+
+test_that("aa_sampleSizeSummary_overTime", {
+
+  # By File:
+  setup_aleatory_analysis_overTime()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2,TIMEPOINTS=c(12,36),
+                            TIMEPOINTSCALE="Hours")
+
+  scores <- aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"),
+                               "AA_A_Test_Summary.csv", 0.23,
+                               AA_SIM_RESULTS_FILE = "AA_Summary.csv",
+                               AA_SIM_RESULTS_OBJECT = NULL,
+                               TIMEPOINTS = c(12,36),
+                               TIMEPOINTSCALE = "Hours")
+
+  aa_sampleSizeSummary(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"), "Sample_Summary.csv", ATESTRESULTS_FILE = "AA_A_Test_Summary.csv",
+                       ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = c(12,36), TIMEPOINTSCALE = "Hours")
+
+  expect_true(file.exists(file.path(getwd(),"AA","Sample_Summary_12.csv")))
+
+  # Check structure:
+  result<-read_from_csv(file.path(getwd(),"AA","Sample_Summary_12.csv"))
+  expect_true(nrow(result)==2)
+  expect_true(ncol(result)==5)
+  expect_false(any(is.na(result)))
+
+  result<-read_from_csv(file.path(getwd(),"AA","Sample_Summary_36.csv"))
+  expect_true(nrow(result)==2)
+  expect_true(ncol(result)==5)
+  expect_false(any(is.na(result)))
+
+  unlink(file.path(getwd(),"AA"),recursive=TRUE)
+
+  # By Object isn't available yet
+
+})
+
+test_that("get_medians_for_size_subsets", {
+
+  setup_aleatory_analysis_tests()
+
+  subset_medians <- get_medians_for_size_subsets(file.path(getwd(),"AA"), 2,
+                                           1, c("Velocity","Displacement"), "trackedCells_Close.csv",
+                                           ALTFILENAME=NULL, 10, 11)
+
+  expect_true(nrow(subset_medians)==2)
+  expect_true(ncol(subset_medians)==4)
+  expect_false(any(is.na(subset_medians)))
+
+  unlink(file.path(getwd(),"AA"),recursive=TRUE)
+})
+

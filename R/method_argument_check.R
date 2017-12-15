@@ -188,7 +188,7 @@ get_file_and_object_argument_names <- function(input_arguments)
 get_correct_file_path_for_function <- function(arguments)
 {
   if(arguments[[1]] == "aa_summariseReplicateRuns")
-    return(paste(eval(arguments$FILEPATH),"/",eval(arguments$SAMPLESIZES)[1],sep=""))
+    return(file.path(eval(arguments$FILEPATH),eval(arguments$SAMPLESIZES)[1],"1","1"))
   else if(arguments[[1]] == "oat_processParamSubsets")
     return(paste(eval(arguments$FILEPATH),"/",eval(arguments$PARAMETERS)[1],"/",eval(arguments$PMIN)[1],"/1/",sep=""))
 }
@@ -889,15 +889,34 @@ check_consistency_result_type <- function(arguments, fileArg, rObjArg)
         # The user is specifying a results file name
         # Can check this here
         file_check <- check_text(arguments[fileArg][[1]], fileArg)
+
         if(file_check)
-          # Check the file exists
-          if(file.exists(file.path(filepath,file_name)))
-            return(TRUE)
+        {
+          if(is.null(eval(arguments$TIMEPOINTS)))
+          {
+            # Check the file exists
+            if(file.exists(file.path(filepath,file_name)))
+              return(TRUE)
+            else
+            {
+              message(paste("File ",file_name, " in argument ",fileArg, " does not exist in ",filepath,sep=""))
+              return(FALSE)
+            }
+          }
           else
           {
-            message(paste("File ",file_name, " in argument ",fileArg, " does not exist in ",filepath,sep=""))
-            return(FALSE)
+            for(t in 1:length(eval(arguments$TIMEPOINTS)))
+            {
+              filename_full <- append_time_to_argument(
+                file_name, eval(arguments$TIMEPOINTS)[t],
+                check_file_extension(file_name))
+
+              if(!file.exists(file.path(filepath, filename_full)))
+                return(FALSE)
+            }
+            return(TRUE)
           }
+        }
         else
         {
           message(paste("Problem with declaration of argument ",fileArg,", ",file_name, ". Spartan Terminated",sep=""))
@@ -912,6 +931,7 @@ check_consistency_result_type <- function(arguments, fileArg, rObjArg)
     }
   },
   error=function(cond) {
+    print(cond)
     message(paste("Error in declaring either ",fileArg," or ",rObjArg,". You must specify one. Spartan Terminated",sep=""))
     return(FALSE)
   })
