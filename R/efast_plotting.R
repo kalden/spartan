@@ -67,8 +67,6 @@ efast_graph_Results <- function(RESULTS_FILE_PATH, PARAMETERS, si, sti,
       dev.off()
     }
     message(paste("Graphs Output to ", RESULTS_FILE_PATH, sep = ""))
-  } else {
-    print("Use of efast_graph_Results requires the gplots library")
   }
 }
 

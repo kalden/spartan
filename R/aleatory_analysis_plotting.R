@@ -111,7 +111,7 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
           atest_results <- read.csv(make_path(c(FILEPATH, SAMPLESUMMARY_FILE)),
                                     header = TRUE, check.names = FALSE)
         } else {
-          print("Specified A-Test Summary File does not exist")
+          message("Specified A-Test Summary File does not exist")
           errorLog <- 0
         }
       } else {
@@ -121,98 +121,80 @@ aa_graphSampleSizeSummary <- function(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
       if(errorLog > 0) {
 
     # NOW DRAW THE GRAPH
-    print("Creating Summary Graph")
+    message("Creating Summary Graph")
 
+    # Where the resulting graph should go
+    graph_file <- make_path(c(FILEPATH, GRAPHOUTPUTFILE))
+    pdf(graph_file, width = 12, height = 7)
+    par(xpd = NA, mar = c(4, 4, 2, 17))
+    atest_results <- as.data.frame(atest_results)
 
+    # NOW PLOT FOR EACH MEASURE
+    # THE PLOT BEGINS WITH THE FIRST MEASURE
+    measure_label <- paste(MEASURES[1], "MaxA", sep = "")
+    plot(atest_results$samplesize, atest_results[measure_label][, 1],
+         type = "o", lty = 1, ylim = c(0.5, 1.0),
+         pch = 1, xlab = "Sample Size",
+         ylab = "A Test Score", xaxt = "n", yaxt = "n")
 
-    #if (file.exists(make_path(c(FILEPATH, SUMMARYFILENAME)))) {
-
-      #atest_results <- read.csv(make_path(c(FILEPATH, SUMMARYFILENAME)),
-       #                        header = TRUE, check.names = FALSE)
-
-      # Where the resulting graph should go
-      graph_file <- make_path(c(FILEPATH, GRAPHOUTPUTFILE))
-      pdf(graph_file, width = 12, height = 7)
-      par(xpd = NA, mar = c(4, 4, 2, 17))
-      atest_results <- as.data.frame(atest_results)
-
-      # NOW PLOT FOR EACH MEASURE
-      # THE PLOT BEGINS WITH THE FIRST MEASURE
-      measure_label <- paste(MEASURES[1], "MaxA", sep = "")
-      plot(atest_results$samplesize, atest_results[measure_label][, 1],
-           type = "o", lty = 1, ylim = c(0.5, 1.0),
-           pch = 1, xlab = "Sample Size",
-           ylab = "A Test Score", xaxt = "n", yaxt = "n")
-
-      # NOW DO ALL OTHER MEASURES, IF THERE ARE MORE THAN ONE
-      if (length(MEASURES) > 1) {
-        for (l in 2:length(MEASURES)) {
-          measure_label <- paste(MEASURES[l], "MaxA", sep = "")
-          lines(atest_results$samplesize, atest_results[measure_label][, 1],
-                type = "o", lty = 5, pch = l)
-        }
+    # NOW DO ALL OTHER MEASURES, IF THERE ARE MORE THAN ONE
+    if (length(MEASURES) > 1) {
+      for (l in 2:length(MEASURES)) {
+        measure_label <- paste(MEASURES[l], "MaxA", sep = "")
+        lines(atest_results$samplesize, atest_results[measure_label][, 1],
+              type = "o", lty = 5, pch = l)
       }
-
-      # COMPLETE GRAPH - TITLE DEPENDs ON WHETHER THIS IS ONE TIMEPOINT OR MANY
-      if (is.null(GRAPHLABEL))
-        title("Maximum A-Test Scores for each Sample Size")
-      else
-        title(paste("Maximum A-Test Scores for each Sample Size ",
-                    "(Timepoint: ", GRAPHLABEL, ")",sep = ""))
-
-      axis(1, at = seq(0, MAXSAMPLESIZE, by = 100))
-      axis(2, at = seq(0.5, 1.0, by = 0.05))
-
-      par(xpd = TRUE)
-      legend(par("usr")[2], par("usr")[4], title = "MEASURES",
-             MEASURES, pch = 1:length(MEASURES), cex = 0.7, ncol = 1)
-
-      par(xpd = FALSE)
-
-      # ADD THE LINES TO SHOW WHERE THE A-TEST EFFECTS ARE
-      abline(h = SMALL, lty = 4)
-      text(MAXSAMPLESIZE / 2, SMALL - 0.01, "SMALL effect", col = "blue")
-      abline(h = LARGE, lty = 4)
-      text(MAXSAMPLESIZE / 2, LARGE + 0.01, "LARGE effect", col = "blue")
-      abline(h = MEDIUM, lty = 4)
-      text(MAXSAMPLESIZE / 2, MEDIUM + 0.02, "MEDIUM effect", col = "blue")
-      dev.off()
-
-      print(paste("Summary Graph output to ", make_path(c(FILEPATH,
-                                                          GRAPHOUTPUTFILE)),
-                  sep = ""))
-      }
-    } else {
-      print(paste("You must specify either an R object containing simulation ",
-                  "a test summary results, or the name of a CSV file in the ",
-                  "filepath containing those results",sep=""))
     }
+
+    # COMPLETE GRAPH - TITLE DEPENDs ON WHETHER THIS IS ONE TIMEPOINT OR MANY
+    if (is.null(GRAPHLABEL))
+      title("Maximum A-Test Scores for each Sample Size")
+    else
+      title(paste("Maximum A-Test Scores for each Sample Size ",
+                  "(Timepoint: ", GRAPHLABEL, ")",sep = ""))
+
+    axis(1, at = seq(0, MAXSAMPLESIZE, by = 100))
+    axis(2, at = seq(0.5, 1.0, by = 0.05))
+
+    par(xpd = TRUE)
+    legend(par("usr")[2], par("usr")[4], title = "MEASURES",
+           MEASURES, pch = 1:length(MEASURES), cex = 0.7, ncol = 1)
+
+    par(xpd = FALSE)
+
+    # ADD THE LINES TO SHOW WHERE THE A-TEST EFFECTS ARE
+    abline(h = SMALL, lty = 4)
+    text(MAXSAMPLESIZE / 2, SMALL - 0.01, "SMALL effect", col = "blue")
+    abline(h = LARGE, lty = 4)
+    text(MAXSAMPLESIZE / 2, LARGE + 0.01, "LARGE effect", col = "blue")
+    abline(h = MEDIUM, lty = 4)
+    text(MAXSAMPLESIZE / 2, MEDIUM + 0.02, "MEDIUM effect", col = "blue")
+    dev.off()
+
+    message(paste("Summary Graph output to ", make_path(c(FILEPATH,
+                                                        GRAPHOUTPUTFILE)),
+                sep = ""))
+    }
+  }
   } else {
     for (n in 1:length(TIMEPOINTS)) {
 
       current_time <- TIMEPOINTS[n]
-      print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
+      message(paste("Processing Timepoint: ", current_time, sep = ""))
+      summaryfilename_full <- append_time_to_argument(
+        SAMPLESUMMARY_FILE, current_time,
+        check_file_extension(SAMPLESUMMARY_FILE))
 
-      summaryfilename_format <- check_file_extension(SAMPLESUMMARY_FILE)
-      SUMMARYFILENAME_FULL <- paste(substr(SAMPLESUMMARY_FILE, 0,
-                                         nchar(SAMPLESUMMARY_FILE) - 4),
-                                  "_", current_time, ".",
-                                  summaryfilename_format, sep = "")
-
-      graphfilename_format <- check_file_extension(GRAPHOUTPUTFILE)
-      GRAPHFILENAME_FULL <- paste(substr(GRAPHOUTPUTFILE, 0,
-                                       nchar(GRAPHOUTPUTFILE) - 4),
-                                "_", current_time, ".", graphfilename_format,
-                                sep = "")
+      graphfilename_full <- append_time_to_argument(
+        GRAPHOUTPUTFILE, current_time,
+        check_file_extension(GRAPHOUTPUTFILE))
 
       GRAPHLABEL <- paste(current_time, TIMEPOINTSCALE, sep = " ")
 
-      aa_graphSampleSizeSummary(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL,
-                                MEDIUM, LARGE, GRAPHFILENAME_FULL,
-                                SAMPLESUMMARY_OBJECT = NULL,
-                                SAMPLESUMMARY_FILE = SUMMARYFILENAME_FULL,
-                                TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-                                GRAPHLABEL)
+      aa_graphSampleSizeSummary(
+        FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL, MEDIUM, LARGE, graphfilename_full,
+        SAMPLESUMMARY_OBJECT = NULL, SAMPLESUMMARY_FILE = summaryfilename_full,
+        TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, GRAPHLABEL)
     }
   }
 }

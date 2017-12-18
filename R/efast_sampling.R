@@ -202,7 +202,7 @@ output_param_sets_per_curve <- function(FILEPATH, NUMCURVES, PARAMETERS, PARAMET
       write.csv(output_params, parameter_file, quote = FALSE,
                 row.names = FALSE)
 
-      print(paste("Parameter Set for ", CURVENUM,
+      message(paste("Parameter Set for ", CURVENUM,
                   " Generated and Output to ", FILEPATH, "/Curve", CURVENUM,
                   "_", PARAMETERS[PARAMNUM], ".csv", sep = ""))
     }

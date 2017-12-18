@@ -444,5 +444,45 @@ test_that("efast_process_netlogo_result", {
 
 })
 
+test_that("ploteFASTSiFromTimepointFiles", {
+
+  # Again we have tested underlying functions, we just need to test for output
+  # Load in the exemplar summaries
+  load(file.path("efast_curve1_summary.Rda"))
+  load(file.path("efast_curve2_summary.Rda"))
+  load(file.path("efast_curve1_summary60.Rda"))
+  load(file.path("efast_curve2_summary60.Rda"))
+  # write these to file
+  write_data_to_csv(efast_curve1_summary,"Curve1_Results_Summary_12.csv")
+  write_data_to_csv(efast_curve2_summary,"Curve2_Results_Summary_12.csv")
+  write_data_to_csv(efast_curve1_summary_60,"Curve1_Results_Summary_60.csv")
+  write_data_to_csv(efast_curve2_summary_60,"Curve2_Results_Summary_60.csv")
+
+  efast_run_Analysis(getwd(),c("Velocity","Displacement"),
+                     c("BindProbability","ChemoThreshold","ChemoUpperLinearAdjust","ChemoLowerLinearAdjust","VCAMProbabilityThreshold","VCAMSlope","Dummy"),
+                     2,65,1:2,0.95,GRAPH_FLAG=TRUE, "efast_summary.csv",TIMEPOINTS=c(12,60))
+
+  ploteFASTSiFromTimepointFiles(getwd(), c("BindProbability","ChemoThreshold","ChemoUpperLinearAdjust","ChemoLowerLinearAdjust","VCAMProbabilityThreshold","VCAMSlope","Dummy"),
+                                c("Velocity","Displacement"),
+                                "efast_summary.csv", TIMEPOINTS=c(12,60), TIMEPOINTSCALE="Hours")
+
+  expect_true(file.exists(file.path(getwd(),"Displacement_OT.pdf")))
+  expect_true(file.exists(file.path(getwd(),"Velocity_OT.pdf")))
+
+  # Cleanup
+  file.remove("Curve1_Results_Summary_12.csv")
+  file.remove("Curve2_Results_Summary_12.csv")
+  file.remove("Curve1_Results_Summary_60.csv")
+  file.remove("Curve2_Results_Summary_60.csv")
+  file.remove("efast_summary_12.csv")
+  file.remove("efast_summary_60.csv")
+  file.remove("Displacement_12.pdf")
+  file.remove("Displacement_60.pdf")
+  file.remove("Velocity_12.pdf")
+  file.remove("Velocity_60.pdf")
+  file.remove(file.path(getwd(),"Displacement_OT.pdf"))
+  file.remove(file.path(getwd(),"Velocity_OT.pdf"))
+})
+
 
 

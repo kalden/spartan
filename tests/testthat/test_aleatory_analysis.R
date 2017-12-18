@@ -446,3 +446,70 @@ test_that("get_medians_for_size_subsets", {
   unlink(file.path(getwd(),"AA"),recursive=TRUE)
 })
 
+test_that("aa_graphSampleSizeSummary", {
+
+  setup_aleatory_analysis_tests()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2)
+
+  scores <- aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"),
+                               "AA_A_Test_Summary.csv", 0.23,
+                               AA_SIM_RESULTS_FILE = "AA_Summary.csv",
+                               AA_SIM_RESULTS_OBJECT = NULL,
+                               TIMEPOINTS = NULL,
+                               TIMEPOINTSCALE = NULL, GRAPHNAME = NULL)
+
+  results <- aa_sampleSizeSummary(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"), "Sample_Summary.csv", ATESTRESULTS_FILE = "AA_A_Test_Summary.csv",
+                       ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+
+  aa_graphSampleSizeSummary(file.path(getwd(),"AA"), c("Velocity","Displacement"), 2, 0.56,
+                                        0.66, 0.73, "AA_ATestMaxes.pdf",
+                                        SAMPLESUMMARY_OBJECT = NULL,
+                                        SAMPLESUMMARY_FILE = "Sample_Summary.csv")
+
+  expect_true(file.exists(file.path(getwd(),"AA","AA_ATestMaxes.pdf")))
+  expect_message(aa_graphSampleSizeSummary(file.path(getwd(),"AA"), c("Velocity","Displacement"), 2, 0.56,
+                                        0.66, 0.73, "AA_ATestMaxes.pdf",
+                                        SAMPLESUMMARY_OBJECT = NULL,
+                                        SAMPLESUMMARY_FILE = "Sample_Summary_Wrong.csv"), "Specified A-Test Summary File does not exist")
+
+  # By object:
+  aa_graphSampleSizeSummary(file.path(getwd(),"AA"), c("Velocity","Displacement"), 2, 0.56,
+                            0.66, 0.73, "AA_ATestMaxes.pdf",
+                            SAMPLESUMMARY_OBJECT = results,
+                            SAMPLESUMMARY_FILE = NULL)
+
+  expect_true(file.exists(file.path(getwd(),"AA","AA_ATestMaxes.pdf")))
+
+  unlink(file.path(getwd(),"AA"),recursive=TRUE)
+
+  # Timepoints:
+  setup_aleatory_analysis_overTime()
+
+  aa_summariseReplicateRuns(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"),
+                            "trackedCells_Close.csv", ALTFILENAME = NULL,
+                            10,11,"AA_Summary.csv",NUMSUBSETSPERSAMPLESIZE=2,TIMEPOINTS=c(12,36),
+                            TIMEPOINTSCALE="Hours")
+
+  scores <- aa_getATestResults(file.path(getwd(),"AA"), c(1,2), 2, c("Velocity","Displacement"),
+                               "AA_A_Test_Summary.csv", 0.23,
+                               AA_SIM_RESULTS_FILE = "AA_Summary.csv",
+                               AA_SIM_RESULTS_OBJECT = NULL,
+                               TIMEPOINTS = c(12,36),
+                               TIMEPOINTSCALE = "Hours")
+
+  results <- aa_sampleSizeSummary(file.path(getwd(),"AA"), c(1,2), c("Velocity","Displacement"), "Sample_Summary.csv", ATESTRESULTS_FILE = "AA_A_Test_Summary.csv",
+                       ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = c(12,36), TIMEPOINTSCALE = "Hours")
+
+  aa_graphSampleSizeSummary(file.path(getwd(),"AA"), c("Velocity","Displacement"), 2, 0.56,
+                            0.66, 0.73, "AA_ATestMaxes.pdf",
+                            SAMPLESUMMARY_OBJECT = NULL,
+                            SAMPLESUMMARY_FILE = "Sample_Summary.csv",TIMEPOINTS=c(12,36), TIMEPOINTSCALE="Hours")
+
+  expect_true(file.exists(file.path(getwd(),"AA","AA_ATestMaxes_12.pdf")))
+  expect_true(file.exists(file.path(getwd(),"AA","AA_ATestMaxes_36.pdf")))
+  unlink(file.path(getwd(),"AA"),recursive=TRUE)
+})
+

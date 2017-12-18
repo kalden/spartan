@@ -27,7 +27,7 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
                                                ensemble_set = TRUE,
                                                normalise = FALSE,
                                                timepoint = NULL) {
-  setwd(filepath)
+
 
   for (c in 1:num_curves) {
     curve_results <- NULL
@@ -35,9 +35,8 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
     for (p in 1:length(parameters)) {
       curve_param_result <- NULL
 
-      spartan_sample <- read.csv(paste(filepath, "/Curve", c, "_",
-                                      parameters[p], ".csv", sep = ""),
-                                header = T)
+      spartan_sample <- read_from_csv(file.path(filepath, paste("Curve", c, "_",
+                                      parameters[p], ".csv", sep = "")))
 
       parameters_minus_dummy <- setdiff(parameters, "dummy")
 
@@ -119,8 +118,6 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                                              timepoint = NULL,
                                              timepointscale = NULL) {
 
-  setwd(filepath)
-
   #emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values)
 
   if(!is.null(param_file) | !is.null(dataset)) {
@@ -158,16 +155,14 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
     # Now write this out as if it was the spartan LHC summary
     colnames(param_values_with_predictions) <- c(parameters, measures)
 
+
     if (is.null(timepoint)) {
-      lhcsummaryfilename <- paste(filepath, "/Emulated_LHC_Summary.csv",
-                                  sep = "")
-      correlation_coeffs <- paste(filepath, "/CorrelationCoefficients.csv",
-                                 sep = "")
+      lhcsummaryfilename <- file.path(filepath, "Emulated_LHC_Summary.csv")
+      correlation_coeffs <- file.path(filepath, "CorrelationCoefficients.csv")
+
     } else {
-      lhcsummaryfilename <- paste(filepath, "/Emulated_LHC_Summary_",
-                                  timepoint, ".csv", sep = "")
-      correlation_coeffs <- paste(filepath, "/CorrelationCoefficients_",
-                                 timepoint, ".csv", sep = "")
+      lhcsummaryfilename <- file.path(filepath, paste("Emulated_LHC_Summary_",timepoint,".csv",sep=""))
+      correlation_coeffs <- file.path(filepath, paste("CorrelationCoefficients_",timepoint,".csv",sep=""))
     }
 
     write.csv(param_values_with_predictions, lhcsummaryfilename,
@@ -176,21 +171,16 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
 
     # Analyse:
     # Method takes care of adding timepoint to the file names
-    lhc_generatePRCoEffs(filepath, parameters,  measures,
+    lhc_generatePRCoEffs(FILEPATH=filepath, parameters,  measures,
                          "Emulated_LHC_Summary.csv",
                          "CorrelationCoefficients.csv",
-                         c(timepoint), timepointscale)
+                         c(timepoint), timepointscale, check_done=TRUE)
 
-    lhc_graphMeasuresForParameterChange(filepath, parameters, measures,
-                                        measure_scale,
-                                        "CorrelationCoefficients.csv",
-                                        "Emulated_LHC_Summary.csv",
-                                        OUTPUT_TYPE = c("PNG"),
-                                        TIMEPOINTS = c(timepoint),
-                                        TIMEPOINTSCALE = timepointscale)
+    lhc_graphMeasuresForParameterChange(
+      filepath, parameters, measures, measure_scale, "CorrelationCoefficients.csv",
+      "Emulated_LHC_Summary.csv", OUTPUT_TYPE = c("PNG"), TIMEPOINTS = c(timepoint),
+      TIMEPOINTSCALE = timepointscale, check_done=TRUE)
   } else {
-    print(paste("You must specify either an R object containing parameter ",
-                "values, or the name of a CSV file in the filepath",
-                "containing parameter values",sep=""))
+    message("You must specify either an R object containing parameter values, or the name of a CSV file in the filepath containing parameter values")
   }
 }

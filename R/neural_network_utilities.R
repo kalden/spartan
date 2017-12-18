@@ -110,13 +110,13 @@ determine_optimal_neural_network_structure <- function(dataset, parameters,
 
   #choose the best structure and generate the network, sending it to filepath
   if (!is.null(network_errors)) {
-    print(network_errors)
+
     # Now select the best performing network
     network_index <- selectSuitableStructure(network_errors)
 
     return(algorithm_settings$network_structures[[network_index]])
   } else {
-    print("Network Structure could not be determined")
+    message("Network Structure could not be determined")
     return(NULL)
   }
 }
@@ -236,7 +236,7 @@ analysenetwork_structures <- function(fold_size, dataset, model_formula,
   average_errors <- NULL
 
   for (n in 1:length(algorithm_settings$network_structures)) {
-    print(paste("Network Structure: ",
+    message(paste("Network Structure: ",
                 algorithm_settings$network_structures[[n]], sep = ""))
 
     # Set the pointers for the first test fold
@@ -313,10 +313,10 @@ createAndEvaluateFolds <- function(fold_size, test_fold_start, test_fold_end,
 
     # Status of run
     if (!fold == algorithm_settings$num_of_folds)
-      print(paste("Fold ", fold, " Test Start: ", test_fold_start, " End: ",
+      message(paste("Fold ", fold, " Test Start: ", test_fold_start, " End: ",
                   test_fold_end, sep = ""))
     else
-      print(paste("Fold ", fold, " Test Start: ", test_fold_start, " End: ",
+      message(paste("Fold ", fold, " Test Start: ", test_fold_start, " End: ",
                   nrow(dataset), sep = ""))
 
     # Create the training fold

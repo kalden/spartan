@@ -388,6 +388,7 @@ lhc_generatePRCoEffs <- function(
   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done = FALSE) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+
   # Run if all checks pass:
   if(check_input_args(input_check$names, input_check$arguments)) {
 

@@ -23,14 +23,14 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
     # THE GRAPHS GO IN SAME DIRECTORY AS THIS FOLDER, NOT IN THE TOP LEVEL
 
     if (file.exists(FILEPATH)) {
-      print("Creating graphs of A-Test results (oat_graphATestsForSampleSize)")
+      message("Creating graphs of A-Test results (oat_graphATestsForSampleSize)")
 
       # FIRSTLY READ IN THE ATESTS FILE (NOW ALL IN ONE FILE)
       RESULT <- read.csv(make_path(c(FILEPATH, ATESTRESULTFILENAME)),
                          sep = ",", header = TRUE, check.names = FALSE)
 
       for (PARAM in 1:length(PARAMETERS)) {
-        print(paste("Creating graph for Parameter ", PARAMETERS[PARAM],
+        message(paste("Creating graph for Parameter ", PARAMETERS[PARAM],
                     sep = ""))
 
         # NEED TO RECOVER THE A-TESTS FOR THIS PARAMETER FROM THE RESULTS
@@ -122,14 +122,14 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
         dev.off()
       }
     } else {
-      print("The directory specified in FILEPATH does not exist.
+      message("The directory specified in FILEPATH does not exist.
             No graph created")
     }
   } else {
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
     for (n in 1:length(TIMEPOINTS)) {
       current_time <- TIMEPOINTS[n]
-      print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
+      message(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
 
       atest_result_filename_format <- check_file_extension(ATESTRESULTFILENAME)
       ATESTRESULTFILENAME_FULL <- paste(substr(ATESTRESULTFILENAME, 0,
@@ -168,7 +168,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
 
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
     if (file.exists(FILEPATH)) {
-      print("Plotting result distribution for each parameter (oat_plotResultDistribution)")
+      message("Plotting result distribution for each parameter (oat_plotResultDistribution)")
 
       # NEW TO SPARTAN VERSION 2
       # READS SIMULATION RESPONSES FROM A CSV FILE, IN THE FORMAT: PARAMETER
@@ -181,7 +181,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                                    header = TRUE, check.names = FALSE)
 
       for (PARAM in 1:length(PARAMETERS)) {
-        print(paste("Creating Output Responses Box Plot Graph for Parameter ",
+        message(paste("Creating Output Responses Box Plot Graph for Parameter ",
                     PARAMETERS[PARAM], sep = ""))
 
         # THE RESULTS OF THE OAT ANALYSIS IS IN ONE PLACE. THUS WE NEED TO
@@ -255,20 +255,20 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
 
           dev.off()
 
-          print(paste("Box Plot Generated and output as ", GRAPHFILE,
+          message(paste("Box Plot Generated and output as ", GRAPHFILE,
                       sep = ""))
 
         }
       }
     } else {
-      print("The directory specified in FILEPATH does not exist.
+      message("The directory specified in FILEPATH does not exist.
             No graph created")
     }
   } else {
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
     for (n in 1:length(TIMEPOINTS)) {
       current_time <- TIMEPOINTS[n]
-      print(paste("PROCESSING TIMEPOINT: ", current_time, sep = ""))
+      message(paste("Processing Timepoint: ", current_time, sep = ""))
 
       csv_file_name_format <- check_file_extension(CSV_FILE_NAME)
       CSV_FILE_NAME_FULL <- paste(substr(CSV_FILE_NAME, 0,

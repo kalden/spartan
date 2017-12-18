@@ -487,13 +487,14 @@ check_filepath_exists <- function(arguments, argument_name)
         return(TRUE)
       else
       {
+
         message(paste("FILEPATH does not seem to exist:", eval(arguments[argument_name][[1]])))
         message("Spartan Function Terminated")
         return(FALSE)
       }
     },
     error=function(cond) {
-      #print(cond)
+      print(cond)
       message(paste("FILEPATH does not seem to exist"))
       message("Spartan Function Terminated")
       return(FALSE)

@@ -77,7 +77,7 @@ lhc_graphMeasuresForParameterChange_overTime <-
 
       for (n in 1:length(TIMEPOINTS)) {
         current_time <- TIMEPOINTS[n]
-        print(paste("Processing Timepoint: ", current_time, sep = ""))
+        message(paste("Processing Timepoint: ", current_time, sep = ""))
 
         corcoeffs_output_full <- append_time_to_argument(
           CORCOEFFSOUTPUTFILE, current_time,
@@ -288,7 +288,7 @@ lhc_plotCoEfficients <- function(FILEPATH, CORCOEFFSOUTPUTFILE, MEASURES,
     for (n in 1:length(TIMEPOINTS)) {
 
       current_time <- TIMEPOINTS[n]
-      print(paste("Processing Timepoint ", current_time, sep = ""))
+      message(paste("Processing Timepoint ", current_time, sep = ""))
 
       CORCOEFFSOUTPUTFILE_FORMAT <- check_file_extension(CORCOEFFSOUTPUTFILE)
       CORCOEFFSOUTPUTFILE_FULL <- paste(substr(CORCOEFFSOUTPUTFILE, 0,
@@ -405,7 +405,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
     for (n in 1:length(TIMEPOINTS)) {
       current_time <- TIMEPOINTS[n]
-      print(paste("Processing Timepoint: ", current_time, sep = ""))
+      message(paste("Processing Timepoint: ", current_time, sep = ""))
 
       CORCOEFFSOUTPUTFILE_FORMAT <- check_file_extension(CORCOEFFSOUTPUTFILE)
       CORCOEFFSOUTPUTFILE_FULL <- paste(substr(CORCOEFFSOUTPUTFILE, 0,
