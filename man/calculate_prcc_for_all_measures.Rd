@@ -5,7 +5,7 @@
 \title{For all measures, calculate the prcc for each parameter}
 \usage{
 calculate_prcc_for_all_measures(MEASURES, COEFFPARAMCOL, COEFFDATA,
-  LHCRESULTFILE)
+  LHCRESULTFILE, cor_calc_method = c("s"), prcc_method = "mat")
 }
 \arguments{
 \item{MEASURES}{Simulation output responses}
@@ -15,6 +15,12 @@ calculate_prcc_for_all_measures(MEASURES, COEFFPARAMCOL, COEFFDATA,
 \item{COEFFDATA}{Coefficient data object being created}
 
 \item{LHCRESULTFILE}{Complete simulation results for all parameter sets}
+
+\item{cor_calc_method}{Way to calculate the correlation coefficient: Pearson's
+("p"), Spearman's ("s"), and Kendall's ("k"). Default is p}
+
+\item{prcc_method}{Method to calculate the partial correlation coefficient, either
+variance-covariance matrix ("mat") or recursive formula ("rec"). Default mat}
 }
 \value{
 Updated set of parameter correlation coefficient results

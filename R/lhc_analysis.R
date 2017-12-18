@@ -424,7 +424,7 @@ lhc_generatePRCoEffs_overTime <- function(FILEPATH, PARAMETERS, MEASURES,
   # RECALLING THIS FUNCTION
   for (n in 1:length(TIMEPOINTS)) {
     current_time <- TIMEPOINTS[n]
-    print(paste("Processing Timepoint: ", current_time, sep = ""))
+    message(paste("Processing Timepoint: ", current_time, sep = ""))
 
     lhcsummaryfilename_full <- append_time_to_argument(
       LHCSUMMARYFILENAME, current_time,
@@ -493,17 +493,27 @@ generate_prcc_results_header <- function(measures) {
 #' @param COEFFPARAMCOL Results for the current simulation parameter
 #' @param COEFFDATA Coefficient data object being created
 #' @param LHCRESULTFILE Complete simulation results for all parameter sets
+#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
+#' @param prcc_method Method to calculate the partial correlation coefficient, either
+#' variance-covariance matrix ("mat") or recursive formula ("rec"). Default mat
 #' @return Updated set of parameter correlation coefficient results
 calculate_prcc_for_all_measures <- function(MEASURES, COEFFPARAMCOL, COEFFDATA,
-                                            LHCRESULTFILE)
+                                            LHCRESULTFILE, cor_calc_method=c("s"),
+                                            prcc_method="mat")
 {
   PARAM_RESULTS <- NULL
   for (l in 1:length(MEASURES)) {
     COEFFMEASURERESULT <- LHCRESULTFILE[, MEASURES[l]]
     PARAMCOEFF <- pcor.test(COEFFPARAMCOL, COEFFMEASURERESULT,
-                          COEFFDATA, calc_method = c("s"))
-    PARAM_RESULTS <- cbind(PARAM_RESULTS, PARAMCOEFF$estimate,
-                          PARAMCOEFF$p.value)
+                          COEFFDATA, calc_method=cor_calc_method, use=prcc_method)
+    if(!is.null(PARAMCOEFF))
+      PARAM_RESULTS <- cbind(PARAM_RESULTS, PARAMCOEFF$estimate,
+                            PARAMCOEFF$p.value)
+    else {
+      message("Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
+      return(NULL)
+    }
   }
   return(PARAM_RESULTS)
 }

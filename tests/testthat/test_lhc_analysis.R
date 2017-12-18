@@ -134,6 +134,39 @@ test_that("calculate_prcc_for_all_measures", {
   # In this case we know what the result should be, so we can check:
   expect_equal(toString(round(prccs,digits=5)),"-0.61257, 0, -0.496, 0")
 
+  # Can now test other methods of prcc calculation
+  # recursive:
+  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("p"),
+                                              prcc_method="rec")
+  expect_true(ncol(prccs)==4)
+  expect_true(nrow(prccs)==1)
+  # In this case we know what the result should be, so we can check:
+  expect_equal(toString(round(prccs,digits=5)),"-0.55122, 0, -0.44966, 0")
+  # Error:
+  expect_message(calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("p"),
+                                                 prcc_method="error"), "Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
+
+  # Spearmans:
+  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("p"),
+                                           prcc_method="mat")
+  expect_true(ncol(prccs)==4)
+  expect_true(nrow(prccs)==1)
+  # In this case we know what the result should be, so we can check:
+  expect_equal(toString(round(prccs,digits=5)),"-0.55122, 0, -0.44966, 0")
+
+  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("k"),
+                                           prcc_method="mat")
+
+  expect_true(ncol(prccs)==4)
+  expect_true(nrow(prccs)==1)
+  # In this case we know what the result should be, so we can check:
+  expect_equal(toString(round(prccs,digits=5)),"-0.23913, 0, -0.21073, 0")
+
+  # Error
+  expect_message(calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("e"),
+                                                 prcc_method="mat"), "Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
+
+
 })
 
 test_that("calculate_prccs_all_parameters", {
@@ -380,3 +413,39 @@ test_that("lhc_process_netlogo_result", {
 
   })
 
+test_that("lhc_generate_netlogo_PRCoEffs", {
+  expect_message(lhc_generate_netlogo_PRCoEffs(getwd(), c("A","B"), c("Velocity","Displacement"),
+                                            "LHCSUMMARY.csv",
+                                            "CORCOEFFS.csv"), "Now deprecated. Use lhc_generatePRCoEffs instead")
+})
+
+test_that("lhc_calculatePRCCForMultipleTimepoints", {
+  load(file.path("LHC_Summary.Rda"))
+  load(file.path("LHC_Summary_36.Rda"))
+  write.csv(LHCRESULTFILE,file="LHC_Results_12.csv",row.names=T,quote=F)
+  write.csv(LHCRESULTFILE_36,file="LHC_Results_36.csv",row.names=T,quote=F)
+
+  # All internal functions have been checked - we now just need to check output
+  lhc_generatePRCoEffs(
+    getwd(), c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
+               "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope"),
+    c("Velocity","Displacement"), "LHC_Results.csv", "Prcc_Out.csv",c(12,36),"Hours")
+
+  lhc_calculatePRCCForMultipleTimepoints(getwd(), "Prcc_Out.csv", c(12,36), c("Velocity","Displacement"))
+
+  expect_true(file.exists(file.path(getwd(),"All_Timepoint_PRCCS_Displacement.csv")))
+  expect_true(file.exists(file.path(getwd(),"All_Timepoint_PRCCS_Velocity.csv")))
+  expect_true(file.exists(file.path(getwd(),"All_Timepoint_PVALS_Displacement.csv")))
+  expect_true(file.exists(file.path(getwd(),"All_Timepoint_PVALS_Velocity.csv")))
+
+  expect_message(lhc_calculatePRCCForMultipleTimepoints(getwd(), "Prcc_Out.csv", c(24), c("Velocity","Displacement")), "Correlation Coefficients file for Timepoint 24 does not exist")
+
+  file.remove(file.path("LHC_Results_12.csv"))
+  file.remove(file.path("LHC_Results_36.csv"))
+  file.remove(file.path("Prcc_Out_36.csv"))
+  file.remove(file.path("Prcc_Out_12.csv"))
+  file.remove(file.path(getwd(),"All_Timepoint_PVALS_Displacement.csv"))
+  file.remove(file.path(getwd(),"All_Timepoint_PVALS_Velocity.csv"))
+  file.remove(file.path(getwd(),"All_Timepoint_PRCCS_Velocity.csv"))
+  file.remove(file.path(getwd(),"All_Timepoint_PRCCS_Displacement.csv"))
+})
