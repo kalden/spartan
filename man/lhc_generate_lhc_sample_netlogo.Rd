@@ -15,7 +15,7 @@ lhc_generate_lhc_sample_netlogo(FILEPATH, PARAMETERS, PARAMVALS, NUMSAMPLES,
 
 \item{PARAMVALS}{Array containing either the parameter value (if not of
 interest in the analysis), or range under which this is being explored
-(stated as as string e.g. "[5,50,5]" for a range of 5-50, increment of 5.}
+(stated as as string e.g. "[5,50]" for a range of 5-50.}
 
 \item{NUMSAMPLES}{The number of parameter subsets to be generated in the LHC design}
 

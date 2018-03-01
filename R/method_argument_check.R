@@ -848,16 +848,26 @@ check_nested_filepaths <- function(file_root, sub_dirs)
     {
       root <- eval(file_root)
       sub_dir_list <- eval(sub_dirs)
+      not_exist <- c()
 
       for(i in 1:length(sub_dir_list))
       {
-        if(!file.exists(paste(root,"/",sub_dir_list[i],sep="")))
+        if(!file.exists(file.path(root,sub_dir_list[i])))
         {
-          message(paste("Sub-directory ",root,"/",sub_dir_list[i])," does not exist. Spartan Terminated",sep="")
-          return(FALSE)
+          not_exist <- c(not_exist, sub_dir_list[i])
+          #message(paste("Sub-directory ",file.path(root,sub_dir_list[i])," does not exist. Spartan Terminated",sep=""))
+          #return(FALSE)
         }
       }
-      return(TRUE)
+      if(length(not_exist)>0)
+      {
+        message(paste("Sub-directories ",toString(not_exist), "do not exist. Spartan Terminated",sep=""))
+        return(FALSE)
+      }
+      else
+      {
+        return(TRUE)
+      }
     },
     error=function(cond) {
       message(paste("Error in declaration of file paths to data to analyse. Spartan Terminated",sep=""))
@@ -932,7 +942,7 @@ check_consistency_result_type <- function(arguments, fileArg, rObjArg)
     }
   },
   error=function(cond) {
-    print(cond)
+    #print(cond)
     message(paste("Error in declaring either ",fileArg," or ",rObjArg,". You must specify one. Spartan Terminated",sep=""))
     return(FALSE)
   })

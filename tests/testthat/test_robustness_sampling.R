@@ -50,3 +50,18 @@ test_that("oat_parameter_sampling", {
   file.remove(paste(getwd(),"/B_OAT_Values.csv",sep=""))
 
 })
+
+test_that("oat_generate_netlogo_behaviour_space_XML", {
+
+  dir.create("OAT_Netlogo")
+  oat_generate_netlogo_behaviour_space_XML(
+    file.path(getwd(),"OAT_Netlogo"), "virus_oat", c("infectiousness","chance-recover","duration"), c(150,"[10,90,10]","[10,90,10]","[5,40,5]"),
+                                           "setup", "go", c("death-thru-sickness","death-but-immune",
+                                                            "death-old-age","death-old-and-sick"), 1, "true")
+
+  expect_true(file.exists(file.path(getwd(),"OAT_Netlogo","virus_oat.xml")))
+
+  unlink(file.path(getwd(),"OAT_Netlogo"),recursive = TRUE)
+
+
+})

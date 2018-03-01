@@ -36,7 +36,7 @@ test_that("lhc_generate_lhc_sample_netlogo", {
   expect_equal(xml_doc$people,150)
 
   file.remove(paste(getwd(),"/LHC_Parameters_for_Runs.csv",sep=""))
-  unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"1"), recursive = TRUE)
 
 })
 

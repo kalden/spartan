@@ -257,8 +257,8 @@ process_parameter_value_if_exists <- function(
   OUTPUTCOLSTART, OUTPUTCOLEND, PARAMETER, PARAM_VAL, EXP_PARAMS)
 {
   # Where results for this parameter and value should be:
-  SAMPLEFILEPATH <- paste(FILEPATH, "/", PARAMETER, "/",
-                          toString(PARAM_VAL), "/", sep = "")
+  SAMPLEFILEPATH <- file.path(FILEPATH, PARAMETER,
+                              toString(PARAM_VAL))
 
   if (file.exists(SAMPLEFILEPATH)) {
 

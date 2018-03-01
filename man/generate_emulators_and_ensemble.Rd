@@ -55,3 +55,21 @@ created by method emulation_algorithm_settings. The latter sets key
 arguments used in emulation creation, as detailed in the description
 accompanying that method.
 }
+\examples{
+sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
+sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
+modelList <- c("RF","GLM")
+measures<-c("Velocity","Displacement")
+parameters<-c("stableBindProbability","chemokineExpressionThreshold",
+"initialChemokineExpressionValue","maxChemokineExpressionValue",
+"maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
+data("sim_data_for_emulation")
+partitionedData <- partition_dataset(sim_data_for_emulation, parameters,
+percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
+sample_mins = sampleMins, sample_maxes = sampleMaxes)
+generated_ensemble<-generate_emulators_and_ensemble(modelList, parameters,
+measures, partitionedData, normalised=TRUE)
+
+
+
+}

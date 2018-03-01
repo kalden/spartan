@@ -111,8 +111,8 @@ test_that("check_filepath_exists", {
 
   expect_true(check_filepath_exists(input_arguments$input,"FILEPATH"))
   # Filepath does not exist:
-  input_arguments <- make_input_arguments_object(FILEPATH=file.path(getwd(),"2"))
-  expect_message(check_filepath_exists(input_arguments$input,"FILEPATH"),paste("FILEPATH does not seem to exist: ",getwd(),"/2",sep=""))
+  input_arguments <- make_input_arguments_object(FILEPATH=file.path(getwd(),"Q"))
+  expect_message(check_filepath_exists(input_arguments$input,"FILEPATH"),paste("FILEPATH does not seem to exist: ", input_arguments$FILEPATH,sep=""))
   # Filepath stated as an undelared variable
   input_arguments <- make_input_arguments_object(FILEPATH=VAR)
   expect_message(check_filepath_exists(input_arguments$input,"FILEPATH"),"FILEPATH does not seem to exist")
@@ -151,7 +151,7 @@ test_that("check_package_installed", {
   # Test that the lhs package is installed
   expect_true(check_package_installed("lhs"))
   # Check one that isn't, e.g. dplyr
-  expect_message(check_package_installed("dplyr"),"Looking for package dplyr, which is not installed or does not exist")
+  #expect_message(check_package_installed("dplyr"),"Looking for package dplyr, which is not installed or does not exist")
   # Check a package that does not exist
   expect_message(check_package_installed("York"),"Looking for package York, which is not installed or does not exist")
   # Check null
@@ -320,15 +320,17 @@ test_that("check_nested_filepaths", {
 
   # Now add some errors - 600 not existing and a reference to A
   input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,600))
-  expect_message(check_nested_filepaths(input_arguments$input$FILEPATH, input_arguments$input$SAMPLESIZES),paste("Sub-directory  ",getwd()," / 600 does not exist. Spartan Terminated",sep=""))
+  expect_message(check_nested_filepaths(input_arguments$input$FILEPATH, input_arguments$input$SAMPLESIZES),paste("Sub-directories ",toString(600), "do not exist. Spartan Terminated",sep=""))
+
+                 #paste("Sub-directory  ",eval(input_arguments$input$FILEPATH),"/",eval(input_arguments$input$SAMPLESIZES), " does not exist. Spartan Terminated",sep=""))
   input_arguments <- make_input_arguments_object(FILEPATH=getwd(), SAMPLESIZES=c(1,5,50,100,R))
   expect_message(check_nested_filepaths(input_arguments$input$FILEPATH, input_arguments$input$SAMPLESIZES),"Error in declaration of file paths to data to analyse. Spartan Terminated")
 
-  unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
-  unlink(paste(getwd(),"/5/",sep=""), recursive = TRUE)
-  unlink(paste(getwd(),"/50/",sep=""), recursive = TRUE)
-  unlink(paste(getwd(),"/100/",sep=""), recursive = TRUE)
-  unlink(paste(getwd(),"/300/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"/1/"), recursive = TRUE)
+  unlink(file.path(getwd(),"/5/"), recursive = TRUE)
+  unlink(file.path(getwd(),"/50/"), recursive = TRUE)
+  unlink(file.path(getwd(),"/100/"), recursive = TRUE)
+  unlink(file.path(getwd(),"/300/"), recursive = TRUE)
 })
 
 test_that("check_list_all_integers", {
@@ -366,12 +368,12 @@ test_that("check_consistency_result_type", {
   expect_true(check_consistency_result_type(input_arguments$input, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"))
   # For this test we'll need to create a file, just to show that the test can pass as well as fail:
   input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT=NULL, FILEPATH=getwd())
-  expect_message(check_consistency_result_type(input_arguments$input, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"),paste("File AA_SimResponses.csv in argument AA_SIM_RESULTS_FILE does not exist in ",getwd(),sep=""))
-  make_file <- file.create(paste(getwd(),"/AA_SimResponses.csv",sep=""))
+  expect_message(check_consistency_result_type(input_arguments$input, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"),paste("File AA_SimResponses.csv in argument AA_SIM_RESULTS_FILE does not exist in ",input_arguments$FILEPATH,sep=""))
+  make_file <- file.create(file.path(getwd(),"/AA_SimResponses.csv"))
   input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT=NULL, FILEPATH=getwd())
   expect_true(check_consistency_result_type(input_arguments$input, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"))
   # Remove this file
-  remove_file <- file.remove(paste(getwd(),"/AA_SimResponses.csv",sep=""))
+  remove_file <- file.remove(file.path(getwd(),"/AA_SimResponses.csv"))
   # Make both NULL
   input_arguments <- make_input_arguments_object(AA_SIM_RESULTS_OBJECT = NULL, AA_SIM_RESULTS_FILE = NULL)
   expect_message(check_consistency_result_type(input_arguments$input, "AA_SIM_RESULTS_FILE","AA_SIM_RESULTS_OBJECT"),"Error in declaring either AA_SIM_RESULTS_FILE or AA_SIM_RESULTS_OBJECT. You must specify one. Spartan Terminated")
@@ -513,7 +515,7 @@ test_that("check_aa_summariseReplicateRuns", {
   input_check$input[[1]]="aa_summariseReplicateRuns"
   expect_message(check_input_args(input_check$names, input_check$input),"SUMMARYFILENAME must be either a text string or numeric. Error in declaration. Terminated")
 
-  unlink(paste(getwd(),"/AA/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"/AA"), recursive = TRUE)
 })
 
 test_that("check_graph_output_type", {

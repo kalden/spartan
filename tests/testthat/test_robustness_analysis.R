@@ -16,7 +16,8 @@ test_that("oat_processParamSubsets", {
 
   expect_true(file.exists(file.path(getwd(),"Test_Summary_File.csv")))
 
-  cleanup()
+  unlink(file.path(getwd(),"chemoLowerLinearAdjust"), recursive = TRUE)
+  unlink(file.path(getwd(),"chemoUpperLinearAdjust"), recursive = TRUE)
   file.remove(file.path(getwd(),"Test_Summary_File.csv"))
 
 
@@ -44,8 +45,8 @@ test_that("generate_summary_stats_for_all_param_sets", {
   expect_equal(round(as.numeric(summary_two_param[2,4]),digits=5),43.18424)
 
 
-  unlink(paste(getwd(),"/chemoLowerLinearAdjust/",sep=""), recursive = TRUE)
-  unlink(paste(getwd(),"/chemoUpperLinearAdjust/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"chemoLowerLinearAdjust"), recursive = TRUE)
+  unlink(file.path(getwd(),"chemoUpperLinearAdjust"), recursive = TRUE)
 })
 
 test_that("produce_summary_for_all_values_of_parameter", {
@@ -56,8 +57,8 @@ test_that("produce_summary_for_all_values_of_parameter", {
   dir.create(file.path(getwd(),"chemoLowerLinearAdjust","0.05","1"))
   dir.create(file.path(getwd(),"chemoLowerLinearAdjust","0.1"))
   dir.create(file.path(getwd(),"chemoLowerLinearAdjust","0.1","1"))
-  make_test_sim_result_file(paste(getwd(),"/chemoLowerLinearAdjust/0.05/1/Test_Robustness_Result.csv",sep=""),1)
-  make_test_sim_result_file(paste(getwd(),"/chemoLowerLinearAdjust/0.1/1/Test_Robustness_Result.csv",sep=""),2)
+  make_test_sim_result_file(file.path(getwd(),"/chemoLowerLinearAdjust/0.05/1/Test_Robustness_Result.csv"),1)
+  make_test_sim_result_file(file.path(getwd(),"/chemoLowerLinearAdjust/0.1/1/Test_Robustness_Result.csv"),2)
 
   PARAMETERS<-c("chemoLowerLinearAdjust")
   param_val_list <-
@@ -78,8 +79,7 @@ test_that("produce_summary_for_all_values_of_parameter", {
   expect_equal(round(as.numeric(param_result$parameter_result[1,3]),digits=5),44.09774)
   expect_equal(round(as.numeric(param_result$parameter_result[2,3]),digits=5),43.18424)
 
-  unlink(paste(getwd(),"/chemoLowerLinearAdjust/",sep=""), recursive = TRUE)
-
+  unlink(file.path(getwd(),"chemoLowerLinearAdjust"), recursive = TRUE)
 
 })
 
@@ -89,7 +89,7 @@ test_that("process_parameter_value_if_exists", {
   dir.create(file.path(getwd(),"chemoLowerLinearAdjust"))
   dir.create(file.path(getwd(),"chemoLowerLinearAdjust","0.05"))
   dir.create(file.path(getwd(),"chemoLowerLinearAdjust","0.05","1"))
-  make_test_sim_result_file(paste(getwd(),"/chemoLowerLinearAdjust/0.05/1/Test_Robustness_Result.csv",sep=""),1)
+  make_test_sim_result_file(file.path(getwd(),"/chemoLowerLinearAdjust/0.05/1/Test_Robustness_Result.csv"),1)
 
   # Requires exp_params for labelling results, but not too much of a worry here
   BASELINE<-c(50, 0.3, 0.2, 0.04, 0.60, 1.0)
@@ -107,14 +107,14 @@ test_that("process_parameter_value_if_exists", {
   # What if the file does not exist
   expect_message(process_parameter_value_if_exists(getwd(),1,c("Velocity","Displacement"),"Test_Robustness_Result.csv",NULL,1,2,"chemoLowerLinearAdjust", 0.10, EXP_PARAMS),"No results can be found for parameter: chemoLowerLinearAdjust Value: 0.1")
 
-  unlink(paste(getwd(),"/chemoLowerLinearAdjust/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"chemoLowerLinearAdjust"), recursive = TRUE)
 })
 
 test_that("generate_medians_for_param_set" , {
 
   # Write and place in the correct directory
   dir.create(file.path(getwd(),1))
-  make_test_sim_result_file(paste(getwd(),"/1/Test_Robustness_Result.csv",sep=""),1)
+  make_test_sim_result_file(file.path(getwd(),"/1/Test_Robustness_Result.csv"),1)
 
   # Requires exp_params for labelling results, but not too much of a worry here
   BASELINE<-c(50, 0.3, 0.2, 0.04, 0.60, 1.0)
@@ -132,7 +132,7 @@ test_that("generate_medians_for_param_set" , {
   expect_equal(round(as.numeric(summary_stats[1,8]),digits=5),44.09774)
 
   # Remove the created structure
-  unlink(paste(getwd(),"/1/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"1"), recursive = TRUE)
 
 })
 
@@ -401,3 +401,4 @@ test_that("oat_plotResultDistribution_overTime", {
   file.remove("chemoUpperLinearAdjust_Velocity_BP_36.pdf")
 
 })
+

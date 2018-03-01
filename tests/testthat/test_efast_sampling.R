@@ -10,13 +10,13 @@ test_that("efast_generate_sample", {
                         PMAX <- c(100, 0.9, 10))
 
   # Check for existance of sample files
-  expect_true(file.exists(paste(getwd(),"/Curve1_BindProbability.csv",sep="")))
-  expect_true(file.exists(paste(getwd(),"/Curve1_ChemoThreshold.csv",sep="")))
-  expect_true(file.exists(paste(getwd(),"/Curve1_Dummy.csv",sep="")))
+  expect_true(file.exists(file.path(getwd(),"Curve1_BindProbability.csv")))
+  expect_true(file.exists(file.path(getwd(),"Curve1_ChemoThreshold.csv")))
+  expect_true(file.exists(file.path(getwd(),"Curve1_Dummy.csv")))
 
-  expect_true(file.exists(paste(getwd(),"/Curve2_BindProbability.csv",sep="")))
-  expect_true(file.exists(paste(getwd(),"/Curve2_ChemoThreshold.csv",sep="")))
-  expect_true(file.exists(paste(getwd(),"/Curve2_Dummy.csv",sep="")))
+  expect_true(file.exists(file.path(getwd(),"Curve2_BindProbability.csv")))
+  expect_true(file.exists(file.path(getwd(),"Curve2_ChemoThreshold.csv")))
+  expect_true(file.exists(file.path(getwd(),"Curve2_Dummy.csv")))
 
   # Check a few error conditions
   expect_message(efast_generate_sample(getwd(), "A", 65, c("BindProbability", "ChemoThreshold", "Dummy"),
@@ -29,12 +29,12 @@ test_that("efast_generate_sample", {
 
   # Cleanup
 
-  file.remove(paste(getwd(),"/Curve1_BindProbability.csv",sep=""))
-  file.remove(paste(getwd(),"/Curve1_ChemoThreshold.csv",sep=""))
-  file.remove(paste(getwd(),"/Curve1_Dummy.csv",sep=""))
+  file.remove(file.path(getwd(),"Curve1_BindProbability.csv"))
+  file.remove(file.path(getwd(),"Curve1_ChemoThreshold.csv"))
+  file.remove(file.path(getwd(),"Curve1_Dummy.csv"))
 
-  file.remove(paste(getwd(),"/Curve2_BindProbability.csv",sep=""))
-  file.remove(paste(getwd(),"/Curve2_ChemoThreshold.csv",sep=""))
-  file.remove(paste(getwd(),"/Curve2_Dummy.csv",sep=""))
+  file.remove(file.path(getwd(),"Curve2_BindProbability.csv"))
+  file.remove(file.path(getwd(),"Curve2_ChemoThreshold.csv"))
+  file.remove(file.path(getwd(),"Curve2_Dummy.csv"))
 
 })

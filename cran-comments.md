@@ -1,6 +1,6 @@
 ## Test environments
-* local Ubuntu 16.04, R 3.4.1
-* local Ubuntu 16.04 R devel 2017-09-05
+* local Ubuntu 16.04, R 3.4.3
+* local Ubuntu 16.04 R development version
 * win-builder (devel and release)
 
 ## R CMD check results

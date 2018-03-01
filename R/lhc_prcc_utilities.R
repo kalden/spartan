@@ -258,7 +258,7 @@ pcor.test <- function(x, y, z, use = "mat", calc_method ="p", na.rm = TRUE) {
   }else if (gregexpr("k", calc_method)[[1]][1] == 1){
     p.method <- "Kendall"
   }else{
-    print("\'method\' should be \"pearson\" or \"spearman\" or \"kendall\"!\n")
+    message("\'method\' should be \"pearson\" or \"spearman\" or \"kendall\"!\n")
     methodOk <- FALSE
   }
 
@@ -271,7 +271,7 @@ pcor.test <- function(x, y, z, use = "mat", calc_method ="p", na.rm = TRUE) {
       p.use <- "Recursive formula"
       pcor <- pcor.rec(x, y, z, cor_method = calc_method, na.rm = na.rm)
     } else {
-      print("\'use\' should be either \"rec\" or \"mat\"!\n")
+      message("\'use\' should be either \"rec\" or \"mat\"!\n")
       useOk <- FALSE
     }
   }

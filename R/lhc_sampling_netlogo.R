@@ -8,7 +8,7 @@
 #' @param PARAMETERS Array containing the names of the parameters of which parameter samples will be generated
 #' @param PARAMVALS Array containing either the parameter value (if not of
 #' interest in the analysis), or range under which this is being explored
-#' (stated as as string e.g. "[5,50,5]" for a range of 5-50, increment of 5.
+#' (stated as as string e.g. "[5,50]" for a range of 5-50.
 #' @param NUMSAMPLES The number of parameter subsets to be generated in the LHC design
 #' @param ALGORITHM Choice of algorithm to use to generate the hypercube. Can be set to either 'normal' or 'optimum'. Beware optimum can take a long time to generate an optimised parameter set (more than 24 hours in some circumstances).
 #' @param EXPERIMENT_REPETITIONS The number of times Netlogo should repeat the experiment for each set of parameter values.
@@ -46,8 +46,6 @@ lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
                                  ParameterInfo$PMIN,
                                  ParameterInfo$PMAX, NUMSAMPLES, design)
 
-      print(make_path(c(FILEPATH,
-                        "LHC_Parameters_for_Runs.csv")))
       write_data_to_csv(design, make_path(c(FILEPATH,
                                             "LHC_Parameters_for_Runs.csv")))
 

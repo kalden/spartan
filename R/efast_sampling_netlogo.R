@@ -91,7 +91,7 @@ efast_generate_sample_netlogo <-
         }
       }
 
-      print(paste("Curve ", CURVENUM, " Complete", sep = ""))
+      message(paste("Curve ", CURVENUM, " Complete", sep = ""))
     }
   }
 }

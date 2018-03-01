@@ -43,3 +43,16 @@ that are generated using this normalised data can be rescaled correctly
 Used in the development of emulations of a simulation using a
 latin-hypercube summary file
 }
+\examples{
+data("sim_data_for_emulation")
+parameters<-c("stableBindProbability","chemokineExpressionThreshold",
+"initialChemokineExpressionValue","maxChemokineExpressionValue",
+"maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
+measures<-c("Velocity","Displacement","PatchArea")
+sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
+sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
+partitionedData <- partition_dataset(sim_data_for_emulation, parameters,
+percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
+sample_mins = sampleMins, sample_maxes = sampleMaxes)
+
+}

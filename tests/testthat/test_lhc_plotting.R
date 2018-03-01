@@ -134,7 +134,7 @@ test_that("make_graph_title", {
 
   expect_true(length(graph_list)==5)
   expect_true(graph_list$title=="LHC Analysis for Parameter: A")
-  expect_true(graph_list$file==paste(file.path(getwd(),"A_Velocity"),sep=""))
+  expect_true(graph_list$file==file.path(getwd(),"A_Velocity"))
   expect_true(graph_list$sub_title=="Measure: Velocity\nCorrelation Coefficient: 0.9")
   expect_true(graph_list$xlabel == "Parameter Value")
   expect_true(graph_list$ylabel == "Median Value Across Runs (microns/min)")

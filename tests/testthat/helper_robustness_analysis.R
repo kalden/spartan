@@ -249,7 +249,7 @@ cleanup_efast <- function(overTime=FALSE)
 
 cleanup <- function()
 {
-  unlink(paste(getwd(),"/chemoLowerLinearAdjust/",sep=""), recursive = TRUE)
-  unlink(paste(getwd(),"/chemoUpperLinearAdjust/",sep=""), recursive = TRUE)
+  unlink(file.path(getwd(),"chemoLowerLinearAdjust"), recursive = TRUE)
+  unlink(file.path(getwd(),"chemoUpperLinearAdjust"), recursive = TRUE)
 }
 
