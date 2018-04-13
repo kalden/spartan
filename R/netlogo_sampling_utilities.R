@@ -13,22 +13,32 @@ process_netlogo_parameter_range_info <- function(PARAMETERS, PARAMVALS) {
   STUDIED_PARAMETERS <- NULL
   PMIN <- NULL
   PMAX <- NULL
+  PINC <- NULL
 
   for (PARAM in 1:length(PARAMETERS)) {
 
     PARAMVALSPLIT <- strsplit(PARAMVALS[PARAM], ",")[[1]]
 
-    if (length(PARAMVALSPLIT) > 1) {
+    if (length(PARAMVALSPLIT) == 2) {
       # ADD THE PARAMETER TO THE CSV FILE HEADER
       STUDIED_PARAMETERS <- c(STUDIED_PARAMETERS, PARAMETERS[PARAM])
       # GET THE MIN AND MAX
       PMIN <- c(PMIN,as.numeric(substring(PARAMVALSPLIT[[1]], 2)))
       PMAX <- c(PMAX, as.numeric(substring(PARAMVALSPLIT[[2]], 1,
                                            nchar(PARAMVALSPLIT[[2]]) - 1)))
+      }
+      if (length(PARAMVALSPLIT) == 3) {
+        # ADD THE PARAMETER TO THE CSV FILE HEADER
+        STUDIED_PARAMETERS <- c(STUDIED_PARAMETERS, PARAMETERS[PARAM])
+        # GET THE MIN, MAX and INC
+        PMIN <- c(PMIN, as.numeric(substring(PARAMVALSPLIT[[1]], 2)))
+        PMAX <- c(PMAX, as.numeric(substring(PARAMVALSPLIT[[2]], 1)))
+        PINC <- c(PINC, as.numeric(substring(PARAMVALSPLIT[[3]], 1,
+                                             nchar(PARAMVALSPLIT[[3]]) - 1)))
 
     }
   }
-  return(list("STUDIED_PARAMETERS"=STUDIED_PARAMETERS,"PMIN"=PMIN,"PMAX"=PMAX))
+  return(list("STUDIED_PARAMETERS"=STUDIED_PARAMETERS,"PMIN"=PMIN,"PMAX"=PMAX, "PINC"=PINC))
 }
 
 #' Initialises the Netlogo setup file for this experiment
