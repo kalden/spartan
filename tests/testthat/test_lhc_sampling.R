@@ -30,9 +30,10 @@ test_that("scale_lhc_sample", {
   PARAMETERS<-c("A","B")
   PMIN<-c(10,0.1)
   PMAX<-c(100,0.9)
+  PINC<-NULL
   NUMSAMPLES<-500
   design <- sample_parameter_space("normal", 500, PARAMETERS)
-  scaledSample <- scale_lhc_sample(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
+  scaledSample <- scale_lhc_sample(PARAMETERS, PMIN, PMAX, PINC, NUMSAMPLES, design)
 
   # Test the characteristics
   expect_equal(nrow(scaledSample),500)
@@ -59,4 +60,3 @@ test_that("lhc_generate_lhc_sample", {
 
   file.remove(paste(getwd(),"/LHC_Parameters_for_Runs.csv",sep=""))
 })
-

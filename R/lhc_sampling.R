@@ -25,6 +25,9 @@
 #' each parameter. Sets a lower bound on sampling space
 #' @param PMAX Array containing the maximum value that should be used for
 #' each parameter. Sets an upper bound on sampling space
+#' @param PINC Array containing the increment value that should be applied
+#' for each parameter. For example, a parameter could have a minimum value
+#' of 10, and maximum value of 100, and be incremented by 10.
 #' @param ALGORITHM Choice of algorithm to use to generate the hypercube.
 #' Can be set to either 'normal' or 'optimum'. Beware optimum can take a
 #' long time to generate an optimised parameter set (more than 24 hours
@@ -33,7 +36,7 @@
 #'
 #' @export
 lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
-                                    PMAX, ALGORITHM) {
+                                    PMAX, ALGORITHM, PINC = NULL) {
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
@@ -45,7 +48,7 @@ lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
       design <- sample_parameter_space(ALGORITHM, NUMSAMPLES, PARAMETERS)
 
       # Now scale this design, as currently all values are between 0 and 1
-      design <- scale_lhc_sample(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
+      design <- scale_lhc_sample(PARAMETERS, PMIN, PMAX, PINC, NUMSAMPLES, design)
 
       # Output the scaled design to csv file
       if(!is.null(FILEPATH))
@@ -94,10 +97,14 @@ sample_parameter_space <- function(ALGORITHM, NUMSAMPLES, PARAMETERS)
 #' each parameter. Sets a lower bound on sampling space
 #' @param PMAX Array containing the maximum value that should be used for
 #' each parameter. Sets an upper bound on sampling space
+#' @param PINC Array containing the increment value that should be applied
+#' for each parameter. For example, a parameter could have a minimum value
+#' of 10, and maximum value of 100, and be incremented by 10.
+
 #' @param design The generated lhc design, all values between 0 and 1
 #' @return Rescaled design in the required ranges
 #'
-scale_lhc_sample <- function(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
+scale_lhc_sample <- function(PARAMETERS, PMIN, PMAX, PINC, NUMSAMPLES, design)
 {
   # NOW LOOK AT THE VALUE CHOSEN FOR EACH SAMPLE, AS THESE WILL
   # CURRENTLY BE BETWEEN 0 AND 1
@@ -110,10 +117,15 @@ scale_lhc_sample <- function(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
       # GET THE MAX AND MIN VALUES FOR THIS PARAMETER FROM THE ARRAY
       lhc_max <- PMAX[l]
       lhc_min <- PMIN[l]
+      lhc_inc <- PINC[l]
 
       # NOW CALCULATE THE VALUE TO USE FOR THIS PARAMETER
-      value <- (design[k, l] * (lhc_max - lhc_min)) + lhc_min
-
+      if (is.null(PINC)) {
+        value <- (design[k, l] * (lhc_max - lhc_min)) + lhc_min
+      } else {
+        value <- (design[k, l] %/% (1 / (1 + (lhc_max - lhc_min) %/% lhc_inc))) * lhc_inc + lhc_min;
+        value <- min (value, lhc_max)
+      }
       # NOW REPLACE THE VALUE IN THE TABLE (BETWEEN 0 AND 1) WITH
       # THE PARAMETER VALUE
       design[k, l] <- value
