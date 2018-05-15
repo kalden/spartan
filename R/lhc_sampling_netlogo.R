@@ -44,7 +44,8 @@ lhc_generate_lhc_sample_netlogo <- function(FILEPATH, PARAMETERS, PARAMVALS,
       # Now scale this design, as currently all values are between 0 and 1
       design <- scale_lhc_sample(ParameterInfo$STUDIED_PARAMETERS,
                                  ParameterInfo$PMIN,
-                                 ParameterInfo$PMAX, NUMSAMPLES, design)
+                                 ParameterInfo$PMAX,
+                                 ParameterInfo$PINC, NUMSAMPLES, design)
 
       write_data_to_csv(design, make_path(c(FILEPATH,
                                             "LHC_Parameters_for_Runs.csv")))

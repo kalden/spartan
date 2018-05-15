@@ -6,7 +6,7 @@
 ensemble}
 \usage{
 weight_emulator_predictions_by_ensemble(model_weights, all_model_predictions,
-  measures, num_generations = 8e+05)
+  measures, num_generations = 800000)
 }
 \arguments{
 \item{model_weights}{Weights for all emulators in the ensemble, based on

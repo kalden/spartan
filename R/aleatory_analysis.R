@@ -44,7 +44,7 @@ aa_summariseReplicateRuns <- function(FILEPATH, SAMPLESIZES, MEASURES,
 
       for (SAMPLESIZE in 1:length(SAMPLESIZES)) {
         subset_medians <- get_medians_for_size_subsets(
-          FILEPATH, NUMSUBSETSPERSAMPLESIZE, SAMPLESIZE, MEASURES, RESULTFILENAME,
+          FILEPATH, NUMSUBSETSPERSAMPLESIZE, SAMPLESIZES[SAMPLESIZE], MEASURES, RESULTFILENAME,
           ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND)
 
         if(!is.null(subset_medians))

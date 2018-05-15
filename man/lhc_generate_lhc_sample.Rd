@@ -4,7 +4,8 @@
 \alias{lhc_generate_lhc_sample}
 \title{Generates sets of simulation parameters using latin-hypercube sampling}
 \usage{
-lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM)
+lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM,
+  PINC = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}
@@ -24,6 +25,11 @@ each parameter. Sets an upper bound on sampling space}
 Can be set to either 'normal' or 'optimum'. Beware optimum can take a
 long time to generate an optimised parameter set (more than 24 hours
 in some circumstances)}
+
+\item{PINC}{Array containing the increment value that should be applied
+for each parameter. For example, a parameter could have a minimum value
+of 10, and maximum value of 100, and be incremented by 10. Added after
+user request on Github}
 }
 \value{
 LHC generated parameter sets

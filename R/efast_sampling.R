@@ -104,7 +104,7 @@ generate_efast_parameter_sets <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
   omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
   NUMSAMPLES <- 2 * MI * omi + 1
   if (NUMSAMPLES * NUMCURVES < 65)
-    print("Error: sample size must be >= 65 per factor")
+    message("Error: sample size must be >= 65 per factor")
 
   PARAMETERVALS <- array(0, dim = c(NUMSAMPLES, length(PARAMETERS),
                                     length(PARAMETERS), NUMCURVES))

@@ -65,6 +65,7 @@ selectSuitableStructure <- function(network_errors) {
   unlabelled_results <- sapply(
     data.frame(network_errors[, 2:ncol(network_errors)],
                stringsAsFactors = FALSE), as.numeric)
+
   min_mses <- apply(unlabelled_results, 2, which.min)
 
   # Now the simplest case, where the minimum is the same network structure
@@ -112,9 +113,16 @@ determine_optimal_neural_network_structure <- function(dataset, parameters,
   if (!is.null(network_errors)) {
 
     # Now select the best performing network
-    network_index <- selectSuitableStructure(network_errors)
+    if(length(algorithm_settings$network_structures))
+    {
+      return(algorithm_settings$network_structures[[1]])
+    }
+    else
+    {
+      network_index <- selectSuitableStructure(network_errors)
 
-    return(algorithm_settings$network_structures[[network_index]])
+      return(algorithm_settings$network_structures[[network_index]])
+    }
   } else {
     message("Network Structure could not be determined")
     return(NULL)

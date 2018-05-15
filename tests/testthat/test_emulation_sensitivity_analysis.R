@@ -3,7 +3,14 @@ context("Test of Spartan Emulation Sensitivity Analysis")
 
 test_that("emulate_efast_sampled_parameters ", {
 
-  load("built_ensemble_72.Rda")
+  ## This is the first test that utilises the ensemble, downloadable from online
+  ## Download it here, and delete it on the final test that uses this object.
+  # Saves downloading several times
+  download.file("www.kieranalden.info/spartan/test_data/built_ensemble_72.Rda", "built_ensemble")
+  # Load this in
+  load("built_ensemble")
+
+  #load("built_ensemble_72.Rda")
   dir.create(file.path(getwd(),"SA"))
 
   efast_generate_sample(file.path(getwd(),"SA"), 3,65, c("stableBindProbability","chemokineExpressionThreshold",
@@ -29,7 +36,11 @@ test_that("emulate_efast_sampled_parameters ", {
 test_that("emulate_lhc_sampled_parameters", {
 
   data("emulated_lhc_values")
-  load("built_ensemble_72.Rda")
+
+  # Downloaded previously from website, should exist in workspace
+  load("built_ensemble")
+
+  #load("built_ensemble_72.Rda")
 
   dir.create(file.path(getwd(),"SA"))
 

@@ -352,7 +352,7 @@ PMAX <- c(100, 0.9, 0.50, 0.08, 1.0, 5.0)
 # Algorithm to use to generate the hypercube. Can be normal (quick) or optimal,
 # which can take a long time (especially for high number of parameters)
 ALGORITHM <- "normal"
-lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM)
+sample<-lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM)
 ```
 
 
@@ -393,6 +393,8 @@ LHCSUMMARYFILENAME <- "LHC_Summary.csv"
 # File name to give to the file showing the Partial Rank Correlation Coefficients
 # for each parameter.
 CORCOEFFSOUTPUTFILE <- "LHC_corCoeffs.csv"
+TIMEPOINTS<-NULL
+TIMEPOINTSCALE<-NULL
 ```
 
 
@@ -425,6 +427,11 @@ Partial Rank Correlation Coefficients (PRCC) for each parameter. This statistica
 
 ```{r, eval=FALSE}
 lhc_generatePRCoEffs(FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE, TIMEPOINTS, TIMEPOINTSCALE)
+# Depending on your application, you can change the method by which the PRCC is calculated, from the default Spearmans (s),
+# to Kendall (k) or Pearsons (p), as below:
+lhc_generatePRCoEffs(FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE, TIMEPOINTS, TIMEPOINTSCALE, cor_calc_method=c("p"))
+
+# Graphing:
 lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME)
 
 # Note that from Spartan 3 you can choose the output format of this graph, by:

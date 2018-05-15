@@ -85,9 +85,9 @@ screen_nsga2_parameters <- function(function_to_evaluate,
       for (k in seq(nsga_sensitivity_parameters$Mutation_min,
                    nsga_sensitivity_parameters$Mutation_max, by = 0.1)) {
 
-        print(paste("Generation Number: ", i, sep = ""))
-        print(paste("Crossover: ", j, sep = ""))
-        print(paste("Mutation: ", k, sep = ""))
+        message(paste("Generation Number: ", i, sep = ""))
+        message(paste("Crossover: ", j, sep = ""))
+        message(paste("Mutation: ", k, sep = ""))
 
         #run nsga2
         nsga2_settings$cprob <- j

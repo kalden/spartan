@@ -988,6 +988,7 @@ check_column_ranges <- function(arguments, filepath, resultfile)
 
         # Load it and check number of columns
         result<-read.csv(file.path(filepath, eval(resultfile)),header=T)
+
         if(eval(arguments$OUTPUTFILECOLSTART) > 0 &
            eval(arguments$OUTPUTFILECOLSTART) <= ncol(result) &
            eval(arguments$OUTPUTFILECOLEND) > 0 &

@@ -4,7 +4,7 @@
 \alias{scale_lhc_sample}
 \title{Scale the LHC design to be the range explored for each parameter}
 \usage{
-scale_lhc_sample(PARAMETERS, PMIN, PMAX, NUMSAMPLES, design)
+scale_lhc_sample(PARAMETERS, PMIN, PMAX, PINC, NUMSAMPLES, design)
 }
 \arguments{
 \item{PARAMETERS}{Array containing the names of the parameters of which
@@ -15,6 +15,10 @@ each parameter. Sets a lower bound on sampling space}
 
 \item{PMAX}{Array containing the maximum value that should be used for
 each parameter. Sets an upper bound on sampling space}
+
+\item{PINC}{Array containing the increment value that should be applied
+for each parameter. For example, a parameter could have a minimum value
+of 10, and maximum value of 100, and be incremented by 10.}
 
 \item{NUMSAMPLES}{The number of parameter subsets to generate}
 

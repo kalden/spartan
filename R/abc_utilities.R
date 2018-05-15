@@ -32,9 +32,10 @@ ensemble_abc_wrapper <- function(x) {
       normalise_values = abc_set$normalise_values,
       normalise_result = abc_set$normalise_result)
 
+
     return(prediction)
   } else {
-    print("parameters, measures, and best_ensemble must exist in the workspace,
+    message("parameters, measures, and best_ensemble must exist in the workspace,
           declared in an abc_settings object. Run that method first")
   }
 }

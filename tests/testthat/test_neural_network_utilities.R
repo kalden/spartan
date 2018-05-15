@@ -239,18 +239,3 @@ test_that("create_neural_network", {
   expect_true(ncol(model_fit$net.result[[1]])==3)
 
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

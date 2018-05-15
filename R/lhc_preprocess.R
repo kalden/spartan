@@ -20,7 +20,7 @@ lhc_generateTimepointFiles <- function(FILEPATH, SPARTAN_PARAMETER_FILE,
   # TIMEPOINT FILES FOR THIS DATA  SO THE FILES ARE COMPATIBLE WITH SPARTAN
 
   if (file.exists(FILEPATH)) {
-    print("Generating Simulation Timestep files compatible for
+    message("Generating Simulation Timestep files compatible for
           Spartan Analysis")
 
     # READ IN THE SPARTAN PARAMETER FILE
@@ -31,7 +31,7 @@ lhc_generateTimepointFiles <- function(FILEPATH, SPARTAN_PARAMETER_FILE,
     for (t in 1:length(TIMEPOINTS)) {
 
       current_timepoint <- TIMEPOINTS[t]
-      print(paste("Processing Timepoint: ", current_timepoint, sep = ""))
+      message(paste("Processing Timepoint: ", current_timepoint, sep = ""))
       ALL_SIM_RESULTS_FOR_TIMEPOINT <- NULL
 
       for (k in 1:NUMSAMPLES) {

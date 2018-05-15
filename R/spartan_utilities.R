@@ -27,6 +27,7 @@ getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
 
   for (i in 1:NUMRUNSPERSAMPLE) {
 
+    #print(i)
     fileaddress <- file.path(FILEPATH, toString(i))
     if (file.exists(fileaddress)) {
 
@@ -303,7 +304,7 @@ partition_dataset <- function(dataset, parameters, percent_train = 75, percent_t
 
       if (normalise == TRUE) {
         if (is.null(sample_mins) | is.null(sample_maxes) | is.null(parameters))
-          print("You need to specify sampling mins and maxes for each parameter,
+          message("You need to specify sampling mins and maxes for each parameter,
                 and parameter names, for correct normalisation. Terminated.")
         else {
           normed_data <- normalise_dataset(dataset, sample_mins, sample_maxes,
@@ -366,6 +367,7 @@ partition_dataset <- function(dataset, parameters, percent_train = 75, percent_t
 #'
 #' @export
 normalise_dataset <- function(dataset, sample_mins, sample_maxes, parameters) {
+
   mins <- apply(dataset, 2, min)
   maxs <- apply(dataset, 2, max)
 

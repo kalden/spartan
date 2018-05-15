@@ -11,24 +11,32 @@ pcor.mat <- function (x, y, z, cor_method = "p", na.rm = TRUE) {
   }
 
   data <- data.frame(x, y, z, check.names = FALSE)
+  #write.csv(data, file=file.path("/home/kja505/Downloads/ed_260318/var-cov.csv"),row.names=F,quote=F)
+  #print(data)
 
   if (na.rm == TRUE) {
     data <- na.omit(data)
   }
 
+  # x data is just the parameter value column and the measure result
   xdata <- na.omit(data.frame(data[, c(1, 2)]), check.names = FALSE)
   Sxx <- cov(xdata, xdata, method = cor_method)
+
 
   xzdata <- na.omit(data)
   xdata <- data.frame(xzdata[, c(1, 2)], check.names = FALSE)
   zdata <- data.frame(xzdata[, -c(1, 2)], check.names = FALSE)
+  # All results bar parameter value and measure result columns:
   Sxz <- cov(xdata, zdata, method = cor_method)
 
   zdata <- na.omit(data.frame(data[, -c(1, 2)]), check.names = FALSE)
   Szz <- cov(zdata, zdata, method = cor_method)
 
+  #write.csv(Szz, file=file.path("/home/kja505/Downloads/ed_260318/Szz.csv"),row.names=F,quote=F)
+
   # is Szz positive definite?
   zz.ev <- eigen(Szz)$values
+
   if (min(zz.ev)[1] < 0) {
     stop("\'Szz\' is not positive definite!\n")
   }

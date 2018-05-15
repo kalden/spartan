@@ -3,8 +3,11 @@ context("Test of Spartan Evolution Utilities")
 
 test_that("emulator_parameter_evolution", {
 
+  # Downloaded previously from website, should exist in workspace
+  load("built_ensemble")
+
   #skip("Skipping")
-  load(file.path("built_ensemble_72.Rda"))
+  #load(file.path("built_ensemble_72.Rda"))
   parameters <- c("stableBindProbability","chemokineExpressionThreshold",
                   "initialChemokineExpressionValue","maxChemokineExpressionValue",
                   "maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
@@ -31,7 +34,10 @@ test_that("emulator_parameter_evolution", {
 test_that("nsga2_set_user_params", {
 
   #skip("Skipping")
-  load(file.path("built_ensemble_72.Rda"))
+  #load(file.path("built_ensemble_72.Rda"))
+  # Downloaded above, now load
+  load("built_ensemble")
+
   parameters <- c("stableBindProbability","chemokineExpressionThreshold",
                   "initialChemokineExpressionValue","maxChemokineExpressionValue",
                   "maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
@@ -47,6 +53,9 @@ test_that("nsga2_set_user_params", {
   expect_equal(nsga2_user_set_parameters$parameters, parameters)
   expect_equal(nsga2_user_set_parameters$measures, measures)
   expect_equal(nsga2_user_set_parameters$desiredResponses, desiredResponses)
+
+  # Can now remove the downloaded ensemble
+  file.remove(file.path(getwd(),"built_ensemble"))
 
 })
 

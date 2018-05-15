@@ -4,7 +4,8 @@
 \alias{calculate_prccs_all_parameters}
 \title{Calculate PRCC values for all parameter-measure pairs}
 \usage{
-calculate_prccs_all_parameters(PARAMETERS, LHCRESULTFILE, MEASURES)
+calculate_prccs_all_parameters(PARAMETERS, LHCRESULTFILE, MEASURES,
+  cor_calc_method = c("s"))
 }
 \arguments{
 \item{PARAMETERS}{Simulation parameters}
@@ -12,6 +13,9 @@ calculate_prccs_all_parameters(PARAMETERS, LHCRESULTFILE, MEASURES)
 \item{LHCRESULTFILE}{Summary statistics for all LHC parameter sets}
 
 \item{MEASURES}{Simulation output responses}
+
+\item{cor_calc_method}{Way to calculate the correlation coefficient: Pearson's
+("p"), Spearman's ("s"), and Kendall's ("k"). Default is p}
 }
 \value{
 Correlation coefficients for all pairings

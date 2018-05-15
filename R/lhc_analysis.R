@@ -379,13 +379,14 @@ calculate_medians_for_all_measures <- function(sim_params, param_result,
 #'
 #' @inheritParams lhc_generateLHCSummary
 #' @param CORCOEFFSOUTPUTFILE Name of the generated CSV file generated
+#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
 #' @param check_done If multiple timepoints, whether the input has been checked
-#'
 #' @export
 #'
 lhc_generatePRCoEffs <- function(
   FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE,
-  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done = FALSE) {
+  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, cor_calc_method=c("s"), check_done = FALSE) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
 
@@ -399,7 +400,7 @@ lhc_generatePRCoEffs <- function(
       message("Generating Partial Rank Correlation Coefficients (lhc_generatePRCoEffs)")
 
       COEFFRESULTS <- calculate_prccs_all_parameters(PARAMETERS, lhc_result_file,
-                                                     MEASURES)
+                                                     MEASURES, cor_calc_method)
 
       write_data_to_csv(COEFFRESULTS,file.path(FILEPATH,CORCOEFFSOUTPUTFILE),row_names=TRUE)
 
@@ -447,8 +448,11 @@ lhc_generatePRCoEffs_overTime <- function(FILEPATH, PARAMETERS, MEASURES,
 #' @param PARAMETERS Simulation parameters
 #' @param LHCRESULTFILE Summary statistics for all LHC parameter sets
 #' @param MEASURES Simulation output responses
+#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
 #' @return Correlation coefficients for all pairings
-calculate_prccs_all_parameters <- function(PARAMETERS, LHCRESULTFILE, MEASURES)
+calculate_prccs_all_parameters <- function(PARAMETERS, LHCRESULTFILE, MEASURES,
+                                           cor_calc_method=c("s"))
 {
 
   COEFFRESULTS <- NULL
@@ -463,7 +467,7 @@ calculate_prccs_all_parameters <- function(PARAMETERS, LHCRESULTFILE, MEASURES)
 
     # Calculate coefficients
     COEFFRESULTS <- rbind(COEFFRESULTS, calculate_prcc_for_all_measures(
-      MEASURES, COEFFPARAMCOL, COEFFDATA, LHCRESULTFILE))
+      MEASURES, COEFFPARAMCOL, COEFFDATA, LHCRESULTFILE, cor_calc_method))
   }
 
   colnames(COEFFRESULTS) <- generate_prcc_results_header(MEASURES)

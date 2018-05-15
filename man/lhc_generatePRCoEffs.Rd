@@ -6,7 +6,7 @@
 \usage{
 lhc_generatePRCoEffs(FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME,
   CORCOEFFSOUTPUTFILE, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  check_done = FALSE)
+  cor_calc_method = c("s"), check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
@@ -32,6 +32,9 @@ e.g. c(12,36,48,60)}
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing
 multiple simulation timepoints. Sets the scale of the timepoints being
 analysed, e.g. "Hours"}
+
+\item{cor_calc_method}{Way to calculate the correlation coefficient: Pearson's
+("p"), Spearman's ("s"), and Kendall's ("k"). Default is p}
 
 \item{check_done}{If multiple timepoints, whether the input has been checked}
 }

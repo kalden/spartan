@@ -71,7 +71,7 @@ generate_requested_emulations <- function(model_list, partitioned_data,
   if ("NNET" %in% model_list & is.null(
     algorithm_settings$network_structures)) {
 
-    print("No Neural Network layer structures provided. Algorithm terminating.
+    message("No Neural Network layer structures provided. Algorithm terminating.
           Please run emulation_algorithm_settings, providing a list as an
           argument for networkStructures, and run this again")
     # -1 used to confirm error when generating ensemble with model generation
