@@ -253,9 +253,9 @@ lhc_plotCoEfficients <- function(FILEPATH, CORCOEFFSOUTPUTFILE, MEASURES,
                               TIMEPOINTS, sep = "")
         }
 
-        pdf(GRAPHFILE, width = 9, height = 5)
+        pdf(GRAPHFILE, width = 10, height = 5)
 
-        par(xpd = NA, mar = c(2, 4, 2, 17))
+        par(xpd = NA, mar = c(2, 4, 2, 9))
 
         PRCCS <- NULL
         for (p in seq(2, ncol(COEFFS), by = 2)) {
@@ -277,8 +277,11 @@ lhc_plotCoEfficients <- function(FILEPATH, CORCOEFFSOUTPUTFILE, MEASURES,
         thelabels <- paste(1:nrow(COEFFS), " ", COEFFS[, 1], sep = "")
         par(xpd = TRUE)
         legend_size <- nrow(COEFFS)*3
-        legend(legend_size, 1.0, legend = thelabels, pch = "",
+        #legend(legend_size, 1.0, legend = thelabels, pch = "",
+        #       cex = 0.7, ncol = 1)
+        legend("topright", inset=c(-0.2,0), 1.0, legend = thelabels, pch = "",
                cex = 0.7, ncol = 1)
+
         par(xpd = FALSE)
         dev.off()
       }
