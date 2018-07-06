@@ -94,17 +94,18 @@ add_parameter_value_to_file <- function(xml, PARAMETERS, ParameterInfo, LHC_DESI
     if(PARAMETERS[PARAM] %in% ParameterInfo$STUDIED_PARAMETERS)
     {
       # Get the value from spartan
-      VALUE <- LHC_DESIGN[SAMPLE, PARAMETERS[PARAM]]
+      PARAMETER_VALUE <- LHC_DESIGN[SAMPLE, PARAMETERS[PARAM]]
     } else {
       # Is a constant value
-      VALUE <- PARAMVALS[PARAM]
+      PARAMETER_VALUE <- PARAMVALS[PARAM]
     }
 
     # NOW CREATE THE XML FOR THIS PARAMETER
     xml$addTag("enumeratedValueSet", attrs = c(
       variable = PARAMETERS[PARAM]), close = FALSE)
+
     # NOW ADD THE VALUE
-    xml$addTag("value", attrs = c(value = VALUE))
+    xml$addTag("value", attrs = c(value = as.numeric(PARAMETER_VALUE)))
 
     # CLOSE THE ENUMERATED VALUE SET TAG
     xml$closeTag()
