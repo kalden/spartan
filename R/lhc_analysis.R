@@ -51,13 +51,15 @@
 #'  multiple simulation timepoints. Sets the scale of the timepoints being
 #'  analysed, e.g. "Hours"
 #' @param check_done If multiple timepoints, whether the input has been checked
+#' @param write_csv_file Whether the analysis should be written to CSV file. Used
+#' with spartanDB, where results are submitted to analysis database
 #'
 #' @export
 lhc_process_sample_run_subsets <- function(
   FILEPATH, SPARTAN_PARAMETER_FILE, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE,
   MEASURES, RESULTFILENAME, ALTFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,
   LHC_ALL_SIM_RESULTS_FILE, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  check_done = FALSE) {
+  check_done = FALSE, write_csv_file = TRUE) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
@@ -76,9 +78,10 @@ lhc_process_sample_run_subsets <- function(
         ALTFILENAME, NUMSAMPLES, lhc_table, OUTPUTCOLSTART, OUTPUTCOLEND)
 
       # Output if results not blank
-      if (!is.null(all_sim_median_results)) {
+      if (!is.null(all_sim_median_results) && write_csv_file) {
         write_data_to_csv(all_sim_median_results,file.path(FILEPATH,LHC_ALL_SIM_RESULTS_FILE))
       }
+      return(all_sim_median_results)
 
     } else {
       lhc_process_sample_run_subsets_overTime(
@@ -237,13 +240,16 @@ summarise_lhc_sweep_responses <- function(
 #'  analysed, e.g. "Hours"
 #' @param check_done If using multiple timepoints, whether data entry has been
 #' checked
+#' @param write_csv_file Whether the analysis should be written to CSV file. Used
+#' with spartanDB, where results are submitted to analysis database
 #'
 #' @export
 lhc_generateLHCSummary <- function(FILEPATH, PARAMETERS, MEASURES,
                                    LHC_ALL_SIM_RESULTS_FILE,
                                    LHCSUMMARYFILENAME,
                                    SPARTAN_PARAMETER_FILE = NULL,
-                                   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done=FALSE) {
+                                   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+                                   check_done=FALSE, write_csv_file=TRUE) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
@@ -259,9 +265,12 @@ lhc_generateLHCSummary <- function(FILEPATH, PARAMETERS, MEASURES,
       # Stores parameters used and their median output responses, for all sets
       summary_table <- summarise_replicate_runs(lhc_all_sim_results, PARAMETERS, MEASURES)
 
-      write_data_to_csv(summary_table, file.path(FILEPATH, LHCSUMMARYFILENAME))
-
-      message(paste("LHC Summary file output to ", file.path(FILEPATH, LHCSUMMARYFILENAME), sep = ""))
+      if(write_csv_file)
+      {
+        write_data_to_csv(summary_table, file.path(FILEPATH, LHCSUMMARYFILENAME))
+        message(paste("LHC Summary file output to ", file.path(FILEPATH, LHCSUMMARYFILENAME), sep = ""))
+      }
+      return(summary_table)
 
     } else {
     # Process each timepoint

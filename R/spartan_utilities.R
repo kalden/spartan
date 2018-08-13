@@ -45,8 +45,9 @@ getMediansSubset <- function(FILEPATH, NUMRUNSPERSAMPLE, measures,
     }
   }
 
-  if(!is.null(all_results) & nrow(all_results) > 0)
-    colnames(all_results) <- measures
+  if(!is.null(all_results))
+    if(nrow(all_results) > 0)
+      colnames(all_results) <- measures
 
   # Now we return this set of medians
   return(all_results)

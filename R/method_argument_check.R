@@ -53,13 +53,16 @@ generate_list_of_checks <-function(argNames)
 
   for(arg in 1:length(argNames))
   {
-    if(argNames[arg] == "FILEPATH")
-      check_methods_to_call[[list_index]] = check_filepath_exists  # TAKES ALL ARGS FIXED
-    else if(argNames[arg] == "SAMPLESIZES")
+    # FILEPATH can now be null (with connection to DB and robospartan), so now is not checked
+    #if(argNames[arg] == "FILEPATH")
+    #  check_methods_to_call[[list_index]] = check_filepath_exists  # TAKES ALL ARGS FIXED
+    if(argNames[arg] == "SAMPLESIZES")
       check_methods_to_call[[list_index]] = check_list_all_integers   # TAKES ALL ARGS FIXED
-    else if(argNames[arg] %in% c("PARAMETERS","MEASURES","MEASURE_SCALE"))
+    # KA in development of roboSpartan this caused issues, so attempting removal of PARAMETERS. May need to go back here below
+    else if(argNames[arg] %in% c("MEASURES","MEASURE_SCALE"))
       check_methods_to_call[[list_index]] = check_text_list            # TAKES ALL ARGS FIXED
-    else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMSAMPLES","NUMCURVES","EXPERIMENT_REPETITIONS"))
+    # Same as above, input checking not working with RoboSpartan, so NUMSAMPLES removed from below
+    else if(argNames[arg] %in% c("NUMSUBSETSPERSAMPLESIZE","NUMRUNSPERSAMPLE","NUMCURVES","EXPERIMENT_REPETITIONS"))
       check_methods_to_call[[list_index]] = check_argument_positive_int      # TAKES ALL ARGS FIXED
     else if(argNames[arg] %in% c("ATESTRESULTSFILENAME", "RESULTFILENAME", "SUMMARYFILENAME", "CSV_FILE_NAME", "NETLOGO_SETUP_FUNCTION","NETLOGO_RUN_FUNCTION", "ATESTRESULTFILENAME",
                                  "SPARTAN_PARAMETER_FILE","LHC_ALL_SIM_RESULTS_FILE", "LHCSUMMARYFILENAME", "CORCOEFFSOUTPUTFILE","EFASTRESULTFILENAME"))
@@ -70,22 +73,22 @@ generate_list_of_checks <-function(argNames)
       check_methods_to_call[[list_index]] = check_double_value_in_range
     else if(argNames[arg] == "TTEST_CONF_INT")
       check_methods_to_call[[list_index]] = check_confidence_interval
-    else if(argNames[arg] == "AA_SIM_RESULTS_FILE")
-      check_methods_to_call[[list_index]] = check_consistency_result_type
     else if(argNames[arg] == "OUTPUTFILECOLSTART")
       check_methods_to_call[[list_index]] = check_column_ranges
-    else if(argNames[arg] == "PMIN")
-      check_methods_to_call[[list_index]] = check_global_param_sampling_args
+    # PMIN check not working with RoboSpartan
+    #else if(argNames[arg] == "PMIN")
+    #  check_methods_to_call[[list_index]] = check_global_param_sampling_args
     else if(argNames[arg] == "PARAMVALS")   # This will also need some more thought once other approaches added
       check_methods_to_call[[list_index]] = check_function_dependent_paramvals
-    else if(argNames[arg] == "ALGORITHM")
-      check_methods_to_call[[list_index]] = check_lhs_algorithm
+    # Same issue, error checking not working with RoboSpartan, algorithm removed
+    #else if(argNames[arg] == "ALGORITHM")
+    #  check_methods_to_call[[list_index]] = check_lhs_algorithm
     else if(argNames[arg] == "OUTPUT_TYPE")
       check_methods_to_call[[list_index]] = check_graph_output_type
     # To deal with AA_SIM_RESULTS_OBJECT, and OUTPUTFILECOLEND, which are checked by FILE and START respectively,
     # and PMAX, BASELINE, PINC, that are checked in PMIN/PARAMVALS checks,we put in an ignore, and detect this later
     # This needs to be done to keep the function list referenced to the argument names
-    else if(argNames[arg] %in% c("AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE","ALTFILENAME","OUTPUTMEASURES_TO_TTEST"))
+    else if(argNames[arg] %in% c("FILEPATH","PARAMETERS","NUMSAMPLES","AA_SIM_RESULTS_OBJECT", "OUTPUTFILECOLEND", "PMAX","PINC","BASELINE","ALTFILENAME","OUTPUTMEASURES_TO_TTEST","AA_SIM_RESULTS_FILE","ALGORITHM"))
       check_methods_to_call[[list_index]] = NULL
 
     list_index = list_index + 1
@@ -725,11 +728,13 @@ check_text_list <-function(arguments, argument_name)
   tryCatch(
     {
       # Get the list
+      print(arguments)
+
       arg_list <- eval(arguments[argument_name][[1]])
       for(i in 1:length(arg_list))
       {
         check = check_text(arg_list[i], argument_name)
-        #print(paste("Check: ",check,sep=""))
+        print(paste("Check: ",check,sep=""))
         if(!check)
         {
           message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
@@ -739,6 +744,7 @@ check_text_list <-function(arguments, argument_name)
       return(TRUE)
     },
     error=function(cond) {
+      print(cond)
       message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
       return(FALSE)
     })
