@@ -33,11 +33,14 @@
 #' Can be set to either 'normal' or 'optimum'. Beware optimum can take a
 #' long time to generate an optimised parameter set (more than 24 hours
 #' in some circumstances)
+#' @param write_csv Whether the sample should be output to a CSV file or not.
+#' Introduced with spartan database link. Defaults to TRUE
 #' @return LHC generated parameter sets
 #'
 #' @export
 lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
-                                    PMAX, ALGORITHM, PINC = NULL) {
+                                    PMAX, ALGORITHM, PINC = NULL,
+                                    write_csv = TRUE) {
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
@@ -55,9 +58,12 @@ lhc_generate_lhc_sample <- function(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN,
       # Output the scaled design to csv file
       if(!is.null(FILEPATH))
       {
-        write_data_to_csv(design, make_path(c(FILEPATH,"LHC_Parameters_for_Runs.csv")))
-        message(paste("Parameter Set Generated and Output to ", FILEPATH,
-                    "/LHC_Parameters_for_Runs.csv", sep = ""))
+        if(write_csv == TRUE)
+        {
+          write_data_to_csv(design, make_path(c(FILEPATH,"LHC_Parameters_for_Runs.csv")))
+          message(paste("Parameter Set Generated and Output to ", FILEPATH,
+                      "/LHC_Parameters_for_Runs.csv", sep = ""))
+        }
       }
       else
         message("No FILEPATH specified. Returning sample as R Object")
