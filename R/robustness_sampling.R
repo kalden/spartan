@@ -13,21 +13,30 @@
 #' Once this has been completed, the results can be analysed
 #' using the robustness analysis  methods included within this package
 #'
-#' @param FILEPATH Directory where the parameter samples should be output to
+#' @param FILEPATH Directory where the parameter samples should be output to. For spartan-db this can be NULL
 #' @param PARAMETERS Array containing the names of the parameters of which parameter samples will be generated
 #' @param BASELINE Array containing the values assigned to each of these parameters in the calibrated baseline
 #' @param PMIN Array containing the minimum value that should be used for each parameter.  Sets a lower bound on sampling space
 #' @param PMAX Array containing the maximum value that should be used for each parameter.  Sets an upper bound on sampling space
 #' @param PINC Array containing the increment value that should be applied for each parameter. For example, a parameter could have a minimum value of 10, and maximum value of 100, and be incremented by 10
 #' @param PARAMVALS Array containing a list of strings for each parameter, each string containing comma separated values that should be assigned to that parameter. Thus sampling can be performed for specific values for each parameter, rather than a uniform incremented value. This replaces the PMIN, PMAX, and PINC where this method is used.
+#' @param write_csv Whether the sample should be output to CSV file. Only used when using spartan with spartan-db package
+#' @param return_sample Used by spartan database link package, to return parameter value samples generated. These can then be added to the database
 #'
 #' @export
 oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
-                                   PMAX = NULL, PINC = NULL, PARAMVALS = NULL) {
+                                   PMAX = NULL, PINC = NULL, PARAMVALS = NULL,
+                                   write_csv=TRUE,
+                                   return_sample = FALSE) {
 
   # Version 3.1 adds pre-execution check functions as part of refactoring:
   # Get the provided function arguments
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+
+  # For link with spartan database package, all samples should be returned. We can do this
+  # by adding each sample to a returned object
+  all_samples <- vector("list", length(parameters))
+
   # Run if all checks pass:
   if(check_input_args(input_check$names, input_check$arguments)) {
 
@@ -42,17 +51,32 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
 
       PARAMETERTABLE <- generate_parameter_table(PARAMETERS, BASELINE, PARAMOFINT, val_list)
 
+      all_samples[[PARAMOFINT]] <- PARAMETERTABLE
+
       # WRITE THE A-TEST RESULTS TO FILE
       results_file <- make_path(c(FILEPATH,
                                   make_filename(c(PARAMETERS[PARAMOFINT],
                                                   "OAT_Values.csv"))))
-      write_data_to_csv(PARAMETERTABLE, results_file)
+      if(write_csv==TRUE)
+      {
+        write_data_to_csv(PARAMETERTABLE, results_file)
 
-      message(paste("Sample File Generated for parameter ",
+        message(paste("Sample File Generated for parameter ",
                   PARAMETERS[PARAMOFINT], " and output to ",
                   results_file, sep = ""))
+      }
     }
   }
+
+  # Utility here to return the parameter tables
+  # Used by spartan-db to generate robustness parameter samples
+  if(return_sample==TRUE)
+  {
+    message("Returning all samples")
+    return(all_samples)
+  }
+
+
 }
 
 #' Takes the value list and generates the sample that is output to csv file
