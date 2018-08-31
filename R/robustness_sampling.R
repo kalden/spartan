@@ -35,7 +35,7 @@ oat_parameter_sampling <- function(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
 
   # For link with spartan database package, all samples should be returned. We can do this
   # by adding each sample to a returned object
-  all_samples <- vector("list", length(parameters))
+  all_samples <- vector("list", length(PARAMETERS))
 
   # Run if all checks pass:
   if(check_input_args(input_check$names, input_check$arguments)) {
