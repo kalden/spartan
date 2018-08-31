@@ -57,7 +57,7 @@ test_that("lhc_generate_lhc_sample", {
   # Do the checks as before:
   expect_equal(nrow(lhcSample),500)
   expect_equal(ncol(lhcSample),2)
-  expect_message(lhc_generate_lhc_sample(FILEPATH=NULL, c("A","B"), 500, c(10,0.1), c(100,0.9), "normal"),"FILEPATH does not seem to exist")
+  expect_message(lhc_generate_lhc_sample(FILEPATH=NULL, c("A","B"), 500, c(10,0.1), c(100,0.9), "normal"),"No FILEPATH specified. Returning sample as R Object")
 
   file.remove(paste(getwd(),"/LHC_Parameters_for_Runs.csv",sep=""))
 })

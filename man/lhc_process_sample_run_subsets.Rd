@@ -7,7 +7,7 @@
 lhc_process_sample_run_subsets(FILEPATH, SPARTAN_PARAMETER_FILE, PARAMETERS,
   NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTFILENAME,
   OUTPUTCOLSTART, OUTPUTCOLEND, LHC_ALL_SIM_RESULTS_FILE, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL, check_done = FALSE)
+  TIMEPOINTSCALE = NULL, check_done = FALSE, write_csv_file = TRUE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
@@ -62,6 +62,9 @@ multiple simulation timepoints. Sets the scale of the timepoints being
 analysed, e.g. "Hours"}
 
 \item{check_done}{If multiple timepoints, whether the input has been checked}
+
+\item{write_csv_file}{Whether the analysis should be written to CSV file. Used
+with spartanDB, where results are submitted to analysis database}
 }
 \description{
 Only to be applied for simulations that are stochastic, and responses are

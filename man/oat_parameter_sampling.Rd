@@ -5,10 +5,11 @@
 \title{Create parameter samples for robustness (local) analysis}
 \usage{
 oat_parameter_sampling(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
-  PMAX = NULL, PINC = NULL, PARAMVALS = NULL)
+  PMAX = NULL, PINC = NULL, PARAMVALS = NULL, write_csv = TRUE,
+  return_sample = FALSE)
 }
 \arguments{
-\item{FILEPATH}{Directory where the parameter samples should be output to}
+\item{FILEPATH}{Directory where the parameter samples should be output to. For spartan-db this can be NULL}
 
 \item{PARAMETERS}{Array containing the names of the parameters of which parameter samples will be generated}
 
@@ -21,6 +22,10 @@ oat_parameter_sampling(FILEPATH, PARAMETERS, BASELINE, PMIN = NULL,
 \item{PINC}{Array containing the increment value that should be applied for each parameter. For example, a parameter could have a minimum value of 10, and maximum value of 100, and be incremented by 10}
 
 \item{PARAMVALS}{Array containing a list of strings for each parameter, each string containing comma separated values that should be assigned to that parameter. Thus sampling can be performed for specific values for each parameter, rather than a uniform incremented value. This replaces the PMIN, PMAX, and PINC where this method is used.}
+
+\item{write_csv}{Whether the sample should be output to CSV file. Only used when using spartan with spartan-db package}
+
+\item{return_sample}{Used by spartan database link package, to return parameter value samples generated. These can then be added to the database}
 }
 \description{
 The robustness of a simulation to parameter alteration can be determined

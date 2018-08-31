@@ -728,13 +728,11 @@ check_text_list <-function(arguments, argument_name)
   tryCatch(
     {
       # Get the list
-      print(arguments)
-
       arg_list <- eval(arguments[argument_name][[1]])
       for(i in 1:length(arg_list))
       {
         check = check_text(arg_list[i], argument_name)
-        print(paste("Check: ",check,sep=""))
+
         if(!check)
         {
           message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
@@ -744,7 +742,7 @@ check_text_list <-function(arguments, argument_name)
       return(TRUE)
     },
     error=function(cond) {
-      print(cond)
+
       message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
       return(FALSE)
     })

@@ -1,4 +1,5 @@
 library(spartan)
+library(XML)
 context("Test of Spartan Netlogo eFAST Sampling")
 
 test_that("efast_generate_sample_netlogo", {

@@ -4,7 +4,8 @@
 \alias{efast_generate_sample}
 \title{Generates parameter sets for variance-based eFAST Sensitivity Analysis}
 \usage{
-efast_generate_sample(FILEPATH, NUMCURVES, NUMSAMPLES, PARAMETERS, PMIN, PMAX)
+efast_generate_sample(FILEPATH, NUMCURVES, NUMSAMPLES, PARAMETERS, PMIN, PMAX,
+  write_csv = TRUE, return_sample = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}
@@ -24,6 +25,12 @@ parameter and the dummy. Sets a lower bound on sampling space}
 
 \item{PMAX}{Array containing the maximum value that should be used for each
 parameter and the dummy. Sets an upper bound on sampling space}
+
+\item{write_csv}{Whether the sample should be output to CSV file. Should be
+true unless using spartan-db}
+
+\item{return_sample}{Whether the complete sample should be returned as an
+R object. Used by spartan db and added to the database}
 }
 \description{
 This technique analyses simulation results generated through sampling

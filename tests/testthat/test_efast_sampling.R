@@ -19,13 +19,14 @@ test_that("efast_generate_sample", {
   expect_true(file.exists(file.path(getwd(),"Curve2_Dummy.csv")))
 
   # Check a few error conditions
-  expect_message(efast_generate_sample(getwd(), "A", 65, c("BindProbability", "ChemoThreshold", "Dummy"),
-                        c(0, 0.10, 1),
-                        PMAX <- c(100, 0.9, 10)),"NUMCURVES must be a positive integer. Terminated")
+  # AUGUST 2018: Removed as error checking now removed due to compatibility issues with spartanDB package
+  #expect_message(efast_generate_sample(getwd(), "A", 65, c("BindProbability", "ChemoThreshold", "Dummy"),
+  #                      c(0, 0.10, 1),
+  #                      PMAX <- c(100, 0.9, 10)),"NUMCURVES must be a positive integer. Terminated")
 
-  expect_message(efast_generate_sample(getwd(), 3, 65, c("BindProbability", "ChemoThreshold", "Dummy"),
-                                       c(120, 0.10, 1),
-                                       PMAX <- c(100, 0.9, 10)),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
+  #expect_message(efast_generate_sample(getwd(), 3, 65, c("BindProbability", "ChemoThreshold", "Dummy"),
+  #                                     c(120, 0.10, 1),
+  #                                     PMAX <- c(100, 0.9, 10)),"PMIN must be less than PMAX for all parameters, both must be numeric, and declared in capitals: e.g. PMIN, PMAX, PINC")
 
   # Cleanup
 

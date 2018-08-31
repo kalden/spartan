@@ -288,8 +288,9 @@ test_that("check_efast_sampling_args", {
   expect_true(check_input_args(input_check$names, input_check$input))
 
   # Now to add an error
-  input_check <- make_input_arguments_object(FILEPATH=getwd(), NUMSAMPLES="A", NUMCURVES=3, PARAMETERS=c("A","B"),PMIN=c(0,1),PMAX=c(100,2))
-  expect_false(check_input_args(input_check$names, input_check$input))
+  # August 2018: Removed due to changes to input checking required by spartanDB package
+  #input_check <- make_input_arguments_object(FILEPATH=getwd(), NUMSAMPLES="A", NUMCURVES=3, PARAMETERS=c("A","B"),PMIN=c(0,1),PMAX=c(100,2))
+  #expect_false(check_input_args(input_check$names, input_check$input))
 })
 
 test_that("check_robustness_sampling_args", {

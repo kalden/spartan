@@ -5,7 +5,7 @@
 \title{Generates sets of simulation parameters using latin-hypercube sampling}
 \usage{
 lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM,
-  PINC = NULL)
+  PINC = NULL, write_csv = TRUE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}
@@ -30,6 +30,9 @@ in some circumstances)}
 for each parameter. For example, a parameter could have a minimum value
 of 10, and maximum value of 100, and be incremented by 10. Added after
 user request on Github}
+
+\item{write_csv}{Whether the sample should be output to a CSV file or not.
+Introduced with spartan database link. Defaults to TRUE}
 }
 \value{
 LHC generated parameter sets
