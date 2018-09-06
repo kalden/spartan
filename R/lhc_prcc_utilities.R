@@ -198,7 +198,7 @@ lhc_constructcoeff_dataset <-
 
     for (m in 1:length(PARAMETERS)) {
       if (PARAMETERS[m] != PARAMNAME) {
-        coeff_data <- cbind(coeff_data, LHCRESULTFILE[, PARAMETERS[m]])
+        coeff_data <- cbind(coeff_data, as.numeric(LHCRESULTFILE[, PARAMETERS[m]]))
         coeff_headers <- cbind(coeff_headers, PARAMETERS[m])
       }
       colnames(coeff_data) <- c(coeff_headers)

@@ -424,6 +424,33 @@ lhc_generatePRCoEffs <- function(
   }
 }
 
+#' Generate Partial Rank Correlation Coefficients for parameter/response pairs for results in database
+#'
+#' For each parameter, and each simulation output measure, calculates the
+#' Partial Rank Correlation Coefficient between the parameter value and the
+#' simulation results, giving a statistical measurement of any effect that
+#' is present. In this case, results are mined from a database, as created by
+#' the spartanDB package, and the statistics returned for adding back to the DB.
+#'
+#' @param db_results Set of experiment results from the DB
+#' @param parameters Simulation parameters
+#' @param measures Simulation measures
+#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
+#' @export
+#'
+lhc_generatePRCoEffs_db_link <- function(
+  db_results, parameters, measures, cor_calc_method=c("s")) {
+
+  message("Generating Partial Rank Correlation Coefficients (lhc_generatePRCoEffs)")
+
+  COEFFRESULTS <- calculate_prccs_all_parameters(parameters, db_results,
+                                                 measures, cor_calc_method)
+
+  return(COEFFRESULTS)
+
+}
+
 #' Pre-process analysis settings if multiple timepoints are being considered
 #'
 #' @inheritParams lhc_generatePRCoEffs
@@ -472,7 +499,7 @@ calculate_prccs_all_parameters <- function(PARAMETERS, LHCRESULTFILE, MEASURES,
     COEFFDATA <- lhc_constructcoeff_dataset(LHCRESULTFILE, PARAMETERS[k],
                                             PARAMETERS)
     # Retrieve parameter result
-    COEFFPARAMCOL <- LHCRESULTFILE[, PARAMETERS[k]]
+    COEFFPARAMCOL <- as.numeric(LHCRESULTFILE[, PARAMETERS[k]])
 
     # Calculate coefficients
     COEFFRESULTS <- rbind(COEFFRESULTS, calculate_prcc_for_all_measures(
@@ -518,7 +545,7 @@ calculate_prcc_for_all_measures <- function(MEASURES, COEFFPARAMCOL, COEFFDATA,
 {
   PARAM_RESULTS <- NULL
   for (l in 1:length(MEASURES)) {
-    COEFFMEASURERESULT <- LHCRESULTFILE[, MEASURES[l]]
+    COEFFMEASURERESULT <- as.numeric(LHCRESULTFILE[, MEASURES[l]])
     PARAMCOEFF <- pcor.test(COEFFPARAMCOL, COEFFMEASURERESULT,
                           COEFFDATA, calc_method=cor_calc_method, use=prcc_method)
     if(!is.null(PARAMCOEFF))
