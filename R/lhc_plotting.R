@@ -66,6 +66,55 @@ lhc_graphMeasuresForParameterChange <-
                    TIMEPOINTSCALE, GRAPHTIME)
     }
   }
+  }
+
+#' Generates parameter/measure plot for each pairing in the analysis, from results stored in a database
+#'
+#' Produces a graph for each parameter, and each output measure, showing
+#' the simulation output achieved when that parameter was assigned that value.
+#' Eases identification of any non-linear effects. This method uses simulation
+#' results stored in a database by spartanDB
+#'
+#' @param db_results Results for a specified experiment mined from the database
+#' @param corcoeffs Correlation coefficients calculated for those results,
+#' held in the databae
+#' @param parameters Parameters included in this analysis
+#' @param measures Simulation output measures
+#' @param MEASURE_SCALE Scale in which each of the output responses is
+#' measured. Used to label plots
+#' @param output_directory Folder where the graphs should be stored
+#' @param OUTPUT_TYPE Type of graph to plot. Can be PDF, PNG, TIFF, BMP, etc,
+#'  all formats supported by ggplot2
+#'
+#' @export
+#'
+lhc_graphMeasuresForParameterChange_from_db <-
+  function(db_results, corcoeffs, parameters, measures, MEASURE_SCALE, output_directory,
+           OUTPUT_TYPE = c("PDF")) {
+
+  message ("Generating output graphs for LHC Parameter Analysis")
+
+  # CREATE A GRAPH FOR EACH PARAMETER, FOR EACH MEASURE
+  for (p in 1:length(parameters)) {
+    for (m in 1:length(measures)) {
+
+      # Get the PRCC value for this pairing
+      corr_result <- subset(corcoeffs, corcoeffs$parameter==parameters[p] & corcoeffs$measure==measures[m],select=c(corcoeffs$statistic_1))
+
+      # Make filename, titles, and labels
+      titles <- make_graph_title(output_directory, parameters[p], NULL, measures[m],
+                                 MEASURE_SCALE[m],as.numeric(corr_result), NULL)
+
+      # Filter the data to plot
+      data_to_plot <- data.frame(as.numeric(db_results[, parameters[p]]),
+                                 as.numeric(db_results[, measures[m]]))
+
+      # Create graphs
+      output_ggplot_graph(titles$file, OUTPUT_TYPE,
+                          make_lhc_plot(data_to_plot, titles))
+    }
+  }
+  message("LHC Graphs Complete")
 }
 
 #' Wrapper for graphing LHC results for multiple timepoints
@@ -136,7 +185,7 @@ make_lhc_plot <- function(data_to_plot, titles) {
                              y = data_to_plot[, 2])) +
     geom_point(size = 0.5) +
     scale_y_continuous(limits = c(
-      floor(min(data_to_plot[,2])), ceiling(max(data_to_plot[, 2])))) +
+      floor(min(as.numeric(data_to_plot[,2]))), ceiling(max(as.numeric(data_to_plot[, 2]))))) +
     labs(x = titles$xlabel, y = titles$ylabel,
          title = titles$title, subtitle = titles$sub_title) +
     theme(axis.title = element_text(size = 7),
