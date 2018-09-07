@@ -5,7 +5,7 @@
 \title{Internal function to calculate the weights for all emulators in the ensemble}
 \usage{
 calculate_weights_for_ensemble_model(all_model_predictions, emulator_test_data,
-  measures, emulator_types, num_of_generations = 800000)
+  measures, emulator_types, num_of_generations = 8e+05)
 }
 \arguments{
 \item{all_model_predictions}{Set of test set predictions obtained for all

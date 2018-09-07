@@ -230,6 +230,7 @@ efast_get_overall_medians_overTime  <-  function(
   }
 }
 
+
 #' Runs the eFAST Analysis for the pre-generated summary file
 #'
 #' Produces a file summarising the analysis; partitioning the variance between
@@ -335,6 +336,68 @@ efast_run_Analysis  <-  function(
   }
 }
 
+#' Runs the eFAST Analysis for a set of results stored in a database
+#'
+#' Produces a file summarising the analysis; partitioning the variance between
+#' parameters and providing relevant statistics. These include, for each
+#' parameter of interest, first-order sensitivity index (Si), total-order
+#' sensitivity index (STi), complementary parameters sensitivity index (SCi),
+#' and relevant p-values and error bar data calculated using a two-sample
+#' t-test and standard error respectively. For a more detailed examination of
+#'  this analysis, see the references in the R Journal paper. For ease of
+#'  representation, the method also produces a graph showing this data for
+#'  each simulation output measure. In this case, this function works with
+#'  spartanDB to analyse data stored in a database
+#'
+#' @param efast_sim_results Set of simulation results mined from the database,
+#' put into the format required by spartan
+#' @param number_samples Number of samples taken per parameter
+#' @param parameters Array containing the names of the parameters of which
+#' parameter samples have been generated
+#' @param number_curves The number of 'resamples' to perform (see eFAST
+#' documentation) - recommend using at least 3
+#' @param measures Array containing the names of the output measures which
+#' are used to analyse the simulation
+#' @param OUTPUTMEASURES_TO_TTEST Which measures in the range should be tested
+#' to see if the result is statistically significant.  To do all, and if
+#' there were 3 measures, this would be set to 1:3
+#' @param TTEST_CONF_INT The level of significance to use for the T-Test
+#' (e.g. 0.95)
+#' @param GRAPH_FLAG Whether graphs should be produced summarising the output
+#' - should be TRUE or FALSE
+#'
+#' @export
+efast_run_Analysis_from_DB<-function(efast_sim_results, number_samples, parameters,
+                                     number_curves, measures,
+                                     OUTPUTMEASURES_TO_TTEST=1:length(measures),
+                                     TTEST_CONF_INT=0.95)
+{
+  MI <- 4
+  # wanted no. of sample points
+  wanted_n <- number_samples * length(parameters) * number_curves
+  omi <- floor( ( (wanted_n / number_curves) - 1) / (2 * MI) / length(parameters))
+
+  message("Producing eFAST Analysis (efast_run_analysis)")
+
+  # Sensitivity Indexes
+  sensitivities <- generate_sensitivity_indices(efast_sim_results, omi, MI,
+                                                measures, parameters, number_curves)
+
+  # T-Test to get P-Values against dummy parameter
+  message("Generating measures of statistical significance")
+  t_tests  <-  efast_ttest(sensitivities$si, sensitivities$range_si,
+                           sensitivities$sti, sensitivities$range_sti,
+                           OUTPUTMEASURES_TO_TTEST, length(parameters),
+                           number_curves, TTEST_CONF_INT)
+
+  formatted_results <- format_efast_result_for_output(
+    sensitivities, t_tests, OUTPUTMEASURES_TO_TTEST, measures,parameters)
+
+  return(formatted_results)
+
+
+}
+
 #' Pre-process analysis settings if multiple timepoints are being considered
 #'
 #' @inheritParams efast_run_Analysis
@@ -388,6 +451,7 @@ read_all_curve_results <- function(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES,
                                 NUMCURVES)))
 
 }
+
 
 #' Generate eFAST Sensitivity Indices
 #' @param results_array Results for all eFAST resample curves
