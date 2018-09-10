@@ -363,8 +363,6 @@ efast_run_Analysis  <-  function(
 #' there were 3 measures, this would be set to 1:3
 #' @param TTEST_CONF_INT The level of significance to use for the T-Test
 #' (e.g. 0.95)
-#' @param GRAPH_FLAG Whether graphs should be produced summarising the output
-#' - should be TRUE or FALSE
 #'
 #' @export
 efast_run_Analysis_from_DB<-function(efast_sim_results, number_samples, parameters,

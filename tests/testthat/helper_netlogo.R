@@ -84,9 +84,9 @@ read_created_efast_xml_file <- function()
 
   # Get the set up and go values
   els <- XML::getNodeSet(doc, "/experiments//setup")
-  setupVal <- xmlValue(els[[1]])
+  setupVal <- XML::xmlValue(els[[1]])
   els <- XML::getNodeSet(doc, "/experiments//go")
-  goVal <- xmlValue(els[[1]])
+  goVal <- XML::xmlValue(els[[1]])
 
   rm(doc)
 

@@ -29,9 +29,6 @@ there were 3 measures, this would be set to 1:3}
 
 \item{TTEST_CONF_INT}{The level of significance to use for the T-Test
 (e.g. 0.95)}
-
-\item{GRAPH_FLAG}{Whether graphs should be produced summarising the output
-- should be TRUE or FALSE}
 }
 \description{
 Produces a file summarising the analysis; partitioning the variance between
