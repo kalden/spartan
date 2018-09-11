@@ -9,7 +9,7 @@ read_created_xml_file <- function(xmlFile, csvFile)
 
   doc = XML::xmlTreeParse(xmlFile, useInternalNodes = TRUE)
   els = XML::getNodeSet(doc, "/experiments//metric")
-  all_metrics <- sapply(els, xmlValue)
+  all_metrics <- sapply(els, XML::xmlValue)
 
   xml_param_vals <- NULL
 
@@ -59,7 +59,7 @@ read_created_efast_xml_file <- function()
 
   doc = XML::xmlTreeParse(xmlFile, useInternalNodes = TRUE)
   els = XML::getNodeSet(doc, "/experiments//metric")
-  all_metrics <- sapply(els, xmlValue)
+  all_metrics <- sapply(els, XML::xmlValue)
 
   xml_param_vals <- NULL
   els = XML::getNodeSet(doc, "/experiments//enumeratedValueSet[@variable='people']//value[@value]")

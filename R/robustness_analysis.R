@@ -341,10 +341,16 @@ oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
               prepare_parameter_value_list(PMIN, PMAX, PINC, PARAMVALS, PARAM))
 
             # Now iterate through the values in this list
-            all_atest_scores <- rbind(all_atest_scores,
-                                      compare_all_values_of_parameter_to_baseline (
+            ## Bug Here, fixed Sept 2018 - should not have been rbinding
+            all_atest_scores <- compare_all_values_of_parameter_to_baseline (
                                         parameter_value_list, PARAMETERS, PARAM, BASELINE, result,
-                                        exp_params, baseline_result, MEASURES, all_atest_scores))
+                                        exp_params, baseline_result, MEASURES, all_atest_scores)
+
+            #all_atest_scores <- rbind(all_atest_scores,
+            #                          compare_all_values_of_parameter_to_baseline (
+            #                            parameter_value_list, PARAMETERS, PARAM, BASELINE, result,
+            #                            exp_params, baseline_result, MEASURES, all_atest_scores))
+
           }
 
           # label the scores
@@ -364,6 +370,82 @@ oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
       }
     }
 }
+
+
+#' Performs a robustness analysis for simulation results stored in a database, comparing simulation behaviour at different parameter values
+#'
+#' This method takes results mined from a database (like spartanDB produces)
+#' and analyses the impact that a change in a single parameter value has had
+#' on simulation response. This is performed by comparing the distribution of
+#' responses for a perturbed parameter condition with the distribution under
+#' baseline/calibrated conditions. This produces a A-Test statistics that are
+#' returned for storing in the results database by the spartanDB package.
+#'
+#' @param db_results Set of experimental results from a mysql database
+#' @param parameters Simulation parameters of interest
+#' @param baseline Baseline/Calibrated values for each of those parameters
+#' @param measures Simulation output responses
+#' @param PMIN Minimum value of each of the parameters in sampling
+#' @param PMAX Maximum valuer of each of the parameters in sampling
+#' @param PINC Increment value applied in sampling
+#' @return A-Test scores for all parameter values and measure pairings
+#'
+#' @export
+oat_csv_result_file_analysis_from_DB <- function(db_results, parameters, baseline,
+                                                 measures,PMIN,PMAX,PINC)
+{
+  # Subset the database-mined results at baseline values
+  # Here we have to be careful, as we could get multiple responses for the
+  # baseline if multiple results in the database (multiples were not found in
+  # original spartan)
+  baseline_result <- subset_results_by_param_value_set(parameters, db_results,
+                                                       baseline)
+
+  if(nrow(baseline_result) > 0)
+  {
+    # Check this does not have more than one parameter of interest
+    if(apply(cbind(baseline_result$paramOfInterest),2,function(x) length(unique(x)))>1)
+    {
+      # Only take the baseline for one parameter - the rest will be duplicates
+      baseline_result<-subset(baseline_result,baseline_result$paramOfInterest==parameters[1])
+    }
+
+    all_atest_scores <- perform_aTest_for_all_sim_measures(
+      baseline, baseline_result, baseline_result, measures)
+
+    # Now process each parameter
+    for (p in 1:length(parameters))
+    {
+      # Exp_params is set as baseline, then the value of the parameter
+      # being analysed is adjusted, thus we have a set of parameters with
+      # which we can subset the result file
+      exp_params <- as.character(baseline)
+
+      # List of parameter values for this parameter
+      parameter_value_list <- as.numeric(
+        prepare_parameter_value_list(PMIN, PMAX, PINC, NULL, p))
+
+      # Now iterate through the values in this list
+      #all_atest_scores <- rbind(all_atest_scores,
+      #                          compare_all_values_of_parameter_to_baseline (
+      #                            parameter_value_list, parameters, p, baseline, db_results,
+      #                            exp_params, baseline_result, measures, all_atest_scores))
+
+      all_atest_scores <- compare_all_values_of_parameter_to_baseline (
+                                  parameter_value_list, parameters, p, baseline, db_results,
+                                  exp_params, baseline_result, measures, all_atest_scores)
+    }
+
+    # label the scores
+    colnames(all_atest_scores) <- generate_a_test_results_header(t(parameters),measures)
+
+    return(all_atest_scores)
+  } else {
+    message("No results in the CSV file for simulation at specified baseline
+              values. No analysis performed")
+  }
+}
+
 
 #' Pre-process analysis settings if multiple timepoints are being considered
 #'

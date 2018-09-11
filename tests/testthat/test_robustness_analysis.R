@@ -205,7 +205,7 @@ test_that("oat_csv_result_file_analysis", {
   # read it in
   result <- read.csv(file.path(getwd(),"EgSet_ATests.csv"),header=T,sep=",",check.names=F)
 
-  expect_true(nrow(result)==38)
+  expect_true(nrow(result)==22)
   expect_true(ncol(result)==6)
   expect_false(any(is.na(result)))
 
@@ -234,12 +234,12 @@ test_that("oat_csv_result_file_analysis_overTime", {
 
   # Check content
   result <- read.csv(file.path(getwd(),"EgSet_ATests_12.csv"),header=T,sep=",",check.names=F)
-  expect_true(nrow(result)==38)
+  expect_true(nrow(result)==22)
   expect_true(ncol(result)==6)
   expect_false(any(is.na(result)))
 
   result <- read.csv(file.path(getwd(),"EgSet_ATests_36.csv"),header=T,sep=",",check.names=F)
-  expect_true(nrow(result)==38)
+  expect_true(nrow(result)==22)
   expect_true(ncol(result)==6)
   expect_false(any(is.na(result)))
 
