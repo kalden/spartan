@@ -164,10 +164,13 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                                        MEASURE_SCALE, CSV_FILE_NAME, BASELINE,
                                        PMIN = NULL, PMAX = NULL, PINC = NULL,
                                        PARAMVALS = NULL, TIMEPOINTS = NULL,
-                                       TIMEPOINTSCALE = NULL) {
+                                       TIMEPOINTSCALE = NULL, output_types=c("pdf")) {
 
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
-    if (file.exists(FILEPATH)) {
+
+    # RoboSpartan had issues with checking the filepath existed, so for the moment this check
+    # has been removed
+    #if (file.exists(FILEPATH)) {
       message("Plotting result distribution for each parameter (oat_plotResultDistribution)")
 
       # NEW TO SPARTAN VERSION 2
@@ -220,21 +223,10 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
           # BOXPLOT THE MEASURE
           if (is.null(TIMEPOINTS)) {
 
-            GRAPHFILE <- make_path(c(FILEPATH,
-                                     make_filename(c(PARAMETERS[PARAM],
-                                                     MEASURES[MEASURE],
-                                                     "BP.pdf"))))
-
             GRAPHTITLE <- paste("Distribution of ", MEASURES[MEASURE],
                                 " Responses \n when altering parameter ",
                               PARAMETERS[PARAM], sep = "")
           } else {
-            GRAPHFILE <- make_extension(make_path(c(FILEPATH,
-                                     make_filename(c(PARAMETERS[PARAM],
-                                                     MEASURES[MEASURE],
-                                                     "BP",
-                                                     TIMEPOINTS)))),
-                                                     "pdf")
 
             GRAPHTITLE <- paste("Distribution of ", MEASURES[MEASURE],
                               " Responses \n when altering parameter ",
@@ -243,27 +235,23 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                               sep = "")
           }
 
-          pdf(GRAPHFILE)
+          ggplot(ALLRESULTS, aes(x=ALLRESULTS[,1], y=ALLRESULTS[, MEASURE+1])) +
+            geom_boxplot() + labs(title=GRAPHTITLE,x="Parameter Value",
+                                  y = paste0("Median ", MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
+            theme(plot.title = element_text(hjust = 0.5))
 
-          # GENERATE YLABEL BASED ON PARAMETER MEASURE
-          YLABEL <- paste("Median ", MEASURES[MEASURE], " (",
-                          MEASURE_SCALE[PARAM], ")", sep = "")
-
-          boxplot(ALLRESULTS[, MEASURE + 1] ~ ALLRESULTS[, 1],
-                  ylab = YLABEL, xlab = "Parameter Value",
-                  main = GRAPHTITLE)
-
-          dev.off()
-
-          message(paste("Box Plot Generated and output as ", GRAPHFILE,
-                      sep = ""))
-
+          for(output in output_types)
+          {
+            ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],MEASURES[MEASURE],"_",TIMEPOINTS,"BP.",output)))
+            message(paste0("Box Plots Generated and output as ",
+                          file.path(FILEPATH,paste0(PARAMETERS[PARAM],MEASURES[MEASURE],"_",TIMEPOINTS,"BP.",output))))
+          }
         }
       }
-    } else {
-      message("The directory specified in FILEPATH does not exist.
-            No graph created")
-    }
+    #} else {
+    #  message("The directory specified in FILEPATH does not exist.
+    #        No graph created")
+    #}
   } else {
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
     for (n in 1:length(TIMEPOINTS)) {
