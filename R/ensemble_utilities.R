@@ -49,12 +49,13 @@ generate_ensemble_training_set <- function(emulator, parameters, measures,
 #' @param normalise Whether the predictions generated when testing the
 #' ensemble should be normalised for presenting test results
 #' @param timepoint Simulation timepoint for which an ensemble is being created
+#' @param output_formats File formats in which result graphs should be produced
 #' @return Generated ensemble object
 create_ensemble <- function(ensemble_emulations, all_emulator_predictions,
                             emulator_test_data, measures, emulator_types,
                             pre_normed_mins, pre_normed_maxes,
                             algorithm_settings = NULL, normalise = FALSE,
-                            timepoint = NULL) {
+                            timepoint = NULL, output_formats=c("pdf")) {
 
   # If called in a process where the emulations are being made,
   # algorithm_settings will already exist. If we're making an ensemble from
@@ -91,13 +92,13 @@ create_ensemble <- function(ensemble_emulations, all_emulator_predictions,
       for (m in 1:length(measures)) {
         produce_accuracy_plots_single_measure(
           "Ensemble_Testing", measures[m], unscaled_predictions[, measures[m]],
-          unscaled_simulations[, measures[m]], timepoint = timepoint)
+          unscaled_simulations[, measures[m]], output_formats, timepoint = timepoint)
       }
     } else {
       for (m in 1:length(measures)) {
         produce_accuracy_plots_single_measure(
           "Ensemble_Testing", measures[m], ensemble_predictions[, measures[m]],
-          emulator_test_data[, measures[m]], timepoint = timepoint)
+          emulator_test_data[, measures[m]], output_formats, timepoint = timepoint)
       }
     }
   }

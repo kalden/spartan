@@ -50,6 +50,7 @@
 #' emulators are being created
 #' @param normalised Whether the emulator data has been normalised or not.
 #' Affects how training and test output predictions are displayed
+#' @param output_formats File formats in which result graphs should be produced
 #' @return Emulation objects, bundled into a list, with the required
 #' sampling information to rescale the data these emulations produce if
 #' required
@@ -60,12 +61,27 @@ generate_requested_emulations <- function(model_list, partitioned_data,
                                           parameters, measures,
                                           algorithm_settings = NULL,
                                           timepoint = NULL,
-                                          normalised = FALSE) {
+                                          normalised = FALSE,
+                                          output_formats=c("pdf")) {
 
   # First see whether any of the default settings have been overridden
   # if not provided generate the defaults
   if (is.null(algorithm_settings))
     algorithm_settings <- emulation_algorithm_settings()
+
+  # Quick check that parameters and measures are equal to those in the partitioned
+  # dataset, where features may have been removed if all values were equal
+  # Ideally we should find a better method of doing this
+  if(length(parameters) != length(partitioned_data$parameters))
+  {
+    parameters = partitioned_data$parameters
+    message("Parameters List Updated to that Used in Partitioning, where features may have been removed")
+  }
+  if(length(measures) != length(partitioned_data$measures))
+  {
+    measures = partitioned_data$measures
+    message("Measures List Updated to that Used in Partitioning, where features may have been removed")
+  }
 
   # For a neural nework check that the structure list has been specified
   if ("NNET" %in% model_list & is.null(
@@ -93,7 +109,8 @@ generate_requested_emulations <- function(model_list, partitioned_data,
                                              parameters, measures,
                                              partitioned_data,
                                              algorithm_settings,
-                                             timepoint = timepoint, normalised)
+                                             timepoint = timepoint, normalised,
+                                             output_formats)
 
         # Add the sampled mins and maxes to help rescaling
         model_fit$pre_normed_mins <- partitioned_data$pre_normed_mins
@@ -118,7 +135,8 @@ generate_requested_emulations <- function(model_list, partitioned_data,
               rbind(partitioned_data$pre_normed_maxes))
             produce_accuracy_plots_all_measures(
               paste(model_list[model_index], "_TestSet", sep = ""), measures,
-              unscaled_predictions, unscaled_simulations, timepoint)
+              unscaled_predictions, unscaled_simulations, output_formats,
+              timepoint)
 
             #produce_accuracy_plots_all_measures(
             #  paste(model_list[model_index], "_TestSet_Normed", sep = ""),
@@ -129,7 +147,7 @@ generate_requested_emulations <- function(model_list, partitioned_data,
             produce_accuracy_plots_all_measures(
               paste(model_list[model_index], "_TestSet", sep = ""),
               measures, emulation_predictions, partitioned_data$testing,
-              timepoint)
+              output_formats, timepoint)
           }
         }
 

@@ -89,31 +89,36 @@ create_abc_settings_object <- function(parameters, measures, built_ensemble,
 #' explored using ABC
 #' @param sampleMaxes Maximum value of the range over which each parameter was
 #' explored using ABC
+#' @param output_formats File formats in which result graphs should be produced
 #'
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_histogram geom_density scale_x_continuous scale_y_continuous labs theme element_text ggsave geom_point ggtitle geom_abline
 #'
 graph_Posteriors_All_Parameters <- function(abc_resultset, parameters,
-                                            sampleMins, sampleMaxes) {
+                                            sampleMins, sampleMaxes, output_formats=c("pdf")) {
   for (p in 1:length(parameters)) {
 
     # Value for each parameter in each column, just need to plot the
     # density of that set
     GRAPHTITLE <- "Parameter Value Search Using \n Approximate Bayesian
       Computation"
-    GRAPH <- ggplot(data.frame(abc_resultset$param[, p]),
-                    aes(abc_resultset$param[, p])) +
-      geom_density() +
-      scale_x_continuous(limits = c(sampleMins[p], sampleMaxes[p])) +
-      labs(x = paste(parameters[p], " Value", sep = ""),
-           y = "Density", title = GRAPHTITLE,
-           subtitle = paste("Parameter: ", parameters[p], sep = "")) +
-      theme(axis.title = element_text(size = 11),
-            axis.text = element_text(size = 11),
-            plot.title = element_text(size = 11, hjust = 0.5),
-            plot.subtitle = element_text(size = 11, hjust = 0.5))
 
-    ggsave(paste(parameters[p], ".pdf", sep = ""),
-           plot = GRAPH, width = 4, height = 4)
+    for(out_type in output_formats)
+    {
+      GRAPH <- ggplot(data.frame(abc_resultset$param[, p]),
+                      aes(abc_resultset$param[, p])) +
+        geom_density() +
+        scale_x_continuous(limits = c(sampleMins[p], sampleMaxes[p])) +
+        labs(x = paste(parameters[p], " Value", sep = ""),
+             y = "Density", title = GRAPHTITLE,
+             subtitle = paste("Parameter: ", parameters[p], sep = "")) +
+        theme(axis.title = element_text(size = 11),
+              axis.text = element_text(size = 11),
+              plot.title = element_text(size = 11, hjust = 0.5),
+              plot.subtitle = element_text(size = 11, hjust = 0.5))
+
+      ggsave(paste0(parameters[p], ".",out_type),
+             plot = GRAPH, width = 4, height = 4)
+    }
   }
 }

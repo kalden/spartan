@@ -250,6 +250,7 @@ pcor.test <- function(x, y, z, use = "mat", calc_method ="p", na.rm = TRUE) {
   #	   all the missing samples from the whole dataset.
   #	   Default is "T".
 
+  print("HERE")
   x <- c(x)
   y <- c(y)
   z <- as.data.frame(z, check.names = FALSE)
@@ -303,6 +304,8 @@ pcor.test <- function(x, y, z, use = "mat", calc_method ="p", na.rm = TRUE) {
       statistic <- pcor * sqrt(val_to_sqrt_l / val_to_sqrt_r)
       p.value <- 2 * pnorm(-abs(statistic))
     }
+
+    print("END")
 
     data.frame(estimate = pcor, p.value = p.value, statistic = statistic,
                n = n, gn = gn, Method = p.method, Use = p.use,

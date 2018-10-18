@@ -5,22 +5,26 @@
 #' @param measure The simulation output response being plotted
 #' @param model_predictions Predicted dataset
 #' @param observed_data Observed dataset (testing or validation)
+#' @param output_format File formats in which graphs should be produced
 #' @param timepoint If using multiple timepoints, the timepoint for which the
 #' emulator has been created
 produce_accuracy_plots_single_measure <- function(technique, measure,
                                                   model_predictions,
                                                   observed_data,
+                                                  output_format=c("pdf"),
                                                   timepoint = NULL) {
-  if (is.null(timepoint))
-    graph_file_name <- paste(technique, "_", measure, ".pdf", sep = "")
-  else
-    graph_file_name <- paste(technique, "_", measure, "_", timepoint, ".pdf",
-                           sep = "")
+  for(out_type in output_format)
+  {
+    if (is.null(timepoint))
+      graph_file_name <- paste0(technique, "_", measure, ".",out_type)
+    else
+      graph_file_name <- paste0(technique, "_", measure, "_", timepoint, ".",out_type)
 
-  plot_compare_sim_observed_to_model_prediction(
-    observed_data, model_predictions, technique, measure,
-    meanSquaredError(model_predictions, observed_data), graph_file_name,
-    timepoint)
+    plot_compare_sim_observed_to_model_prediction(
+      observed_data, model_predictions, technique, measure,
+      meanSquaredError(model_predictions, observed_data), graph_file_name,
+      timepoint,out_type)
+  }
 }
 
 
@@ -33,11 +37,13 @@ produce_accuracy_plots_single_measure <- function(technique, measure,
 #' @param measures All simulation output responses to plot
 #' @param model_predictions Predicted dataset
 #' @param observed_data Observed dataset (testing or validation)
+#' @param output_format File formats in which graphs should be produced
 #' @param timepoint If using multiple timepoints, the timepoint for which the
 #' emulator has been created
 produce_accuracy_plots_all_measures <- function(technique, measures,
                                                 model_predictions,
                                                 observed_data,
+                                                output_format=c("pdf"),
                                                 timepoint=NULL) {
   for (m in 1:length(measures)) {
     # Note model_predictions index is just m, not measures[m], the
@@ -45,6 +51,7 @@ produce_accuracy_plots_all_measures <- function(technique, measures,
     produce_accuracy_plots_single_measure(technique, measures[m],
                                           model_predictions[, m],
                                           observed_data[, measures[m]],
+                                          output_format,
                                           timepoint)
   }
 }
@@ -61,10 +68,12 @@ produce_accuracy_plots_all_measures <- function(technique, measures,
 #' @param graph_file_name Name to give the produced PDF plot
 #' @param timepoint If using multiple timepoints, the timepoint for which the
 #' emulator has been created
+#' @param output_format File format in which this graph is being produced
 plot_compare_sim_observed_to_model_prediction <- function(observed, predicted,
                                                           technique, measure,
                                                           mse, graph_file_name,
-                                                          timepoint = NULL) {
+                                                          timepoint = NULL,
+                                                          output_format) {
   plot_data <- data.frame(predicted, observed)
 
   if (is.null(timepoint))
@@ -97,8 +106,6 @@ plot_compare_sim_observed_to_model_prediction <- function(observed, predicted,
     scale_x_continuous(limits = c(axis_minimum, axis_limit)) +
     scale_y_continuous(limits = c(axis_minimum, axis_limit))
 
-  ggplot2::ggsave(graph_file_name, device = "pdf")
+  ggplot2::ggsave(graph_file_name, device = output_format)
 
-  # KA: Checking graph error - going to store the output data so the graphs can be recreated outside spartan
-  #save(plot_data, file=paste(graph_file_name,".RDa",sep=""))
 }

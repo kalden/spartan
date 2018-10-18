@@ -545,12 +545,20 @@ calculate_prcc_for_all_measures <- function(MEASURES, COEFFPARAMCOL, COEFFDATA,
 {
   PARAM_RESULTS <- NULL
   for (l in 1:length(MEASURES)) {
+    #print(MEASURES[l])
+    #print(LHCRESULTFILE[,MEASURES[l]])
     COEFFMEASURERESULT <- as.numeric(LHCRESULTFILE[, MEASURES[l]])
     PARAMCOEFF <- pcor.test(COEFFPARAMCOL, COEFFMEASURERESULT,
                           COEFFDATA, calc_method=cor_calc_method, use=prcc_method)
+    #print(PARAMCOEFF)
     if(!is.null(PARAMCOEFF))
+    {
+      #print(PARAMCOEFF$estimate)
+      #print(PARAMCOEFF$p.value)
       PARAM_RESULTS <- cbind(PARAM_RESULTS, PARAMCOEFF$estimate,
                             PARAMCOEFF$p.value)
+      #print(PARAM_RESULTS)
+    }
     else {
       message("Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
       return(NULL)
