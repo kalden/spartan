@@ -212,7 +212,7 @@ efast_sd <- function(RESULTSARRAY, omi, MI, OUTMEASURES, NUMPARAMS, NUMCURVES) {
 #' Internal function used in calculating the partitions of variance in eFAST
 #'
 #' @keywords internal
-efast_setfreq <- function(NUMPARAMS, omci_max, PARAMNUM) {
+efast_setfreq <- function(NUMPARAMS ,omci_max, PARAMNUM) {
 
   omci <- array(0, dim = c(1, NUMPARAMS, 1))
 

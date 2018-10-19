@@ -274,17 +274,18 @@ efast_get_overall_medians_overTime  <-  function(
 #' e.g. "Hours"
 #' @param check_done If using multiple timepoints, whether data entry has been
 #' checked
+#' @param output_types Files types of graph to produce (pdf,png,bmp etc)
 #'
 #' @export
 #'
 efast_run_Analysis  <-  function(
   FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
   TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE) {
+  TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE, output_types=c("pdf")) {
 
-  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  #input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
-  if(check_input_args(input_check$names, input_check$arguments)) {
+  #if(check_input_args(input_check$names, input_check$arguments)) {
 
     if (is.null(TIMEPOINTS)) {
       # maximum number of fourier coefficients that may be retained in
@@ -293,7 +294,9 @@ efast_run_Analysis  <-  function(
       MI <- 4
       # wanted no. of sample points
       wanted_n <- NUMSAMPLES * length(PARAMETERS) * NUMCURVES
-      omi <- floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
+      # OMI changed October 2018 to accommodate greater number of parameters
+      #omi <- floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
+      omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / (length(PARAMETERS)/3))
 
       message("Producing eFAST Analysis (efast_run_analysis)")
 
@@ -324,16 +327,16 @@ efast_run_Analysis  <-  function(
         if (GRAPH_FLAG)
           efast_graph_Results(
             FILEPATH, PARAMETERS, sensitivities$si, sensitivities$sti, sensitivities$errors_si,
-            sensitivities$errors_sti, MEASURES, GRAPHTIME, TIMEPOINTSCALE)
+            sensitivities$errors_sti, MEASURES, GRAPHTIME, TIMEPOINTSCALE, output_types)
 
 
     } else {
       efast_run_Analysis_overTime(
         FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
-        TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
+        TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS, TIMEPOINTSCALE, output_types)
 
     }
-  }
+  #}
 }
 
 #' Runs the eFAST Analysis for a set of results stored in a database

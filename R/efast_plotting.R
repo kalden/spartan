@@ -11,63 +11,38 @@
 #' @param MEASURES Simulation output measures
 #' @param TIMEPOINT Timepoint being analysed
 #' @param TIMEPOINTSCALE Scale in which the timepoints are measures
+#' @param output_types Files types of graph to produce (pdf,png,bmp etc)
 #'
 #' @export
 efast_graph_Results <- function(RESULTS_FILE_PATH, PARAMETERS, si, sti,
                                 errors_si, errors_sti, MEASURES, TIMEPOINT,
-                                TIMEPOINTSCALE) {
-  if (requireNamespace("gplots", quietly = TRUE)) {
+                                TIMEPOINTSCALE, output_types=c("pdf")) {
 
-    colors <- c("black", "grey50")
+    for (MEASURE in 1:length(MEASURES)) {
 
-    for (MEASURE in seq(length(MEASURES))) {
+      # October 2018 - rewritten to use ggplot2
+      si_results<-data.frame(rep("Si",length(PARAMETERS)),parameters,si[,,MEASURE], (as.numeric(si[,,MEASURE]) + as.numeric(errors_si[,MEASURE])),stringsAsFactors = FALSE)
+      colnames(si_results)<-c("Statistic","Parameter","Sensitivity","Error")
+      sti_results<-data.frame(rep("STi",length(PARAMETERS)),parameters,sti[,,MEASURE], (as.numeric(sti[,,MEASURE]) + as.numeric(errors_sti[,MEASURE])),stringsAsFactors = FALSE)
+      colnames(sti_results)<-c("Statistic","Parameter","Sensitivity","Error")
 
-      if (is.null(TIMEPOINT)) {
-        GRAPHFILE <- paste(RESULTS_FILE_PATH, "/", MEASURES[MEASURE], ".pdf",
-                           sep = "")
-        GRAPHTITLE <- paste("Partitioning of Variance in Simulation Results
-                            Measure: ", MEASURES[MEASURE],
-                            sep = "")
-      } else {
-        GRAPHFILE <- paste(RESULTS_FILE_PATH, "/", MEASURES[MEASURE], "_",
-                           TIMEPOINT, ".pdf", sep = "")
-        GRAPHTITLE <- paste("Partitioning of Variance in Simulation Results
-                            Measure: ", MEASURES[MEASURE],
-                            ". Timepoint: ", TIMEPOINT, " ",
-                            TIMEPOINTSCALE, sep = "")
+      # Merge
+      graph_frame <- rbind(si_results,sti_results)
+
+      for(out in output_types)
+      {
+        ggplot2::ggplot(data=graph_frame, aes(x=Parameter, y=as.numeric(Sensitivity), fill=Statistic)) +
+          geom_bar(stat="identity", position=position_dodge()) + scale_fill_manual("", values = c("Si" = "black", "STi" = "darkgray")) +
+          theme(axis.text.x = element_text(angle = 65, hjust = 1, size=rel(0.75))) +
+          ggtitle(paste0("Partitioning of Variance in Simulation Results\n Measure: ",MEASURES[MEASURE])) + theme(plot.title = element_text(hjust = 0.5, size=rel(0.75))) +
+          geom_errorbar(aes(ymin=as.numeric(Sensitivity), ymax=as.numeric(Error)), width=.2, position=position_dodge(.9)) + ylim(0,1) +
+          xlab("Parameter")+ylab("Sensitivity")
+
+        ggsave(file.path(RESULTS_FILE_PATH,paste0(MEASURES[MEASURE],".",out)))
       }
-
-      pdf(GRAPHFILE)
-      labelspacing <- seq(2, (length(PARAMETERS) * 3), 3)
-
-      # DATA TO GRAPH RETRIEVES THE PARAMETERS,
-      # si AND sti TO BE GRAPHED FROM THE MAIN RESULT SET
-      data_to_graph <- data.frame(cbind(si[, , MEASURE], sti[, , MEASURE]),
-                                check.names = FALSE)
-
-      # CONSTRUCT THE ERROR BAR
-      high_si <- data_to_graph[, 1] + errors_si[, MEASURE]
-      high_sti <- data_to_graph[, 2] + errors_sti[, MEASURE]
-      # COMBINE
-      errors_high <- cbind(high_si, high_sti)
-
-      colnames(data_to_graph) <- c("Si", "STi")
-      par(mar = c(9, 4, 4, 2) + 0.1)
-      gplots::barplot2(t(data_to_graph), names.arg = PARAMETERS, beside = TRUE,
-                       main = GRAPHTITLE,
-                       ylim = c(0, 1.0),
-                       ylab = "eFAST Sensitivity", col = colors, xaxt = "n",
-                       plot.ci = TRUE, ci.u = t(errors_high),
-                       ci.l = t(data_to_graph))
-
-      # TEXT SIZE CONTROLLED BY CEX.AXIS
-      axis(1, at = labelspacing, labels = PARAMETERS, las = 2, cex.axis = 0.6)
-      legend("topleft", title = NULL, c("Si", "STi"), fill = colors)
-
-      dev.off()
     }
     message(paste("Graphs Output to ", RESULTS_FILE_PATH, sep = ""))
-  }
+
 }
 
 #' Plot the Si value for all parameters for multiple simulation timepoints
