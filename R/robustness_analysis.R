@@ -306,11 +306,11 @@ oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
 
   # Version 3.1 - added pre-execution error checks
   # Get the provided function arguments
-  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
+  #input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   #print(input_check)
 
   # If recursively called when doing timepoints, we don't need to do the check again
-  if(check_input_args(input_check$names, input_check$arguments)) {
+  #if(check_input_args(input_check$names, input_check$arguments)) {
       if (is.null(TIMEPOINTS)) {
         # From Spartan 2 simulation responses read from CSV in format: parameter
         # values (columns) followed by sim output measures. First function creates
@@ -368,7 +368,7 @@ oat_csv_result_file_analysis <- function(FILEPATH, CSV_FILE_NAME, PARAMETERS,
           ATESTRESULTFILENAME, PMIN, PMAX, PINC, PARAMVALS, TIMEPOINTS,
           TIMEPOINTSCALE)
       }
-    }
+    #}
 }
 
 

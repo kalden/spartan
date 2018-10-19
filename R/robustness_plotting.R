@@ -6,6 +6,7 @@
 #' @inheritParams oat_processParamSubsets
 #' @inheritParams oat_csv_result_file_analysis
 #' @param ATESTSIGLEVEL The A-Test determines if there is a large difference between two sets if the result is greater than 0.21 either side of the 0.5 line. Should this not be suitable, this can be changed here
+#' @param output_types Files types of graph to produce (pdf,png,bmp etc)
 #'
 #' @export
 #'
@@ -15,7 +16,8 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
                                          BASELINE, PMIN = NULL, PMAX = NULL,
                                          PINC = NULL, PARAMVALS = NULL,
                                          TIMEPOINTS = NULL,
-                                         TIMEPOINTSCALE = NULL) {
+                                         TIMEPOINTSCALE = NULL,
+                                         output_types=c("pdf")) {
 
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
     # NOTE THAT OUTPUT_FOLDER AND BASELINE PARAMETERS ADDED IN SPARTAN 2.0
@@ -61,65 +63,37 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
 
         }
 
-        # Where the resulting graph should go
-        if (is.null(TIMEPOINTS)) {
-          GRAPHFILE <- make_path(c(FILEPATH,
-                                   make_extension(PARAMETERS[PARAM], "pdf")))
-          GRAPHTITLE <- paste("A-Test Scores when adjusting parameter \n",
-                              PARAMETERS[PARAM], sep = "")
-        } else {
-          GRAPHFILE <- make_path(c(FILEPATH,
-                                   make_extension(
-                                     make_filename(
-                                       c(PARAMETERS[PARAM],
-                                         TIMEPOINTS)), "pdf")))
-
-          GRAPHTITLE <- paste("A-Test Scores when adjusting parameter \n",
-                              PARAMETERS[PARAM], " at Timepoint: ",
-                              TIMEPOINTS, " ", TIMEPOINTSCALE, sep = "")
+        graph_frame<-data.frame()
+        for(measure in 1:length(MEASURES))
+        {
+          measure_set<-data.frame(rep(MEASURES[measure],nrow(PARAM_ATESTS[PARAMETERS[PARAM]])),PARAM_ATESTS[PARAMETERS[PARAM]],PARAM_ATESTS[paste0("ATest",MEASURES[measure])])
+          colnames(measure_set)<-c("Measure","ParameterValue","ATestScore")
+          graph_frame<-rbind(graph_frame,measure_set)
         }
 
-        pdf(GRAPHFILE, width = 12, height = 7)
-        par(xpd = NA, mar = c(4, 4, 4, 17))
+        for(out in output_types)
+        {
+          # Now we can plot this
+          ggplot2::ggplot(data=graph_frame, aes(x=ParameterValue, y=ATestScore, group=Measure)) +
+            geom_line(aes(color=Measure)) + geom_point(aes(shape=Measure,color=Measure)) + theme(legend.position="bottom") + xlab("Parameter Value")+ylab("A-Test Score") + ylim(0,1) +
+            theme(axis.text.x = element_text(angle = 65, hjust = 1, size=rel(0.95))) +
+            ggtitle(paste0("A-Test Scores when adjusting parameter\n",PARAMETERS[PARAM])) + theme(plot.title = element_text(hjust = 0.5, size=rel(0.90))) +
+            geom_hline(yintercept=0.5, linetype="dashed", color="black") +
+            geom_hline(yintercept=0.5 + ATESTSIGLEVEL, linetype="dashed", color="black") +
+            geom_hline(yintercept=0.5 - ATESTSIGLEVEL, linetype="dashed", color="black") +
+            scale_x_continuous(breaks = seq(min(graph_frame$ParameterValue), max(graph_frame$ParameterValue), by = PINC[PARAM])) +
+            annotate("text",x=(max(val_list) + min(val_list))/2, y=0.52, label="No Difference", color="blue", size=3) +
+            annotate("text",x=(max(val_list) + min(val_list))/2, y=(0.5 + ATESTSIGLEVEL+ 0.02), label="Large Difference", color="blue",size=3) +
+            annotate("text",x=(max(val_list) + min(val_list))/2, y=(0.5 - ATESTSIGLEVEL- 0.02), label="Large DIfference", color="blue", size=3)
 
-        # NOW PLOT THE MEASURES, START WITH THE FIRST
-        MEASURELABEL <- paste("ATest", MEASURES[1], sep = "")
-        plot(PARAM_ATESTS[[PARAMETERS[PARAM]]], PARAM_ATESTS[, MEASURELABEL],
-             type = "o", main = GRAPHTITLE,
-             lty = 1, ylim = c(0, 1), pch = 1, xlab = "Parameter Value",
-             ylab = "A Test Score", xaxt = "n")
 
-        if (length(MEASURES) > 1) {
-          # NOW ADD THE REST OF THE MEASURES
-          for (l in 2:length(MEASURES)) {
-            MEASURELABEL <- paste("ATest", MEASURES[l], sep = "")
-            lines(PARAM_ATESTS[[PARAMETERS[PARAM]]],
-                  PARAM_ATESTS[, MEASURELABEL],
-                  type = "o", lty = 5, pch = l)
-          }
+            if(is.null(TIMEPOINTS))
+            {
+              ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],".",out)))
+            } else {
+              ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],"_",TIMEPOINTS,".",out)))
+            }
         }
-
-        axis(1, val_list)
-        legend(par("usr")[2], par("usr")[4], title = "Measures", MEASURES,
-               pch = 1:length(MEASURES), cex = 0.7, ncol = 1)
-        par(xpd = FALSE)
-
-        abline(a = 0.5, b = 0, lty = 4)
-        text_pos <- (max(val_list) + min(val_list)) / 2
-        text(text_pos, 0.52, "no difference",
-             col = "blue")
-        a_abline <- 0.5 + ATESTSIGLEVEL
-        abline(a = a_abline, b = 0, lty = 4)
-        text(text_pos, (0.5 + ATESTSIGLEVEL
-                                                    + 0.02),
-             "large difference", col = "blue")
-        a_abline <- 0.5 - ATESTSIGLEVEL
-        abline(a = a_abline, b = 0, lty = 4)
-        text(text_pos, (0.5 - ATESTSIGLEVEL
-                                                    - 0.02),
-             "large difference", col = "blue")
-
-        dev.off()
       }
     } else {
       message("The directory specified in FILEPATH does not exist.
