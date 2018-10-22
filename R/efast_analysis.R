@@ -295,8 +295,10 @@ efast_run_Analysis  <-  function(
       # wanted no. of sample points
       wanted_n <- NUMSAMPLES * length(PARAMETERS) * NUMCURVES
       # OMI changed October 2018 to accommodate greater number of parameters
-      #omi <- floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
-      omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / (length(PARAMETERS)/3))
+      omi <- floor( ( (wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
+
+      # In sampling, this change caused undesirable effects (below), so changed back
+      # omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / (length(PARAMETERS)/3))
 
       message("Producing eFAST Analysis (efast_run_analysis)")
 

@@ -370,7 +370,10 @@ calculate_medians_for_all_measures <- function(sim_params, param_result,
   else
     summary_sim_row <- NULL
 
+  #print(paste0("Measures: ",measures))
+
   for (l in 1:length(measures)) {
+    #print(param_result[[measures[l]]])
     summary_sim_row <- cbind(summary_sim_row,
                              median(param_result[[measures[l]]]))
   }

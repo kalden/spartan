@@ -138,7 +138,8 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                                        MEASURE_SCALE, CSV_FILE_NAME, BASELINE,
                                        PMIN = NULL, PMAX = NULL, PINC = NULL,
                                        PARAMVALS = NULL, TIMEPOINTS = NULL,
-                                       TIMEPOINTSCALE = NULL, output_types=c("pdf")) {
+                                       TIMEPOINTSCALE = NULL, output_types=c("pdf"),
+                                       outliers=FALSE) {
 
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
 
@@ -209,10 +210,21 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                               sep = "")
           }
 
+          ALLRESULTS$chemoLowerLinearAdjust <-as.factor(ALLRESULTS$chemoLowerLinearAdjust)
+          if(!outliers)
+          {
+            outlier_flag=NA
+          } else {
+            outlier_flag = 1
+          }
+
           ggplot(ALLRESULTS, aes(x=ALLRESULTS[,1], y=ALLRESULTS[, MEASURE+1])) +
-            geom_boxplot() + labs(title=GRAPHTITLE,x="Parameter Value",
+            geom_boxplot(notch=TRUE, outlier.shape = outlier_flag) + labs(title=GRAPHTITLE,x="Parameter Value",
                                   y = paste0("Median ", MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
-            theme(plot.title = element_text(hjust = 0.5))
+            theme(plot.title = element_text(hjust = 0.5)) +
+            stat_summary(fun.y=median, geom="point", shape=23, size=2)
+
+
 
           for(output in output_types)
           {

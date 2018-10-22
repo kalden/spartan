@@ -115,8 +115,11 @@ generate_efast_parameter_sets <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
 
   # Computation of the frequency for the group
   # of interest omi and the # of sample points NUMSAMPLES (here N=NUMSAMPLES)
-  #omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
-  omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / (length(PARAMETERS)/3))
+  omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / length(PARAMETERS))
+
+  # This was the fix I put in for Paul's 30 parameters, but has not worked as desired
+  # omi <- floor(((wanted_n / NUMCURVES) - 1) / (2 * MI) / (length(PARAMETERS)/3))
+
   NUMSAMPLES <- 2 * MI * omi + 1
   if (NUMSAMPLES * NUMCURVES < 65)
     message("Error: sample size must be >= 65 per factor")
@@ -130,8 +133,10 @@ generate_efast_parameter_sets <- function(FILEPATH, NUMCURVES, NUMSAMPLES,
     # omci(i), i=1:k-1, contains the set of frequencies
     # to be used by the complementary group.
 
-    #omci <- efast_setfreq(length(PARAMETERS), omi / 2 / MI, PARAMNUM)
-    omci <- efast_setfreq(length(PARAMETERS), length(PARAMETERS), PARAMNUM)
+    omci <- efast_setfreq(length(PARAMETERS), omi / 2 / MI, PARAMNUM)
+
+    # Line used to try ti increase number of frequencies for large number of parameters, but has caused undesirable results
+    #omci <- efast_setfreq(length(PARAMETERS), length(PARAMETERS), PARAMNUM)
     OM <- array(0, dim = c(1, length(PARAMETERS), 1))
 
     # Loop over the NUMCURVES search curves.
