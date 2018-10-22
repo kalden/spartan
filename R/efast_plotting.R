@@ -18,16 +18,18 @@ efast_graph_Results <- function(RESULTS_FILE_PATH, PARAMETERS, si, sti,
                                 errors_si, errors_sti, MEASURES, TIMEPOINT,
                                 TIMEPOINTSCALE, output_types=c("pdf")) {
 
+
     for (MEASURE in 1:length(MEASURES)) {
 
       # October 2018 - rewritten to use ggplot2
-      si_results<-data.frame(rep("Si",length(PARAMETERS)),parameters,si[,,MEASURE], (as.numeric(si[,,MEASURE]) + as.numeric(errors_si[,MEASURE])),stringsAsFactors = FALSE)
+      si_results<-data.frame(rep("Si",length(PARAMETERS)),PARAMETERS,si[,,MEASURE], (as.numeric(si[,,MEASURE]) + as.numeric(errors_si[,MEASURE])),stringsAsFactors = FALSE)
       colnames(si_results)<-c("Statistic","Parameter","Sensitivity","Error")
-      sti_results<-data.frame(rep("STi",length(PARAMETERS)),parameters,sti[,,MEASURE], (as.numeric(sti[,,MEASURE]) + as.numeric(errors_sti[,MEASURE])),stringsAsFactors = FALSE)
+      sti_results<-data.frame(rep("STi",length(PARAMETERS)),PARAMETERS,sti[,,MEASURE], (as.numeric(sti[,,MEASURE]) + as.numeric(errors_sti[,MEASURE])),stringsAsFactors = FALSE)
       colnames(sti_results)<-c("Statistic","Parameter","Sensitivity","Error")
 
       # Merge
       graph_frame <- rbind(si_results,sti_results)
+      print(graph_frame)
 
       for(out in output_types)
       {
