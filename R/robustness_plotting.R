@@ -210,7 +210,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                               sep = "")
           }
 
-          ALLRESULTS$chemoLowerLinearAdjust <-as.factor(ALLRESULTS$chemoLowerLinearAdjust)
+          ALLRESULTS[PARAMETERS[PARAM]] <-as.factor(as.matrix(ALLRESULTS[PARAMETERS[PARAM]]))
           if(!outliers)
           {
             outlier_flag=NA
@@ -223,8 +223,6 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                                   y = paste0("Median ", MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
             theme(plot.title = element_text(hjust = 0.5)) +
             stat_summary(fun.y=median, geom="point", shape=23, size=2)
-
-
 
           for(output in output_types)
           {
