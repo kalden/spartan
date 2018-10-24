@@ -394,11 +394,14 @@ calculate_medians_for_all_measures <- function(sim_params, param_result,
 #' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
 #' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
 #' @param check_done If multiple timepoints, whether the input has been checked
+#' @param write_csv_files Whether results should be output to CSV file. Used with spartanDB
+#' @return If no CSV file output, PRCC values returned as an R object
 #' @export
 #'
 lhc_generatePRCoEffs <- function(
   FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE,
-  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, cor_calc_method=c("s"), check_done = FALSE) {
+  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, cor_calc_method=c("s"), check_done = FALSE,
+  write_csv_files = TRUE) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
 
@@ -414,10 +417,17 @@ lhc_generatePRCoEffs <- function(
       COEFFRESULTS <- calculate_prccs_all_parameters(PARAMETERS, lhc_result_file,
                                                      MEASURES, cor_calc_method)
 
-      write_data_to_csv(COEFFRESULTS,file.path(FILEPATH,CORCOEFFSOUTPUTFILE),row_names=TRUE)
-
-      message(paste("File of PRCCs output to ", file.path(FILEPATH,CORCOEFFSOUTPUTFILE),
-                    sep=""))
+      if(write_csv_files)
+      {
+        write_data_to_csv(COEFFRESULTS,file.path(FILEPATH,CORCOEFFSOUTPUTFILE),row_names=TRUE)
+        message(paste("File of PRCCs output to ", file.path(FILEPATH,CORCOEFFSOUTPUTFILE),
+                      sep=""))
+      }
+      else
+      {
+        message("Calculated PRCCs returned as R Object")
+        return(COEFFRESULTS)
+      }
 
     } else {
       lhc_generatePRCoEffs_overTime(

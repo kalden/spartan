@@ -434,15 +434,12 @@ dataset_precheck <- function(dataset, parameters, measures)
 #' @export
 normalise_dataset <- function(dataset, sample_mins, sample_maxes, parameters) {
 
-  print("In Normalise")
-  print(head(dataset))
-  print("Next")
   mins <- apply(dataset, 2, min)
   maxs <- apply(dataset, 2, max)
 
   # we want to override the parameter bounds with those used in sampling
-  mins[parameters] <- sample_mins
-  maxs[parameters] <- sample_maxes
+  mins[parameters] <- sample_mins[parameters]
+  maxs[parameters] <- sample_maxes[parameters]
 
   # Normalise data
   scaled <- as.data.frame(scale(dataset, center = mins, scale = maxs - mins))

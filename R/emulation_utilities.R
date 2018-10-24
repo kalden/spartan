@@ -128,13 +128,9 @@ generate_emulator_model <- function(technique, parameters, measures, dataset,
     # Make the formula
     model_formula <- generate_model_formula(parameters, measures[m])
 
-    print(model_formula)
-    print(technique)
-    print(head(dataset$training[,c(parameters,measures[m])]))
     if (technique == "SVM") {
       model_fit <- e1071::svm(
         model_formula, data = dataset$training[, c(parameters, measures[m])])
-      print("Gets this Far")
       # Stats for the training fit:
       model_training_fit <- predict(model_fit,
                                   newdata = dataset$training[, parameters])
@@ -249,39 +245,59 @@ generate_emulator_model <- function(technique, parameters, measures, dataset,
 emulator_predictions <- function(emulation, parameters, measures,
                                  data_to_predict, normalise=FALSE,
                                  normalise_result = FALSE) {
-  if (normalise) {
-    # We need to normalise the parameters the user has sent in:
-    data_to_predict <- normalise_dataset(data_to_predict,
-                                       emulation$pre_normed_mins[parameters],
-                                       emulation$pre_normed_maxes[parameters],
-                                       parameters)
 
-    # Normalise returns an object with scaled data, mins and maxes. To keep
-    # consistency get rid of the mins and maxes
-    data_to_predict <- data_to_predict$scaled
-  }
+  tryCatch({
+    # October 2018 - This seems to only work with one emulation (as the docs say it should)
+    # Yet the code below does say this will work with multiple emulators, yet it doesn't
+    # So a check has been put on this to make sure one emulator is specified
+    if(length(emulation$emulators)==1)
+    {
+
+      if (normalise) {
+        # We need to normalise the parameters the user has sent in:
+        data_to_predict <- normalise_dataset(data_to_predict,
+                                           emulation$pre_normed_mins[parameters],
+                                           emulation$pre_normed_maxes[parameters],
+                                           parameters)
+
+        # Normalise returns an object with scaled data, mins and maxes. To keep
+        # consistency get rid of the mins and maxes
+        data_to_predict <- data_to_predict$scaled
+      }
 
 
-  predictions <- NULL
-  # Run this for all emulators in the object
-  for (e in 1:length(emulation$emulators)) {
-    model_predictions <- generate_predictions_from_emulator(
-      emulation$emulators[[e]], parameters, measures, data_to_predict)
-    predictions <- cbind(
-      predictions, extract_predictions_from_result_list(
-        model_predictions, emulation$emulators[[e]]$type, measures))
-  }
+      predictions <- NULL
+      # Run this for all emulators in the object
+      for (e in 1:length(emulation$emulators)) {
+        model_predictions <- generate_predictions_from_emulator(
+          emulation$emulators[[e]], parameters, measures, data_to_predict)
+        predictions <- cbind(
+          predictions, extract_predictions_from_result_list(
+            model_predictions, emulation$emulators[[e]]$type, measures))
+      }
 
-  # Now we need to scale the predictions back,  if these were normalised
-  if (normalise_result)  {
-    # rbind used to get the mins and maxes into the correct format
-    # (compatible with all other calls to this function)
-    predictions <- denormalise_dataset(
-      predictions, rbind(emulation$pre_normed_mins[measures]),
-      rbind(emulation$pre_normed_maxes[measures] ))
-  }
+      # Now we need to scale the predictions back,  if these were normalised
+      if (normalise_result)  {
+        # rbind used to get the mins and maxes into the correct format
+        # (compatible with all other calls to this function)
+        predictions <- denormalise_dataset(
+          predictions, rbind(emulation$pre_normed_mins[measures]),
+          rbind(emulation$pre_normed_maxes[measures] ))
+      }
 
-  return(predictions)
+      return(predictions)
+    }
+    else
+    {
+      stop()
+    }
+  }, error = function(e)
+  {
+    message("Error in Generating Predictions")
+    message("Have you made sure you specify only one emulator for this prediction method?")
+    message("Method Terminated")
+    print(e)
+  })
 }
 
 #' Internal function to generate predictions from an emulator
@@ -301,6 +317,7 @@ generate_predictions_from_emulator <- function(emulator, parameters, measures,
   # Note this receives a list of emulators,  one for each simulation response
   # Thus this will return a list of predicted responses,  necessary for making
   # the ensemble
+
   predictions_all_measures <- vector("list", length(measures))
 
   for (m in 1:length(measures)) {
@@ -323,7 +340,7 @@ generate_predictions_from_emulator <- function(emulator, parameters, measures,
     else if (technique == "SVM") {
       predictions <- predict(measure_emulation,
                              as.matrix(data_to_predict[, parameters]))
-    }
+      }
     else if (technique == "GLM") {
       predictions <- stats::predict.lm(measure_emulation,
                                        newdata = data_to_predict[, parameters])

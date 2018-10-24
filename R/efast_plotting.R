@@ -29,7 +29,6 @@ efast_graph_Results <- function(RESULTS_FILE_PATH, PARAMETERS, si, sti,
 
       # Merge
       graph_frame <- rbind(si_results,sti_results)
-      print(graph_frame)
 
       for(out in output_types)
       {

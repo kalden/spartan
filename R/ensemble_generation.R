@@ -155,6 +155,7 @@ generate_ensemble_from_existing_emulations <-
   # Add on the total from all emulation creation
   time.taken <- time.taken + generation_time
 
+
   # Build the ensemble package for saving and return
   # Add in the mins and maxes from the emulator creation, as we'll need
   # these to denormalise the predictions if the original data was normalised
@@ -265,6 +266,12 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
         emulators_with_test_preds$pre_normed_maxes, algorithm_settings = NULL,
         normalise = normalised, timepoint = NULL, output_formats)
 
+      # Added October 2018: Would be nice to see the stats for the ensemble performance
+      #performance_stats<-c("Ensemble")
+      #for (m in 1:length(measures))
+      #{
+      #  performance_stats<-cbind(performance_stats,meanSquaredError(all_model_predictions[, measures[m]], partitioned_data$testing[, measures[m]]))
+      #}
 
       # Calculate time taken, only want the elapsed value (3rd one)
       time.taken <- as.numeric(proc.time() - start.time)[3]
@@ -278,7 +285,8 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
         "pre_normed_maxes" = t(data.frame(
           emulators_with_test_preds$pre_normed_maxes)),
         "pre_normed_mins" = t(data.frame(
-          emulators_with_test_preds$pre_normed_mins)))
+          emulators_with_test_preds$pre_normed_mins)),
+        "statistics" = emulators_with_test_preds$statistics)
 
       # Save out the ensemble
       if (is.null(timepoint))

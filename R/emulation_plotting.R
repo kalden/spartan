@@ -13,6 +13,7 @@ produce_accuracy_plots_single_measure <- function(technique, measure,
                                                   observed_data,
                                                   output_format=c("pdf"),
                                                   timepoint = NULL) {
+
   for(out_type in output_format)
   {
     if (is.null(timepoint))

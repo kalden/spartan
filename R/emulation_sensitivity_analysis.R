@@ -108,6 +108,7 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
 #' @param timepoint Simulation timepoint being analysed, if more than one. See
 #' the vignette for analysing more than one timepoint
 #' @param timepointscale Scale of the timepoints, if being used
+#' @param write_csv_files Whether output should be written to CSV file. Used with spartanDB
 #'
 #' @export
 emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
@@ -116,7 +117,8 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                                              dataset = NULL, ensemble_set = TRUE,
                                              normalise = FALSE,
                                              timepoint = NULL,
-                                             timepointscale = NULL) {
+                                             timepointscale = NULL,
+                                             write_csv_files = TRUE) {
 
   #emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values)
 
@@ -156,30 +158,42 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
     colnames(param_values_with_predictions) <- c(parameters, measures)
 
 
-    if (is.null(timepoint)) {
-      lhcsummaryfilename <- file.path(filepath, "Emulated_LHC_Summary.csv")
-      correlation_coeffs <- file.path(filepath, "CorrelationCoefficients.csv")
+    if(write_csv_files)
+    {
+      if (is.null(timepoint)) {
+        lhcsummaryfilename <- file.path(filepath, "Emulated_LHC_Summary.csv")
+        correlation_coeffs <- file.path(filepath, "CorrelationCoefficients.csv")
 
-    } else {
-      lhcsummaryfilename <- file.path(filepath, paste("Emulated_LHC_Summary_",timepoint,".csv",sep=""))
-      correlation_coeffs <- file.path(filepath, paste("CorrelationCoefficients_",timepoint,".csv",sep=""))
+      } else {
+        lhcsummaryfilename <- file.path(filepath, paste("Emulated_LHC_Summary_",timepoint,".csv",sep=""))
+        correlation_coeffs <- file.path(filepath, paste("CorrelationCoefficients_",timepoint,".csv",sep=""))
+      }
+
+      write.csv(param_values_with_predictions, lhcsummaryfilename,
+                quote = FALSE, row.names = FALSE)
     }
-
-    write.csv(param_values_with_predictions, lhcsummaryfilename,
-              quote = FALSE, row.names = FALSE)
 
 
     # Analyse:
     # Method takes care of adding timepoint to the file names
-    lhc_generatePRCoEffs(FILEPATH=filepath, parameters,  measures,
+    prccs<-lhc_generatePRCoEffs(FILEPATH=filepath, parameters,  measures,
                          "Emulated_LHC_Summary.csv",
                          "CorrelationCoefficients.csv",
-                         c(timepoint), timepointscale, check_done=TRUE)
+                         c(timepoint), timepointscale, check_done=TRUE,
+                         write_csv_files = FALSE)
 
     lhc_graphMeasuresForParameterChange(
       filepath, parameters, measures, measure_scale, "CorrelationCoefficients.csv",
       "Emulated_LHC_Summary.csv", OUTPUT_TYPE = c("PNG"), TIMEPOINTS = c(timepoint),
       TIMEPOINTSCALE = timepointscale, check_done=TRUE)
+
+    # return the PRCC values, spartan DB uses these to add to a DB
+    if(!write_csv_files)
+    {
+      message("Object returned contains ensemble generated predictions and PRCC values for this experiment")
+      return(list("predictions"=param_values_with_predictions,"prccs"=prccs))
+    }
+
   } else {
     message("You must specify either an R object containing parameter values, or the name of a CSV file in the filepath containing parameter values")
   }
