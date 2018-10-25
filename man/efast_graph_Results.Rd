@@ -5,7 +5,7 @@
 \title{Plot the parition of variance in a simulation response for each measure}
 \usage{
 efast_graph_Results(RESULTS_FILE_PATH, PARAMETERS, si, sti, errors_si,
-  errors_sti, MEASURES, TIMEPOINT, TIMEPOINTSCALE)
+  errors_sti, MEASURES, TIMEPOINT, TIMEPOINTSCALE, output_types = c("pdf"))
 }
 \arguments{
 \item{RESULTS_FILE_PATH}{Where the eFAST results were saved to}
@@ -27,6 +27,8 @@ parameters}
 \item{TIMEPOINT}{Timepoint being analysed}
 
 \item{TIMEPOINTSCALE}{Scale in which the timepoints are measures}
+
+\item{output_types}{Files types of graph to produce (pdf,png,bmp etc)}
 }
 \description{
 Plot the parition of variance in a simulation response for each measure

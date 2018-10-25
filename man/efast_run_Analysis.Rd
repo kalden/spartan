@@ -7,7 +7,9 @@
 efast_run_Analysis(FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES,
   OUTPUTMEASURES_TO_TTEST, TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME,
   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, GRAPHTIME = NULL,
-  check_done = FALSE)
+  check_done = FALSE, output_types = c("pdf"),
+  csv_file_curve_summary = TRUE, write_csv_file_out = TRUE,
+  CURVE_SUMMARY = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found, in folders
@@ -52,6 +54,22 @@ graphs when processing multiple timepoints}
 
 \item{check_done}{If using multiple timepoints, whether data entry has been
 checked}
+
+\item{output_types}{Files types of graph to produce (pdf,png,bmp etc)}
+
+\item{csv_file_curve_summary}{Whether curve summaries are provided in
+multiple CSV files (as in traditional spartan), or as an R object (as in
+spartanDB)}
+
+\item{write_csv_file_out}{Whether the analysis should output a CSV file
+(TRUE) or return an R object (FALSE)}
+
+\item{CURVE_SUMMARY}{If providing an R object (csv_file_curve_summary=FALSE),
+this is the R object containing those summaries}
+}
+\value{
+Either NULL if a CSV file is returned, or an R object containing the
+results of this analysis
 }
 \description{
 Produces a file summarising the analysis; partitioning the variance between

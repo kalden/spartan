@@ -253,6 +253,16 @@ check_data_partitions <-function(train,test,validate)
     return(FALSE)
 }
 
+check_ranges<-function(sample_mins,sample_maxes,parameters)
+{
+  if(length(sample_mins)==length(parameters) & length(sample_maxes)==length(parameters))
+  {
+    colnames(sample_mins)<-parameters
+    colnames(sample_maxes)<-parameters
+    return(list("sample_mins"=apply(sample_mins,2,as.numeric),"sample_maxes"=apply(sample_maxes,2,as.numeric)))
+  }
+}
+
 #' Partition latin-hypercube summary file to training, testing, and validation
 #'
 #' Used in the development of emulations of a simulation using a
@@ -282,11 +292,11 @@ check_data_partitions <-function(train,test,validate)
 #' "initialChemokineExpressionValue","maxChemokineExpressionValue",
 #' "maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
 #' measures<-c("Velocity","Displacement","PatchArea")
-#' sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
-#' sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
+#' sample_maxes <- cbind(100,0.9,0.5,0.08,1,5)
+#' sample_mins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
 #' partitionedData <- partition_dataset(sim_data_for_emulation, parameters,
-#' percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
-#' sample_mins = sampleMins, sample_maxes = sampleMaxes)
+#' measures, percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
+#' sample_mins = sample_mins, sample_maxes = sample_maxes)
 #'
 #' @export
 partition_dataset <- function(dataset, parameters, measures, percent_train = 75, percent_test = 15,
@@ -315,6 +325,11 @@ partition_dataset <- function(dataset, parameters, measures, percent_train = 75,
           parameters<-dataset_check$parameters
           measures<-dataset_check$measures
         }
+
+        range_check<-check_ranges(sample_mins,sample_maxes,parameters)
+        sample_mins<-range_check$sample_mins
+        sample_maxes<-range_check$sample_maxes
+
 
         # If we normalise, we need to have the mins and maxes for parameters and
         # measures for denormalisation of results. If we don't normalise then
@@ -458,10 +473,17 @@ normalise_dataset <- function(dataset, sample_mins, sample_maxes, parameters) {
 #' @keywords internal
 denormalise_dataset <- function(normalised_data, scaled_mins, scaled_maxes) {
 
+
+  #for (c in 1:ncol(normalised_data)) {
+  #  normalised_data[, c] <- (normalised_data[, c] *
+  #                            (scaled_maxes[, c] -
+  #                               scaled_mins[, c])) + scaled_mins[, c]
+  #}
+
   for (c in 1:ncol(normalised_data)) {
     normalised_data[, c] <- (normalised_data[, c] *
-                              (scaled_maxes[, c] -
-                                 scaled_mins[, c])) + scaled_mins[, c]
+                               (scaled_maxes[c] -
+                                  scaled_mins[c])) + scaled_mins[c]
   }
   return(normalised_data)
 }

@@ -5,7 +5,7 @@
 \title{Internal function used to create accuracy plots of the emulation against observed data}
 \usage{
 plot_compare_sim_observed_to_model_prediction(observed, predicted, technique,
-  measure, mse, graph_file_name, timepoint = NULL)
+  measure, mse, graph_file_name, timepoint = NULL, output_format)
 }
 \arguments{
 \item{observed}{Observed dataset (testing or validation)}
@@ -22,6 +22,8 @@ plot_compare_sim_observed_to_model_prediction(observed, predicted, technique,
 
 \item{timepoint}{If using multiple timepoints, the timepoint for which the
 emulator has been created}
+
+\item{output_format}{File format in which this graph is being produced}
 }
 \description{
 Outputs plot to PDF in the current working directory

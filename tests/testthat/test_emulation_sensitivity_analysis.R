@@ -22,7 +22,7 @@ test_that("emulate_efast_sampled_parameters ", {
                                    c("stableBindProbability","chemokineExpressionThreshold",
                                      "initialChemokineExpressionValue",
                                      "maxChemokineExpressionValue","maxProbabilityOfAdhesion",
-                                     "adhesionFactorExpressionSlope"), c("Velocity","Displacement"),
+                                     "adhesionFactorExpressionSlope","dummy"), c("Velocity","Displacement"),
                                    3, ensemble_set = TRUE, normalise = TRUE)
 
   expect_true(file.exists(file.path(getwd(),"SA","Curve1_Results_Summary.csv")))

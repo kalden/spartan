@@ -4,7 +4,8 @@
 \alias{visualise_data_distribution}
 \title{Used to diagnose skew in a training dataset before use in emulation}
 \usage{
-visualise_data_distribution(dataset, measure, graphname, num_bins = 30)
+visualise_data_distribution(dataset, measure, graphname, num_bins = 30,
+  output_format = c("pdf"))
 }
 \arguments{
 \item{dataset}{Dataset being visualised}
@@ -14,6 +15,8 @@ visualise_data_distribution(dataset, measure, graphname, num_bins = 30)
 \item{graphname}{Name of the graph to produce (as a PDF)}
 
 \item{num_bins}{Number of bins to use in the histogram}
+
+\item{output_format}{File formats in which graphs should be produced}
 }
 \description{
 Useful for determining how useful a simulation dataset is for training

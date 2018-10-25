@@ -6,7 +6,7 @@
 \usage{
 generate_emulators_and_ensemble(model_list, parameters, measures,
   partitioned_data, algorithm_settings = NULL, timepoint = NULL,
-  normalised = FALSE)
+  normalised = FALSE, output_formats = c("pdf"))
 }
 \arguments{
 \item{model_list}{Vector of the types of emulation model to create.
@@ -37,6 +37,8 @@ emulators are being created}
 
 \item{normalised}{Whether the emulator data has been normalised or not.
 Affects how training and test output predictions are displayed}
+
+\item{output_formats}{File formats in which result graphs should be produced}
 }
 \value{
 A list containing the ensemble, the time taken to generate it,
@@ -56,16 +58,16 @@ arguments used in emulation creation, as detailed in the description
 accompanying that method.
 }
 \examples{
-sampleMaxes <- cbind(0.9,0.5,0.08,1,5)
-sampleMins <-cbind(0.1,0.1,0.015,0.1,0.25)
+sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
+sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
 modelList <- c("RF","GLM")
 measures<-c("Velocity","Displacement")
-parameters<-c("chemokineExpressionThreshold",
+parameters<-c("stableBindProbability","chemokineExpressionThreshold",
 "initialChemokineExpressionValue","maxChemokineExpressionValue",
 "maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
 data("sim_data_for_emulation")
 partitionedData <- partition_dataset(sim_data_for_emulation, parameters,
-percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
+measures, percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
 sample_mins = sampleMins, sample_maxes = sampleMaxes)
 generated_ensemble<-generate_emulators_and_ensemble(modelList, parameters,
 measures, partitionedData, normalised=TRUE)

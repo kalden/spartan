@@ -120,6 +120,7 @@ generate_model_formula <- function(parameters, measures) {
 generate_emulator_model <- function(technique, parameters, measures, dataset,
                                     algorithm_settings, timepoint = NULL,
                                     normalised = FALSE, output_formats=c("pdf")) {
+
   start.time <- proc.time()
   models_for_all_measures <- vector("list", length(measures))
 

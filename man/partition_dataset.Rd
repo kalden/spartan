@@ -4,7 +4,7 @@
 \alias{partition_dataset}
 \title{Partition latin-hypercube summary file to training, testing, and validation}
 \usage{
-partition_dataset(dataset, parameters, percent_train = 75,
+partition_dataset(dataset, parameters, measures, percent_train = 75,
   percent_test = 15, percent_validation = 10, seed = NULL,
   normalise = FALSE, sample_mins = NULL, sample_maxes = NULL,
   timepoint = NULL)
@@ -13,6 +13,8 @@ partition_dataset(dataset, parameters, percent_train = 75,
 \item{dataset}{LHC summary file to partition}
 
 \item{parameters}{Simulation parameters the emulation will be fed as input}
+
+\item{measures}{Simulation responses of interest}
 
 \item{percent_train}{Percent of the dataset to use as training}
 
@@ -49,10 +51,10 @@ parameters<-c("stableBindProbability","chemokineExpressionThreshold",
 "initialChemokineExpressionValue","maxChemokineExpressionValue",
 "maxProbabilityOfAdhesion","adhesionFactorExpressionSlope")
 measures<-c("Velocity","Displacement","PatchArea")
-sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
-sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
+sample_maxes <- cbind(100,0.9,0.5,0.08,1,5)
+sample_mins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
 partitionedData <- partition_dataset(sim_data_for_emulation, parameters,
-percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
-sample_mins = sampleMins, sample_maxes = sampleMaxes)
+measures, percent_train=75, percent_test=15, percent_validation=10, normalise=TRUE,
+sample_mins = sample_mins, sample_maxes = sample_maxes)
 
 }

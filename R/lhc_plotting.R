@@ -99,7 +99,8 @@ lhc_graphMeasuresForParameterChange_from_db <-
     for (m in 1:length(measures)) {
 
       # Get the PRCC value for this pairing
-      corr_result <- subset(corcoeffs, corcoeffs$parameter==parameters[p] & corcoeffs$measure==measures[m],select=c(statistic_1))
+      #corr_result <- subset(corcoeffs, corcoeffs$parameter==parameters[p] & corcoeffs$measure==measures[m],select=c(statistic_1))
+      corr_result <- corcoeffs[corcoeffs$parameter == parameters[p] & corcoeffs$measure == measures[m],]["statistic_1"]
 
       # Make filename, titles, and labels
       titles <- make_graph_title(output_directory, parameters[p], NULL, measures[m],

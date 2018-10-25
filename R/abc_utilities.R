@@ -34,6 +34,19 @@ ensemble_abc_wrapper <- function(x) {
 
 
     return(prediction)
+  } else if(exists("abc_set")) {
+
+    params <- as.data.frame(matrix(x, nrow = 1, ncol = length(x)))
+    names(params) <- abc_set$parameters
+
+    # Format the parameter input
+    prediction <- use_ensemble_to_generate_predictions(
+      abc_set$built_ensemble, params, abc_set$parameters, abc_set$measures,
+      normalise_values = abc_set$normalise_values,
+      normalise_result = abc_set$normalise_result)
+
+    return(prediction)
+
   } else {
     message("parameters, measures, and best_ensemble must exist in the workspace,
           declared in an abc_settings object. Run that method first")
@@ -62,18 +75,24 @@ ensemble_abc_wrapper <- function(x) {
 #' presented in their correct scale
 #' @param normalise_result Whether the results produced in running abc
 #' generated parameter sets using the ensemble should be rescaled.
+#' @param file_out Whether the settings file should be output to file (TRUE)
+#' or as an R object (FALSE)
+#' @return Object containing attributes needed for abc analysis
 #'
 #' @export
 create_abc_settings_object <- function(parameters, measures, built_ensemble,
                                        normalise_values = FALSE,
-                                       normalise_result = FALSE){
+                                       normalise_result = FALSE, file_out = TRUE){
 
   abc_set <- list("parameters" = parameters, "measures" = measures,
                   "built_ensemble" = built_ensemble,
                   "normalise_values" = normalise_values,
                   "normalise_result" = normalise_result)
 
-  save(abc_set, file = paste(getwd(), "/abc_settings.Rda", sep = ""))
+  if(file_out)
+    save(abc_set, file = paste(getwd(), "/abc_settings.Rda", sep = ""))
+  else
+    return(abc_set)
 }
 
 

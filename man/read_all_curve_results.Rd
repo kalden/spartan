@@ -8,23 +8,20 @@ read_all_curve_results(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES, MEASURES,
   PARAMETERS)
 }
 \arguments{
-\item{FILEPATH}{Directory where the simulation runs can be found, in folders
-or in CSV file format}
+\item{FILEPATH}{Filepath where simulation results can be found}
 
-\item{GRAPHTIME}{Value never needs stating, used internally to produce
-graphs when processing multiple timepoints}
+\item{GRAPHTIME}{Timepoint graph is being produced}
 
-\item{NUMCURVES}{The number of 'resamples' to perform (see eFAST
-documentation) - recommend using at least 3}
+\item{NUMCURVES}{Number of resample curves used in this analysis}
 
-\item{NUMSAMPLES}{The number of parameter subsets that were generated in
-the eFAST design}
+\item{NUMSAMPLES}{Number of samples taken from each curve}
 
-\item{MEASURES}{Array containing the names of the output measures which
-are used to analyse the simulation}
+\item{MEASURES}{Simulation output measures of interest}
 
-\item{PARAMETERS}{Array containing the names of the parameters of which
-parameter samples have been generated}
+\item{PARAMETERS}{Simulation parameters of interest}
+}
+\value{
+R matrix containing the curve summaries in the format spartan requires
 }
 \description{
 Reads results from each curve into a multi-dimensional array

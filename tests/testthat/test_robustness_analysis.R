@@ -67,7 +67,7 @@ test_that("produce_summary_for_all_values_of_parameter", {
   EXP_PARAMS <- as.character(c(0.05))
 
   param_result <- produce_summary_for_all_values_of_parameter(getwd(),1, param_val_list, BASELINE=c(0.05), FALSE, PARAMETERS, EXP_PARAMS,
-    1, c("Velocity","Displacement"),"Test_Robustness_Result.csv", NULL, 1,2)
+                                                              1, c("Velocity","Displacement"),"Test_Robustness_Result.csv", NULL, 1,2)
 
   # Test the baseline has been evaluated
   expect_true(param_result$baseline_evaluated)
@@ -122,7 +122,7 @@ test_that("generate_medians_for_param_set" , {
 
   # Now to test the result produces the correct structure:
   summary_stats <- generate_medians_for_param_set(getwd(), 1, c("Velocity","Displacement"), "Test_Robustness_Result.csv",
-    NULL,1, 2, EXP_PARAMS, "chemoLowerLinearAdjust",0.05)
+                                                  NULL,1, 2, EXP_PARAMS, "chemoLowerLinearAdjust",0.05)
 
   # examine the structure created
   expect_equal(nrow(summary_stats),1)
@@ -141,7 +141,7 @@ test_that("calculate_atest_score", {
   load(file.path("test_baseline.Rda"))
   load(file.path("robust_param_test_data.Rda"))
   a_test_result <- calculate_atest_score(parameter_result, c("0.015","0.2"),
-                                    baseline_result, c("Velocity","Displacement"), "chemoLowerLinearAdjust", 0.015)
+                                         baseline_result, c("Velocity","Displacement"), "chemoLowerLinearAdjust", 0.015)
 
   # Now we can test the structure:
   # In this case should be 6 columns and 1 row
@@ -222,11 +222,11 @@ test_that("oat_csv_result_file_analysis_overTime", {
   write.csv(robustness_hour36_data,file="robustness_result_36.csv")
 
   oat_csv_result_file_analysis(getwd(), "robustness_result.csv", c("chemoLowerLinearAdjust", "chemoUpperLinearAdjust"),
-                                        c(0.04, 0.2), c("Velocity", "Displacement"),
-                                        "EgSet_ATests.csv",
-                                        PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
-                                        PARAMVALS = NULL, TIMEPOINTS = c(12,36),
-                                        TIMEPOINTSCALE="Hours")
+                               c(0.04, 0.2), c("Velocity", "Displacement"),
+                               "EgSet_ATests.csv",
+                               PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
+                               PARAMVALS = NULL, TIMEPOINTS = c(12,36),
+                               TIMEPOINTSCALE="Hours")
 
   # Check for file output
   expect_true(file.exists("EgSet_ATests_12.csv"))
@@ -277,8 +277,6 @@ test_that("oat_processParamSubsets_overTime", {
   cleanup()
   file.remove(file.path(getwd(),"Test_Summary_File_12.csv"))
   file.remove(file.path(getwd(),"Test_Summary_File_36.csv"))
-
-
 
 })
 
@@ -355,17 +353,16 @@ test_that("oat_plotResultDistribution", {
                              c("Velocity", "Displacement"), c("microns/min","microns"), "robustness_result.csv", c(0.04, 0.2), PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
                              PARAMVALS = NULL)
 
-  expect_true(file.exists("chemoLowerLinearAdjust_Displacement_BP.pdf"))
-  expect_true(file.exists("chemoLowerLinearAdjust_Velocity_BP.pdf"))
-  expect_true(file.exists("chemoUpperLinearAdjust_Displacement_BP.pdf"))
-  expect_true(file.exists("chemoUpperLinearAdjust_Velocity_BP.pdf"))
+  expect_true(file.exists("BP_chemoLowerLinearAdjust_Displacement.pdf"))
+  expect_true(file.exists("BP_chemoLowerLinearAdjust_Velocity.pdf"))
+  expect_true(file.exists("BP_chemoUpperLinearAdjust_Displacement.pdf"))
+  expect_true(file.exists("BP_chemoUpperLinearAdjust_Velocity.pdf"))
 
   file.remove("robustness_result.csv")
-  file.remove("chemoLowerLinearAdjust_Displacement_BP.pdf")
-  file.remove("chemoLowerLinearAdjust_Velocity_BP.pdf")
-  file.remove("chemoUpperLinearAdjust_Displacement_BP.pdf")
-  file.remove("chemoUpperLinearAdjust_Velocity_BP.pdf")
-
+  file.remove("BP_chemoLowerLinearAdjust_Displacement.pdf")
+  file.remove("BP_chemoLowerLinearAdjust_Velocity.pdf")
+  file.remove("BP_chemoUpperLinearAdjust_Displacement.pdf")
+  file.remove("BP_chemoUpperLinearAdjust_Velocity.pdf")
 
 })
 
@@ -380,25 +377,25 @@ test_that("oat_plotResultDistribution_overTime", {
                              c("Velocity", "Displacement"), c("microns/min","microns"), "robustness_result.csv", c(0.04, 0.2), PMIN = c(0.015, 0.10), PMAX = c(0.08, 0.50), PINC = c(0.005, 0.05),
                              PARAMVALS = NULL, TIMEPOINTS<-c(12,36), TIMEPOINTSCALE="Hours")
 
-  expect_true(file.exists("chemoLowerLinearAdjust_Displacement_BP_12.pdf"))
-  expect_true(file.exists("chemoLowerLinearAdjust_Velocity_BP_12.pdf"))
-  expect_true(file.exists("chemoUpperLinearAdjust_Displacement_BP_12.pdf"))
-  expect_true(file.exists("chemoUpperLinearAdjust_Velocity_BP_12.pdf"))
-  expect_true(file.exists("chemoLowerLinearAdjust_Displacement_BP_36.pdf"))
-  expect_true(file.exists("chemoLowerLinearAdjust_Velocity_BP_36.pdf"))
-  expect_true(file.exists("chemoUpperLinearAdjust_Displacement_BP_36.pdf"))
-  expect_true(file.exists("chemoUpperLinearAdjust_Velocity_BP_36.pdf"))
+  expect_true(file.exists("BP_chemoLowerLinearAdjust_Displacement12.pdf"))
+  expect_true(file.exists("BP_chemoLowerLinearAdjust_Velocity12.pdf"))
+  expect_true(file.exists("BP_chemoUpperLinearAdjust_Displacement12.pdf"))
+  expect_true(file.exists("BP_chemoUpperLinearAdjust_Velocity12.pdf"))
+  expect_true(file.exists("BP_chemoLowerLinearAdjust_Displacement36.pdf"))
+  expect_true(file.exists("BP_chemoLowerLinearAdjust_Velocity36.pdf"))
+  expect_true(file.exists("BP_chemoUpperLinearAdjust_Displacement36.pdf"))
+  expect_true(file.exists("BP_chemoUpperLinearAdjust_Velocity36.pdf"))
 
   file.remove("robustness_result_12.csv")
   file.remove("robustness_result_36.csv")
-  file.remove("chemoLowerLinearAdjust_Displacement_BP_12.pdf")
-  file.remove("chemoLowerLinearAdjust_Velocity_BP_12.pdf")
-  file.remove("chemoUpperLinearAdjust_Displacement_BP_12.pdf")
-  file.remove("chemoUpperLinearAdjust_Velocity_BP_12.pdf")
-  file.remove("chemoLowerLinearAdjust_Displacement_BP_36.pdf")
-  file.remove("chemoLowerLinearAdjust_Velocity_BP_36.pdf")
-  file.remove("chemoUpperLinearAdjust_Displacement_BP_36.pdf")
-  file.remove("chemoUpperLinearAdjust_Velocity_BP_36.pdf")
+  file.remove("BP_chemoLowerLinearAdjust_Displacement12.pdf")
+  file.remove("BP_chemoLowerLinearAdjust_Velocity12.pdf")
+  file.remove("BP_chemoUpperLinearAdjust_Displacement12.pdf")
+  file.remove("BP_chemoUpperLinearAdjust_Velocity12.pdf")
+  file.remove("BP_chemoLowerLinearAdjust_Displacement36.pdf")
+  file.remove("BP_chemoLowerLinearAdjust_Velocity36.pdf")
+  file.remove("BP_chemoUpperLinearAdjust_Displacement36.pdf")
+  file.remove("BP_chemoUpperLinearAdjust_Velocity36.pdf")
 
 })
 

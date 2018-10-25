@@ -275,13 +275,22 @@ efast_get_overall_medians_overTime  <-  function(
 #' @param check_done If using multiple timepoints, whether data entry has been
 #' checked
 #' @param output_types Files types of graph to produce (pdf,png,bmp etc)
-#'
+#' @param csv_file_curve_summary Whether curve summaries are provided in
+#' multiple CSV files (as in traditional spartan), or as an R object (as in
+#' spartanDB)
+#' @param write_csv_file_out Whether the analysis should output a CSV file
+#' (TRUE) or return an R object (FALSE)
+#' @param CURVE_SUMMARY If providing an R object (csv_file_curve_summary=FALSE),
+#' this is the R object containing those summaries
+#' @return Either NULL if a CSV file is returned, or an R object containing the
+#' results of this analysis
 #' @export
 #'
 efast_run_Analysis  <-  function(
   FILEPATH, MEASURES, PARAMETERS, NUMCURVES, NUMSAMPLES, OUTPUTMEASURES_TO_TTEST,
   TTEST_CONF_INT, GRAPH_FLAG, EFASTRESULTFILENAME, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE, output_types=c("pdf")) {
+  TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE, output_types=c("pdf"),
+  csv_file_curve_summary = TRUE, write_csv_file_out = TRUE, CURVE_SUMMARY=NULL) {
 
   #input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
@@ -302,8 +311,15 @@ efast_run_Analysis  <-  function(
 
       message("Producing eFAST Analysis (efast_run_analysis)")
 
-      efast_sim_results <- read_all_curve_results(FILEPATH, GRAPHTIME, NUMCURVES,
+      if(csv_file_curve_summary)
+      {
+        efast_sim_results <- read_all_curve_results(FILEPATH, GRAPHTIME, NUMCURVES,
                                                   NUMSAMPLES,  MEASURES, PARAMETERS)
+      } else {
+
+        efast_sim_results <- build_curve_results_from_r_object(CURVE_SUMMARY, NUMCURVES, NUMSAMPLES,
+                                                  MEASURES, PARAMETERS)
+      }
 
       # Sensitivity Indexes
       sensitivities <- generate_sensitivity_indices(efast_sim_results, omi, MI,
@@ -320,10 +336,18 @@ efast_run_Analysis  <-  function(
         sensitivities, t_tests, OUTPUTMEASURES_TO_TTEST, MEASURES, PARAMETERS)
 
       # Output
-      write_data_to_csv(formatted_results,file.path(FILEPATH, EFASTRESULTFILENAME), row_names=TRUE)
+      if(write_csv_file_out)
+      {
+        write_data_to_csv(formatted_results,file.path(FILEPATH, EFASTRESULTFILENAME), row_names=TRUE)
 
-      message(paste("eFAST Results file generated. Output to",
+        message(paste("eFAST Results file generated. Output to",
                     file.path(FILEPATH, EFASTRESULTFILENAME)))
+      }
+      else
+      {
+        return(formatted_results)
+        message(paste("eFAST Results generated and returned as R object"))
+      }
 
         # GRAPH THE RESULTS IF REQUIRED
         if (GRAPH_FLAG)
@@ -425,7 +449,13 @@ efast_run_Analysis_overTime  <- function(
 }
 
 #' Reads results from each curve into a multi-dimensional array
-#' @inheritParams efast_run_Analysis
+#' @param FILEPATH Filepath where simulation results can be found
+#' @param GRAPHTIME Timepoint graph is being produced
+#' @param NUMCURVES Number of resample curves used in this analysis
+#' @param NUMSAMPLES Number of samples taken from each curve
+#' @param MEASURES Simulation output measures of interest
+#' @param PARAMETERS Simulation parameters of interest
+#' @return R matrix containing the curve summaries in the format spartan requires
 read_all_curve_results <- function(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES,
                                    MEASURES, PARAMETERS) {
   # read in curve 1
@@ -453,6 +483,37 @@ read_all_curve_results <- function(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES,
   return(array(results, dim = c(NUMSAMPLES, (length(PARAMETERS) * length(MEASURES)),
                                 NUMCURVES)))
 
+}
+
+#' When developing spartanDB, it became clear curve results may not be in separate
+#' files but in one R object. This takes an R object containing curve summaries and
+#' builds these into the format spartan requires to perform the analysis
+#' @param CURVE_SUMMARY R object containing summaries for all curves
+#' @param NUMCURVES The number of 'resamples' to perform (see eFAST
+#' documentation) - recommend using at least 3
+#' @param NUMSAMPLES The number of parameter subsets that were generated in
+#' the eFAST design
+#' @param MEASURES Array containing the names of the output measures which
+#' are used to analyse the simulation
+#' @param PARAMETERS Array containing the names of the parameters of which
+#' parameter samples have been generated
+#' @return R matrix containing the curve summaries in the format spartan requires
+build_curve_results_from_r_object<-function(CURVE_SUMMARY, NUMCURVES, NUMSAMPLES,
+                                            MEASURES, PARAMETERS)
+{
+  results <- CURVE_SUMMARY[[1]]
+
+  if(NUMCURVES > 1) {
+    for (CURVE in 2:NUMCURVES) {
+      results <- cbind(results, CURVE_SUMMARY[[CURVE]])
+    }
+  }
+
+  # Convert to multi-dimensional array for ease of processing later
+  # Each dimension contains one curve
+  results <- as.matrix(results)
+  return(array(results, dim = c(NUMSAMPLES, (length(PARAMETERS) * length(MEASURES)),
+                                NUMCURVES)))
 }
 
 

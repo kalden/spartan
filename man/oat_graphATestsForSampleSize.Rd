@@ -6,7 +6,8 @@
 \usage{
 oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL,
   ATESTRESULTFILENAME, BASELINE, PMIN = NULL, PMAX = NULL, PINC = NULL,
-  PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+  PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+  output_types = c("pdf"))
 }
 \arguments{
 \item{FILEPATH}{Directory where either the simulation runs or single CSV file result can be found}
@@ -32,6 +33,8 @@ oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL,
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing multiple simulation timepoints. If only analysing one timepoint, this should be set to NULL. If not, this should be an array of timepoints, e.g. c(12,36,48,60)}
 
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing multiple simulation timepoints. Sets the scale of the timepoints being analysed, e.g. "Hours"}
+
+\item{output_types}{Files types of graph to produce (pdf,png,bmp etc)}
 }
 \description{
 This makes it easy to determine how the effect that changing the parameter

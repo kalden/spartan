@@ -5,7 +5,9 @@
 \title{Emulate simulations for a set of eFAST generated parameter values}
 \usage{
 emulate_efast_sampled_parameters(filepath, surrogateModel, parameters, measures,
-  num_curves, ensemble_set = TRUE, normalise = FALSE, timepoint = NULL)
+  num_curves, ensemble_set = TRUE, normalise = FALSE, timepoint = NULL,
+  csv_file_input = TRUE, spartan_sample_obj = NULL,
+  write_csv_file_out = TRUE, normalise_result = FALSE)
 }
 \arguments{
 \item{filepath}{Path to the folder containing the set of CSV files for eFAST
@@ -29,6 +31,20 @@ and 1)}
 
 \item{timepoint}{Simulation timepoint being analysed, if more than one. See
 the vignette for analysing more than one timepoint}
+
+\item{csv_file_input}{Whether parameters to emulate are being supplied in a CSV
+file. Default is TRUE, with spartanDB this is false}
+
+\item{spartan_sample_obj}{Where spartanDB is used, or another application that
+supplied parameter values as an R object created by spartan's sampling method,
+the name of that R object}
+
+\item{write_csv_file_out}{Whether results for each curve should be output to a
+CSV file. SpartanDB instead requires an R object containing this data, which is
+returned}
+
+\item{normalise_result}{Whether the resultant predictions should be
+normalised}
 }
 \description{
 This method runs an ensemble for all parameter value sets specified in a CSV

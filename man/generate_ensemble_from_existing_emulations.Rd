@@ -6,7 +6,7 @@
 \usage{
 generate_ensemble_from_existing_emulations(existing_emulations, parameters,
   measures, observed_data, algorithm_settings = NULL, normalise = FALSE,
-  timepoint = NULL)
+  timepoint = NULL, output_formats = c("pdf"))
 }
 \arguments{
 \item{existing_emulations}{Vector of emulator objects created by method
@@ -36,6 +36,8 @@ ensemble should be normalised for presenting test results}
 
 \item{timepoint}{If using multiple timepoints, the timepoint for which
 this ensemble is being created}
+
+\item{output_formats}{File formats in which result graphs should be produced}
 }
 \value{
 A list containing the ensemble, the time taken to generate it,

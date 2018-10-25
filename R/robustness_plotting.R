@@ -74,24 +74,25 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
         for(out in output_types)
         {
           # Now we can plot this
-          ggplot2::ggplot(data=graph_frame, aes(x=ParameterValue, y=ATestScore, group=Measure)) +
-            geom_line(aes(color=Measure)) + geom_point(aes(shape=Measure,color=Measure)) + theme(legend.position="bottom") + xlab("Parameter Value")+ylab("A-Test Score") + ylim(0,1) +
-            theme(axis.text.x = element_text(angle = 65, hjust = 1, size=rel(0.95))) +
-            ggtitle(paste0("A-Test Scores when adjusting parameter\n",PARAMETERS[PARAM])) + theme(plot.title = element_text(hjust = 0.5, size=rel(0.90))) +
-            geom_hline(yintercept=0.5, linetype="dashed", color="black") +
-            geom_hline(yintercept=0.5 + ATESTSIGLEVEL, linetype="dashed", color="black") +
-            geom_hline(yintercept=0.5 - ATESTSIGLEVEL, linetype="dashed", color="black") +
-            scale_x_continuous(breaks = seq(min(graph_frame$ParameterValue), max(graph_frame$ParameterValue), by = PINC[PARAM])) +
-            annotate("text",x=(max(val_list) + min(val_list))/2, y=0.52, label="No Difference", color="blue", size=3) +
-            annotate("text",x=(max(val_list) + min(val_list))/2, y=(0.5 + ATESTSIGLEVEL+ 0.02), label="Large Difference", color="blue",size=3) +
-            annotate("text",x=(max(val_list) + min(val_list))/2, y=(0.5 - ATESTSIGLEVEL- 0.02), label="Large DIfference", color="blue", size=3)
+          ggplot2::ggplot(data=graph_frame, ggplot2::aes(x=graph_frame$ParameterValue, y=graph_frame$ATestScore, group=graph_frame$Measure)) +
+            ggplot2::geom_line(ggplot2::aes(color=graph_frame$Measure)) + ggplot2::geom_point(ggplot2::aes(shape=graph_frame$Measure,color=graph_frame$Measure)) +
+            ggplot2::theme(legend.position="bottom") + ggplot2::xlab("Parameter Value")+ggplot2::ylab("A-Test Score") + ggplot2::ylim(0,1) +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 65, hjust = 1, size=ggplot2::rel(0.95))) +
+            ggplot2::ggtitle(paste0("A-Test Scores when adjusting parameter\n",PARAMETERS[PARAM])) + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size=ggplot2::rel(0.90))) +
+            ggplot2::geom_hline(yintercept=0.5, linetype="dashed", color="black") +
+            ggplot2::geom_hline(yintercept=0.5 + ATESTSIGLEVEL, linetype="dashed", color="black") +
+            ggplot2::geom_hline(yintercept=0.5 - ATESTSIGLEVEL, linetype="dashed", color="black") +
+            ggplot2::scale_x_continuous(breaks = seq(min(graph_frame$ParameterValue), max(graph_frame$ParameterValue), by = PINC[PARAM])) +
+            ggplot2::annotate("text",x=(max(val_list) + min(val_list))/2, y=0.52, label="No Difference", color="blue", size=3) +
+            ggplot2::annotate("text",x=(max(val_list) + min(val_list))/2, y=(0.5 + ATESTSIGLEVEL+ 0.02), label="Large Difference", color="blue",size=3) +
+            ggplot2::annotate("text",x=(max(val_list) + min(val_list))/2, y=(0.5 - ATESTSIGLEVEL- 0.02), label="Large DIfference", color="blue", size=3)
 
 
             if(is.null(TIMEPOINTS))
             {
-              ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],".",out)))
+              ggplot2::ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],".",out)))
             } else {
-              ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],"_",TIMEPOINTS,".",out)))
+              ggplot2::ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],"_",TIMEPOINTS,".",out)))
             }
         }
       }
@@ -130,6 +131,8 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
 #' @inheritParams oat_processParamSubsets
 #' @inheritParams oat_csv_result_file_analysis
 #' @param MEASURE_SCALE An array containing the measure used for each of the output measures (i.e. microns, microns/min).  Used to label graphs
+#' @param output_types File formats in which graphs should be produced
+#' @param outliers Whether outliers int he data should be removed
 #'
 #' @export
 #'
@@ -218,17 +221,17 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
             outlier_flag = 1
           }
 
-          ggplot(ALLRESULTS, aes(x=ALLRESULTS[,1], y=ALLRESULTS[, MEASURE+1])) +
-            geom_boxplot(notch=TRUE, outlier.shape = outlier_flag) + labs(title=GRAPHTITLE,x="Parameter Value",
+          ggplot2::ggplot(ALLRESULTS, ggplot2::aes(x=ALLRESULTS[,1], y=ALLRESULTS[, MEASURE+1])) +
+            ggplot2::geom_boxplot(notch=TRUE, outlier.shape = outlier_flag) + ggplot2::labs(title=GRAPHTITLE,x="Parameter Value",
                                   y = paste0("Median ", MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
-            theme(plot.title = element_text(hjust = 0.5)) +
-            stat_summary(fun.y=median, geom="point", shape=23, size=2)
+            ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
+            ggplot2::stat_summary(fun.y=median, geom="point", shape=23, size=2)
 
           for(output in output_types)
           {
-            ggsave(file.path(FILEPATH,paste0(PARAMETERS[PARAM],MEASURES[MEASURE],"_",TIMEPOINTS,"BP.",output)))
+            ggplot2::ggsave(file.path(FILEPATH,paste0("BP_",PARAMETERS[PARAM],"_",MEASURES[MEASURE],TIMEPOINTS,".",output)))
             message(paste0("Box Plots Generated and output as ",
-                          file.path(FILEPATH,paste0(PARAMETERS[PARAM],MEASURES[MEASURE],"_",TIMEPOINTS,"BP.",output))))
+                          file.path(FILEPATH,paste0("BP_",PARAMETERS[PARAM],"_",MEASURES[MEASURE],TIMEPOINTS,".",output))))
           }
         }
       }

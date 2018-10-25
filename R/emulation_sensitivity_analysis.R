@@ -19,6 +19,16 @@
 #' and 1)
 #' @param timepoint Simulation timepoint being analysed, if more than one. See
 #' the vignette for analysing more than one timepoint
+#' @param csv_file_input Whether parameters to emulate are being supplied in a CSV
+#' file. Default is TRUE, with spartanDB this is false
+#' @param spartan_sample_obj Where spartanDB is used, or another application that
+#' supplied parameter values as an R object created by spartan's sampling method,
+#' the name of that R object
+#' @param write_csv_file_out Whether results for each curve should be output to a
+#' CSV file. SpartanDB instead requires an R object containing this data, which is
+#' returned
+#' @param normalise_result Whether the resultant predictions should be
+#' normalised
 #'
 #' @export
 emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
@@ -26,19 +36,36 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
                                                num_curves,
                                                ensemble_set = TRUE,
                                                normalise = FALSE,
-                                               timepoint = NULL) {
+                                               timepoint = NULL,
+                                               csv_file_input=TRUE,
+                                               spartan_sample_obj=NULL,
+                                              write_csv_file_out=TRUE,
+                                             normalise_result = FALSE) {
 
-
+  all_curve_results<-vector("list", length = num_curves)
   for (c in 1:num_curves) {
     curve_results <- NULL
 
     for (p in 1:length(parameters)) {
       curve_param_result <- NULL
 
-      spartan_sample <- read_from_csv(file.path(filepath, paste("Curve", c, "_",
-                                      parameters[p], ".csv", sep = "")))
+      if(csv_file_input)
+      {
+        spartan_sample <- read_from_csv(file.path(filepath, paste("Curve", c, "_",
+                                        parameters[p], ".csv", sep = "")))
+      }
+      else
+      {
+        # Using spartanDB, can read from the spartan sample object
+        spartan_sample <- data.frame(spartan_sample_obj[,,p,c])
+        colnames(spartan_sample)<-parameters
+      }
 
-      parameters_minus_dummy <- setdiff(parameters, "dummy")
+      if("dummy" %in% parameters)
+        parameters_minus_dummy <- setdiff(parameters, "dummy")
+      else if("Dummy" %in% parameters)
+        parameters_minus_dummy <- setdiff(parameters, "Dummy")
+
 
       spartan_sample <- spartan_sample[, parameters_minus_dummy]
 
@@ -51,11 +78,11 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
         {
           prediction  <-  use_ensemble_to_generate_predictions(
             surrogateModel, param_sample[, parameters_minus_dummy],
-            parameters_minus_dummy, measures, normalise)
+            parameters_minus_dummy, measures, normalise,  normalise_result)
         } else {
           prediction <- emulator_predictions(
             surrogateModel, parameters_minus_dummy, measures,
-            param_sample[,parameters_minus_dummy], normalise)
+            param_sample[,parameters_minus_dummy], normalise,  normalise_result)
         }
 
 
@@ -72,15 +99,27 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
     }
 
     # Now output the curve results as spartan would
-    if (is.null(timepoint))
-      curveoutputfile <- paste(filepath, "/Curve", c, "_Results_Summary.csv",
-                               sep = "")
-    else
-      curveoutputfile <- paste(filepath, "/Curve", c, "_", timepoint,
-                               "_Results_Summary.csv", sep = "")
+    if(write_csv_file_out)
+    {
+      if (is.null(timepoint))
+        curveoutputfile <- paste(filepath, "/Curve", c, "_Results_Summary.csv",
+                                 sep = "")
+      else
+        curveoutputfile <- paste(filepath, "/Curve", c, "_", timepoint,
+                                 "_Results_Summary.csv", sep = "")
 
-    write.csv(curve_results, curveoutputfile, quote = FALSE, row.names = FALSE)
+      write.csv(curve_results, curveoutputfile, quote = FALSE, row.names = FALSE)
+    }
+    else
+    {
+      all_curve_results[[c]]<-curve_results
+    }
   }
+
+  if(!write_csv_file_out)
+    return(all_curve_results)
+
+
 }
 
 #' Emulate simulations for a set of latin-hypercube generated parameter values
@@ -180,7 +219,7 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                          "Emulated_LHC_Summary.csv",
                          "CorrelationCoefficients.csv",
                          c(timepoint), timepointscale, check_done=TRUE,
-                         write_csv_files = FALSE)
+                         write_csv_files=write_csv_files)
 
     lhc_graphMeasuresForParameterChange(
       filepath, parameters, measures, measure_scale, "CorrelationCoefficients.csv",

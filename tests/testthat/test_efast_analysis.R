@@ -338,8 +338,8 @@ test_that("efast_run_Analysis_overTime", {
   expect_equal(toString(sprintf("%.5f",result[1,])),"1.00000, 0.08813, 0.05700, 0.24784, 0.02469, 0.75216, 26.86857, 3.71013, 0.01717, 0.00648, 0.22511, 0.12915, 0.54497, 0.06276, 0.45503, 51.91940, 6.50279, 0.07777, 0.02486", tolerance=1e-5)
 
   # Test the plots exist
-  expect_true(file.exists(file.path("Displacement_12.pdf")))
-  expect_true(file.exists(file.path("Velocity_12.pdf")))
+  expect_true(file.exists(file.path("Displacement12.pdf")))
+  expect_true(file.exists(file.path("Velocity12.pdf")))
 
   # Now for hour 60:
   expect_true(file.exists(file.path(getwd(),"efast_summary_60.csv")))
@@ -354,8 +354,8 @@ test_that("efast_run_Analysis_overTime", {
   expect_equal(toString(sprintf("%.5f",result[1,])),"1.00000, 0.09799, 0.01383, 0.19954, 0.12078, 0.80046, 13.97981, 24.01992, 0.00968, 0.03386, 0.07279, 0.00795, 0.29447, 0.01611, 0.70553, 3.98752, 1.48493, 0.00206, 0.00310",tolerance=1e-5)
 
   # Test the plots exist
-  expect_true(file.exists(file.path("Displacement_60.pdf")))
-  expect_true(file.exists(file.path("Velocity_60.pdf")))
+  expect_true(file.exists(file.path("Displacement60.pdf")))
+  expect_true(file.exists(file.path("Velocity60.pdf")))
 
   # Cleanup
   file.remove("Curve1_Results_Summary_12.csv")
@@ -364,10 +364,10 @@ test_that("efast_run_Analysis_overTime", {
   file.remove("Curve2_Results_Summary_60.csv")
   file.remove("efast_summary_12.csv")
   file.remove("efast_summary_60.csv")
-  file.remove("Displacement_12.pdf")
-  file.remove("Displacement_60.pdf")
-  file.remove("Velocity_12.pdf")
-  file.remove("Velocity_60.pdf")
+  file.remove("Displacement12.pdf")
+  file.remove("Displacement60.pdf")
+  file.remove("Velocity12.pdf")
+  file.remove("Velocity60.pdf")
 
 })
 
@@ -484,10 +484,10 @@ test_that("ploteFASTSiFromTimepointFiles", {
   file.remove("Curve2_Results_Summary_60.csv")
   file.remove("efast_summary_12.csv")
   file.remove("efast_summary_60.csv")
-  file.remove("Displacement_12.pdf")
-  file.remove("Displacement_60.pdf")
-  file.remove("Velocity_12.pdf")
-  file.remove("Velocity_60.pdf")
+  file.remove("Displacement12.pdf")
+  file.remove("Displacement60.pdf")
+  file.remove("Velocity12.pdf")
+  file.remove("Velocity60.pdf")
   file.remove(file.path(getwd(),"Displacement_OT.pdf"))
   file.remove(file.path(getwd(),"Velocity_OT.pdf"))
 })

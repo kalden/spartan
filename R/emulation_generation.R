@@ -102,8 +102,7 @@ generate_requested_emulations <- function(model_list, partitioned_data,
     # Iterate through all the models that the user wants to generate
     for (model_index in 1:length(model_list)) {
       # Check an acceptable model has been specified
-      if (check_acceptable_model_type
-          (model_list[model_index]) == TRUE) {
+      if (check_acceptable_model_type(model_list[model_index]) == TRUE) {
         # Sse the same code to generate all the currently acceptable model types
         model_fit <- generate_emulator_model(model_list[model_index],
                                              parameters, measures,

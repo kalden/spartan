@@ -32,14 +32,14 @@ efast_graph_Results <- function(RESULTS_FILE_PATH, PARAMETERS, si, sti,
 
       for(out in output_types)
       {
-        ggplot2::ggplot(data=graph_frame, aes(x=Parameter, y=as.numeric(Sensitivity), fill=Statistic)) +
-          geom_bar(stat="identity", position=position_dodge()) + scale_fill_manual("", values = c("Si" = "black", "STi" = "darkgray")) +
-          theme(axis.text.x = element_text(angle = 65, hjust = 1, size=rel(0.75))) +
-          ggtitle(paste0("Partitioning of Variance in Simulation Results\n Measure: ",MEASURES[MEASURE])) + theme(plot.title = element_text(hjust = 0.5, size=rel(0.75))) +
-          geom_errorbar(aes(ymin=as.numeric(Sensitivity), ymax=as.numeric(Error)), width=.2, position=position_dodge(.9)) + ylim(0,1) +
-          xlab("Parameter")+ylab("Sensitivity")
+        ggplot2::ggplot(data=graph_frame, aes(x=graph_frame$Parameter, y=as.numeric(graph_frame$Sensitivity), fill=graph_frame$Statistic)) +
+          ggplot2::geom_bar(stat="identity", position=ggplot2::position_dodge()) + ggplot2::scale_fill_manual("", values = c("Si" = "black", "STi" = "darkgray")) +
+          theme(axis.text.x = element_text(angle = 65, hjust = 1, size=ggplot2::rel(0.75))) +
+          ggplot2::ggtitle(paste0("Partitioning of Variance in Simulation Results\n Measure: ",MEASURES[MEASURE])) + ggplot2::theme(plot.title = element_text(hjust = 0.5, size=ggplot2::rel(0.75))) +
+          ggplot2::geom_errorbar(aes(ymin=as.numeric(graph_frame$Sensitivity), ymax=as.numeric(graph_frame$Error)), width=.2, position=ggplot2::position_dodge(.9)) + ggplot2::ylim(0,1) +
+          ggplot2::xlab("Parameter")+ggplot2::ylab("Sensitivity")
 
-        ggsave(file.path(RESULTS_FILE_PATH,paste0(MEASURES[MEASURE],".",out)))
+        ggplot2::ggsave(file.path(RESULTS_FILE_PATH,paste0(MEASURES[MEASURE],TIMEPOINT,".",out)))
       }
     }
     message(paste("Graphs Output to ", RESULTS_FILE_PATH, sep = ""))

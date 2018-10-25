@@ -7,7 +7,7 @@ data}
 \usage{
 generate_requested_emulations(model_list, partitioned_data, parameters,
   measures, algorithm_settings = NULL, timepoint = NULL,
-  normalised = FALSE)
+  normalised = FALSE, output_formats = c("pdf"))
 }
 \arguments{
 \item{model_list}{Vector of the types of emulation model to create.
@@ -38,6 +38,8 @@ emulators are being created}
 
 \item{normalised}{Whether the emulator data has been normalised or not.
 Affects how training and test output predictions are displayed}
+
+\item{output_formats}{File formats in which result graphs should be produced}
 }
 \value{
 Emulation objects, bundled into a list, with the required

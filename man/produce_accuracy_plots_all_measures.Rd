@@ -6,7 +6,7 @@
 observed data, for all measures}
 \usage{
 produce_accuracy_plots_all_measures(technique, measures, model_predictions,
-  observed_data, timepoint = NULL)
+  observed_data, output_format = c("pdf"), timepoint = NULL)
 }
 \arguments{
 \item{technique}{The machine learning technique used to develop the emulator}
@@ -16,6 +16,8 @@ produce_accuracy_plots_all_measures(technique, measures, model_predictions,
 \item{model_predictions}{Predicted dataset}
 
 \item{observed_data}{Observed dataset (testing or validation)}
+
+\item{output_format}{File formats in which graphs should be produced}
 
 \item{timepoint}{If using multiple timepoints, the timepoint for which the
 emulator has been created}

@@ -5,7 +5,7 @@
 \title{Graph posterior distributions generated for all parameters, to PDF file}
 \usage{
 graph_Posteriors_All_Parameters(abc_resultset, parameters, sampleMins,
-  sampleMaxes)
+  sampleMaxes, output_formats = c("pdf"))
 }
 \arguments{
 \item{abc_resultset}{Result object obtained from the EasyABC package}
@@ -18,6 +18,8 @@ explored using ABC}
 
 \item{sampleMaxes}{Maximum value of the range over which each parameter was
 explored using ABC}
+
+\item{output_formats}{File formats in which result graphs should be produced}
 }
 \description{
 We provide a means of plotting the produced posterior distribution for all

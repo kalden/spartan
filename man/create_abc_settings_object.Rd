@@ -5,7 +5,7 @@
 \title{Creates ensemble-specific parameters for ABC analysis}
 \usage{
 create_abc_settings_object(parameters, measures, built_ensemble,
-  normalise_values = FALSE, normalise_result = FALSE)
+  normalise_values = FALSE, normalise_result = FALSE, file_out = TRUE)
 }
 \arguments{
 \item{parameters}{Array containing the names of the parameters for which
@@ -23,6 +23,12 @@ presented in their correct scale}
 
 \item{normalise_result}{Whether the results produced in running abc
 generated parameter sets using the ensemble should be rescaled.}
+
+\item{file_out}{Whether the settings file should be output to file (TRUE)
+or as an R object (FALSE)}
+}
+\value{
+Object containing attributes needed for abc analysis
 }
 \description{
 The EasyABC model wrapper can only take one parameter input: the parameter

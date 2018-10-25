@@ -7,7 +7,7 @@
 create_ensemble(ensemble_emulations, all_emulator_predictions,
   emulator_test_data, measures, emulator_types, pre_normed_mins,
   pre_normed_maxes, algorithm_settings = NULL, normalise = FALSE,
-  timepoint = NULL)
+  timepoint = NULL, output_formats = c("pdf"))
 }
 \arguments{
 \item{ensemble_emulations}{All emulations to build into the ensemble}
@@ -39,6 +39,8 @@ should be produced showing ensemble performance.}
 ensemble should be normalised for presenting test results}
 
 \item{timepoint}{Simulation timepoint for which an ensemble is being created}
+
+\item{output_formats}{File formats in which result graphs should be produced}
 }
 \value{
 Generated ensemble object
