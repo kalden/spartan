@@ -43,17 +43,26 @@ lhc_graphMeasuresForParameterChange <-
             corr_result <- corcoeffs[
               p, paste(MEASURES[m], "_Estimate", sep = "")]
 
-            # Make filename, titles, and labels
-            titles <- make_graph_title(FILEPATH, PARAMETERS[p], GRAPHTIME, MEASURES[m],
+            # In some instances, the correlation coefficient has been reported as NA
+            # especially in cases where the output result is the same for all parameter
+            # values. This needs detecting and no graph plotted if that occurs
+
+            if(!is.na(corr_result))
+            {
+              # Make filename, titles, and labels
+              titles <- make_graph_title(FILEPATH, PARAMETERS[p], GRAPHTIME, MEASURES[m],
                              MEASURE_SCALE[m],corr_result, TIMEPOINTSCALE)
 
-            # Filter the data to plot
-            data_to_plot <- data.frame(lhcresult[, PARAMETERS[p]],
+              # Filter the data to plot
+              data_to_plot <- data.frame(lhcresult[, PARAMETERS[p]],
                                        lhcresult[, MEASURES[m]])
 
-            # Create graphs
-            output_ggplot_graph(titles$file, OUTPUT_TYPE,
+              # Create graphs
+              output_ggplot_graph(titles$file, OUTPUT_TYPE,
                                 make_lhc_plot(data_to_plot, titles))
+            } else {
+              message(paste0("Parameter ",PARAMETERS[p], "Correlation Coefficient was reported as NA. Excluded from plotting."))
+            }
           }
         }
         message("LHC Graphs Complete")
@@ -381,15 +390,30 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
                               header = TRUE, check.names = FALSE,
                               row.names = 1)
 
+
+
         # Plot set up:
         # convert 360 degrees to radians
         circle_in_radians <- 6.28319
-        degree <- circle_in_radians / length(PARAMETERS)
+
         # outputs:
         output_forms <- c("png", "pdf")
 
         # Now create a plot for all simulation MEASURES
         for (m in 1:length(MEASURES)) {
+
+          # Need to exclude any parameters that are NA prior to plotting
+          na_corrs <- which(is.na(CORCOEFFS[,paste0(MEASURES[m],"_Estimate")]))
+
+          plot_parameters<-PARAMETERS
+          if(length(na_corrs)>0)
+          {
+            plot_parameters<-PARAMETERS[!(PARAMETERS %in% PARAMETERS[na_corrs])]
+            message(paste0("For Measure ",MEASURES[m],", Parameter(s) ",toString(PARAMETERS[na_corrs])," reported correlation coefficients of NA. Excluded from Plot. Check calculation"))
+          }
+
+          degree <- circle_in_radians / length(plot_parameters)
+
           # Create the angles at which the PARAMETERS will be shown on the
           # plot, as well as the colours (blue negative, red positive)
           angle <- c()
@@ -399,12 +423,15 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
                            sep = "")
 
 
-          for (i in 1:length(PARAMETERS)) {
+          #for (i in 1:length(PARAMETERS)) {
+          for (i in 1:length(plot_parameters))
             angle <- c(angle, degree * i)
             # Now see if the correlation is positive or negative
-            if (CORCOEFFS[PARAMETERS[i], col_head] < 0)
+            #if (CORCOEFFS[PARAMETERS[i], col_head] < 0)
+          if (CORCOEFFS[plot_parameters[i], col_head] < 0)
+          {
               colours <- c(colours, "blue")
-            else
+          } else {
               colours <- c(colours, "red")
           }
 
@@ -423,16 +450,18 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
             par(cex.axis = 1.5)
 
             # readjust the parameter list to align with the correct angles
-            PARAM_NAMES <- c(PARAMETERS[length(PARAMETERS)],
-                             PARAMETERS[1:length(PARAMETERS) - 1])
+            #PARAM_NAMES <- c(PARAMETERS[length(PARAMETERS)],
+            #                 PARAMETERS[1:length(PARAMETERS) - 1])
+            PARAM_NAMES <- c(plot_parameters[length(plot_parameters)],
+                             plot_parameters[1:length(plot_parameters) - 1])
 
 
             # Note we use absolute values as plot goes from 0 to 1, it is the
             # colour which shows if it is positive or negative
-            radial.plot(abs(CORCOEFFS[, col_head]),
+            radial.plot(abs(CORCOEFFS[plot_parameters, col_head]),
                         angle, rp.type = "r",
                         lwd = 4, line.col = colours,
-                        labels = seq(1, length(PARAMETERS), by = 1),
+                        labels = seq(1, length(plot_parameters), by = 1),
                         radial.lim = c(0, 1), #range of grid circle
                         main = paste("Partial Rank Correlation Coefficient
                                      Values for ",
@@ -446,7 +475,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
             legend("topleft", 1, c("Positive", "Negative"), lty = 1, lwd = 1:2,
                    col = c("red", "blue"), cex = 0.9, pt.cex = 1)
             par(xpd = TRUE)
-            legend(1, 1, pch = as.character(c(1:length(PARAMETERS))),
+            legend(1, 1, pch = as.character(c(1:length(plot_parameters))),
                    PARAM_NAMES, cex = 0.9, pt.cex = 1)
             par(xpd = FALSE)
             dev.off()
