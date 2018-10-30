@@ -250,6 +250,13 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
       model_list, partitioned_data, parameters, measures, algorithm_settings,
       timepoint, normalised, output_formats)
 
+    # Here we need to double check whether any parameters or measures were
+    # excluded from data partitioning (if they were all the same)
+    if(length(parameters) > length(partitioned_data$parameters))
+      parameters<-partitioned_data$parameters
+    if(length(measures) > length(partitioned_data$measures))
+      measures<-partitioned_data$measures
+
     # Above will return -1 on error with Neural network settings
     # (if algorithm_settings has not been provided with a structure list)
     if (!(typeof(emulators_with_test_preds) == "list")) {
@@ -263,8 +270,8 @@ generate_emulators_and_ensemble <- function(model_list, parameters, measures,
       generated_ensemble <- create_ensemble(
         emulators, all_model_predictions, partitioned_data$testing, measures,
         model_list, emulators_with_test_preds$pre_normed_mins,
-        emulators_with_test_preds$pre_normed_maxes, algorithm_settings = NULL,
-        normalise = normalised, timepoint = NULL, output_formats)
+        emulators_with_test_preds$pre_normed_maxes, algorithm_settings,
+        normalise = normalised, timepoint, output_formats)
 
       # Added October 2018: Would be nice to see the stats for the ensemble performance
       #performance_stats<-c("Ensemble")

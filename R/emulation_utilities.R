@@ -128,6 +128,7 @@ generate_emulator_model <- function(technique, parameters, measures, dataset,
   for (m in 1:length(measures)) {
     # Make the formula
     model_formula <- generate_model_formula(parameters, measures[m])
+    print(model_formula)
 
     if (technique == "SVM") {
       model_fit <- e1071::svm(

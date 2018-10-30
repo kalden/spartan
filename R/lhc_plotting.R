@@ -61,7 +61,7 @@ lhc_graphMeasuresForParameterChange <-
               output_ggplot_graph(titles$file, OUTPUT_TYPE,
                                 make_lhc_plot(data_to_plot, titles))
             } else {
-              message(paste0("Parameter ",PARAMETERS[p], "Correlation Coefficient was reported as NA. Excluded from plotting."))
+              message(paste0("For Parameter ",PARAMETERS[p], " Measure ",MEASURES[m], " Pairing, Correlation Coefficient was reported as NA. Excluded from plotting."))
             }
           }
         }
@@ -412,73 +412,78 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
             message(paste0("For Measure ",MEASURES[m],", Parameter(s) ",toString(PARAMETERS[na_corrs])," reported correlation coefficients of NA. Excluded from Plot. Check calculation"))
           }
 
-          degree <- circle_in_radians / length(plot_parameters)
-
-          # Create the angles at which the PARAMETERS will be shown on the
-          # plot, as well as the colours (blue negative, red positive)
-          angle <- c()
-          colours <- c()
-          # Make the header for this measure
-          col_head <- paste(MEASURES[m], "_Estimate",
-                           sep = "")
-
-
-          #for (i in 1:length(PARAMETERS)) {
-          for (i in 1:length(plot_parameters))
-            angle <- c(angle, degree * i)
-            # Now see if the correlation is positive or negative
-            #if (CORCOEFFS[PARAMETERS[i], col_head] < 0)
-          if (CORCOEFFS[plot_parameters[i], col_head] < 0)
+          # Check there are still parameters left to plot after those removed!
+          if(length(plot_parameters)>0)
           {
-              colours <- c(colours, "blue")
-          } else {
-              colours <- c(colours, "red")
-          }
 
-          graph_name <- paste(FILEPATH, "/polarPlot_", MEASURES[m],sep="")
-          if(!is.null(TIMEPOINTS))
-            graph_name<-paste(graph_name,"_",TIMEPOINTS,sep="")
+            degree <- circle_in_radians / length(plot_parameters)
 
-          # Now plot the graph:
-          for (o in 1:length(output_forms))  {
-            if (output_forms[o] == "pdf")
-              pdf(paste(graph_name, ".pdf", sep = ""), width = 12)
-            if (output_forms[o] == "png")
-              png(filename = paste(graph_name,".png",sep = ""), width = 800)
-
-            # Sets the size of the labels on the outside of the polar plot
-            par(cex.axis = 1.5)
-
-            # readjust the parameter list to align with the correct angles
-            #PARAM_NAMES <- c(PARAMETERS[length(PARAMETERS)],
-            #                 PARAMETERS[1:length(PARAMETERS) - 1])
-            PARAM_NAMES <- c(plot_parameters[length(plot_parameters)],
-                             plot_parameters[1:length(plot_parameters) - 1])
+            # Create the angles at which the PARAMETERS will be shown on the
+            # plot, as well as the colours (blue negative, red positive)
+            angle <- c()
+            colours <- c()
+            # Make the header for this measure
+            col_head <- paste(MEASURES[m], "_Estimate",
+                             sep = "")
 
 
-            # Note we use absolute values as plot goes from 0 to 1, it is the
-            # colour which shows if it is positive or negative
-            radial.plot(abs(CORCOEFFS[plot_parameters, col_head]),
-                        angle, rp.type = "r",
-                        lwd = 4, line.col = colours,
-                        labels = seq(1, length(plot_parameters), by = 1),
-                        radial.lim = c(0, 1), #range of grid circle
-                        main = paste("Partial Rank Correlation Coefficient
-                                     Values for ",
-                                     MEASURES[m], sep = ""),
-                        show.grid.labels = 2,
-                        #put the concentric circle labels going down
-                        show.radial.grid = TRUE,
-                        cex.lab = 0.7
-            )
+            #for (i in 1:length(PARAMETERS)) {
+            for (i in 1:length(plot_parameters))
+              angle <- c(angle, degree * i)
+              # Now see if the correlation is positive or negative
+              #if (CORCOEFFS[PARAMETERS[i], col_head] < 0)
+            if (CORCOEFFS[plot_parameters[i], col_head] < 0)
+            {
+                colours <- c(colours, "blue")
+            } else {
+                colours <- c(colours, "red")
+            }
 
-            legend("topleft", 1, c("Positive", "Negative"), lty = 1, lwd = 1:2,
-                   col = c("red", "blue"), cex = 0.9, pt.cex = 1)
-            par(xpd = TRUE)
-            legend(1, 1, pch = as.character(c(1:length(plot_parameters))),
-                   PARAM_NAMES, cex = 0.9, pt.cex = 1)
-            par(xpd = FALSE)
-            dev.off()
+            graph_name <- paste(FILEPATH, "/polarPlot_", MEASURES[m],sep="")
+            if(!is.null(TIMEPOINTS))
+              graph_name<-paste(graph_name,"_",TIMEPOINTS,sep="")
+
+            # Now plot the graph:
+            for (o in 1:length(output_forms))  {
+              if (output_forms[o] == "pdf")
+                pdf(paste(graph_name, ".pdf", sep = ""), width = 12)
+              if (output_forms[o] == "png")
+                png(filename = paste(graph_name,".png",sep = ""), width = 800)
+
+              # Sets the size of the labels on the outside of the polar plot
+              par(cex.axis = 1.5)
+
+              # readjust the parameter list to align with the correct angles
+              #PARAM_NAMES <- c(PARAMETERS[length(PARAMETERS)],
+              #                 PARAMETERS[1:length(PARAMETERS) - 1])
+              PARAM_NAMES <- c(plot_parameters[length(plot_parameters)],
+                               plot_parameters[1:length(plot_parameters) - 1])
+
+
+              # Note we use absolute values as plot goes from 0 to 1, it is the
+              # colour which shows if it is positive or negative
+              radial.plot(abs(CORCOEFFS[plot_parameters, col_head]),
+                          angle, rp.type = "r",
+                          lwd = 4, line.col = colours,
+                          labels = seq(1, length(plot_parameters), by = 1),
+                          radial.lim = c(0, 1), #range of grid circle
+                          main = paste("Partial Rank Correlation Coefficient
+                                       Values for ",
+                                       MEASURES[m], sep = ""),
+                          show.grid.labels = 2,
+                          #put the concentric circle labels going down
+                          show.radial.grid = TRUE,
+                          cex.lab = 0.7
+              )
+
+              legend("topleft", 1, c("Positive", "Negative"), lty = 1, lwd = 1:2,
+                     col = c("red", "blue"), cex = 0.9, pt.cex = 1)
+              par(xpd = TRUE)
+              legend(1, 1, pch = as.character(c(1:length(plot_parameters))),
+                     PARAM_NAMES, cex = 0.9, pt.cex = 1)
+              par(xpd = FALSE)
+              dev.off()
+            }
           }
         }
       }

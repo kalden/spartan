@@ -101,6 +101,7 @@ generate_requested_emulations <- function(model_list, partitioned_data,
 
     # Iterate through all the models that the user wants to generate
     for (model_index in 1:length(model_list)) {
+      print(model_list[model_index])
       # Check an acceptable model has been specified
       if (check_acceptable_model_type(model_list[model_index]) == TRUE) {
         # Sse the same code to generate all the currently acceptable model types
@@ -170,12 +171,17 @@ generate_requested_emulations <- function(model_list, partitioned_data,
 
 
     # Build the object that is to be both saved out (if requested) and returned
+    # Oct 2018 - as we're now checking parameters and measures are not all the same
+    # and removing these, we need to return the updated parameters and measures incase
+    # used in an ensemble
     built_emulation <- list(
       "emulators" = ensemble_emulators,
       "prediction_set" = all_model_predictions,
       "statistics" = all_model_accuracy_stats,
       "pre_normed_mins" = partitioned_data$pre_normed_mins,
-      "pre_normed_maxes" = partitioned_data$pre_normed_maxes)
+      "pre_normed_maxes" = partitioned_data$pre_normed_maxes,
+      "parameters"=partitioned_data$parameters,
+      "measures"=partitioned_data$measures)
 
     if (algorithm_settings$save_emulators) {
       if (is.null(timepoint))

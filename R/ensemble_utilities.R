@@ -57,6 +57,7 @@ create_ensemble <- function(ensemble_emulations, all_emulator_predictions,
                             algorithm_settings = NULL, normalise = FALSE,
                             timepoint = NULL, output_formats=c("pdf")) {
 
+
   # If called in a process where the emulations are being made,
   # algorithm_settings will already exist. If we're making an ensemble from
   # already existing emulations, this will not. Here it is assumed that the
@@ -151,6 +152,7 @@ calculate_weights_for_ensemble_model <- function(all_model_predictions,
                                                  emulator_test_data,
                                                  measures, emulator_types,
                                                  num_of_generations = 800000) {
+
   weights <- NULL
 
   ## NOW WE HAVE THE MODELS, WE NEED AN ENSEMBLE FOR EACH MEASURE
@@ -161,7 +163,8 @@ calculate_weights_for_ensemble_model <- function(all_model_predictions,
     columns <- seq(m, ncol(all_model_predictions), by = length(measures))
 
     # Extract this data for training the net
-    weightings_net_training_data <- all_model_predictions[, columns]
+    # KA: rbind added in October 2018: May need further checking
+    weightings_net_training_data <- rbind(all_model_predictions[, columns])
 
     model_formula <- generate_model_formula(
       colnames(weightings_net_training_data), measures[m])
@@ -211,6 +214,7 @@ weight_emulator_predictions_by_ensemble <- function(model_weights,
                                                     all_model_predictions,
                                                     measures,
                                                     num_generations = 800000) {
+
   all_ensemble_predictions <- NULL
 
   for (m in 1:length(measures)) {
