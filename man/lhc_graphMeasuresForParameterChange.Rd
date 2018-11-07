@@ -7,7 +7,8 @@
 lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES,
   MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME,
   OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  GRAPHTIME = NULL, check_done = FALSE)
+  GRAPHTIME = NULL, check_done = FALSE, corcoeffs_output_object = NULL,
+  lhc_summary_object = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
@@ -44,6 +45,12 @@ analysed, e.g. "Hours"}
 \item{GRAPHTIME}{The timepoint being processed, if any. NULL if not.}
 
 \item{check_done}{For multiple timepoints, whether input has been checked}
+
+\item{corcoeffs_output_object}{Correlation coefficients can be input as an
+R object as well as CSV file. In this case, CORCOEFFSOUTPUTFILE will be NULL}
+
+\item{lhc_summary_object}{If not specified in a CSV file, results can be specified in an
+R object. In this case LHCSUMMARYFILENAME will be NULL}
 }
 \description{
 Produces a graph for each parameter, and each output measure, showing

@@ -44,12 +44,13 @@ test_that("emulate_lhc_sampled_parameters", {
 
   dir.create(file.path(getwd(),"SA"))
 
-  emulate_lhc_sampled_parameters(file.path(getwd(),"SA"), built_ensemble,
+  predictions<-emulate_lhc_sampled_parameters(file.path(getwd(),"SA"), built_ensemble,
                                  c("stableBindProbability","chemokineExpressionThreshold",
                                    "initialChemokineExpressionValue",
                                    "maxChemokineExpressionValue","maxProbabilityOfAdhesion",
                                    "adhesionFactorExpressionSlope"), c("Velocity","Displacement"),
-                                 c("microns","microns/min"), dataset = emulated_lhc_values, normalise = TRUE)
+                                 c("microns","microns/min"), dataset = emulated_lhc_values, normalise = TRUE,
+                                 write_csv_files = FALSE)
 
   expect_true(file.exists(file.path(getwd(),"SA","stableBindProbability_Velocity.png")))
   expect_true(file.exists(file.path(getwd(),"SA","chemokineExpressionThreshold_Velocity.png")))

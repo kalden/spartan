@@ -395,13 +395,15 @@ calculate_medians_for_all_measures <- function(sim_params, param_result,
 #' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
 #' @param check_done If multiple timepoints, whether the input has been checked
 #' @param write_csv_files Whether results should be output to CSV file. Used with spartanDB
+#' @param lhc_summary_object If not specified in a CSV file, results can be specified in an
+#' R object. In this case LHCSUMMARYFILENAME will be NULL
 #' @return If no CSV file output, PRCC values returned as an R object
 #' @export
 #'
 lhc_generatePRCoEffs <- function(
   FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE,
   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, cor_calc_method=c("s"), check_done = FALSE,
-  write_csv_files = TRUE) {
+  write_csv_files = TRUE, lhc_summary_object=NULL) {
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
 
@@ -410,7 +412,14 @@ lhc_generatePRCoEffs <- function(
 
     if (is.null(TIMEPOINTS)) {
 
-      lhc_result_file <- read_from_csv(file.path(FILEPATH,LHCSUMMARYFILENAME))
+      if(!is.null(LHCSUMMARYFILENAME))
+      {
+        lhc_result_file <- read_from_csv(file.path(FILEPATH,LHCSUMMARYFILENAME))
+      }
+      else if(!is.null(lhc_summary_object))
+      {
+        lhc_result_file<-lhc_summary_object
+      }
 
       message("Generating Partial Rank Correlation Coefficients (lhc_generatePRCoEffs)")
 

@@ -13,13 +13,19 @@
 #'  all formats supported by ggplot2
 #' @param GRAPHTIME The timepoint being processed, if any. NULL if not.
 #' @param check_done For multiple timepoints, whether input has been checked
+#' @param corcoeffs_output_object Correlation coefficients can be input as an
+#' R object as well as CSV file. In this case, CORCOEFFSOUTPUTFILE will be NULL
+#' @param lhc_summary_object If not specified in a CSV file, results can be specified in an
+#' R object. In this case LHCSUMMARYFILENAME will be NULL
 #'
 #' @export
 #'
 lhc_graphMeasuresForParameterChange <-
   function(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE,
            LHCSUMMARYFILENAME, OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL,
-           TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE) {
+           TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE,
+           corcoeffs_output_object=NULL, lhc_summary_object=NULL) {
+
 
   input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
   # Run if all checks pass:
@@ -27,11 +33,17 @@ lhc_graphMeasuresForParameterChange <-
 
   if (is.null(TIMEPOINTS)) {
 
-    if(check_file_exists(file.path(FILEPATH, CORCOEFFSOUTPUTFILE)) &
-       check_file_exists(file.path(FILEPATH,LHCSUMMARYFILENAME))) {
+    if(!is.null(CORCOEFFSOUTPUTFILE))
+    {
+      corcoeffs <- read_from_csv(file.path(FILEPATH, CORCOEFFSOUTPUTFILE))
+      lhcresult <- read_from_csv(file.path(FILEPATH, LHCSUMMARYFILENAME))
+    }
+    else if(!is.null(corcoeffs_output_object))
+    {
+      corcoeffs <- corcoeffs_output_object
+      lhcresult <- lhc_summary_object
+    }
 
-        corcoeffs <- read_from_csv(file.path(FILEPATH, CORCOEFFSOUTPUTFILE))
-        lhcresult <- read_from_csv(file.path(FILEPATH, LHCSUMMARYFILENAME))
 
         message ("Generating output graphs for LHC Parameter Analysis")
 
@@ -66,7 +78,6 @@ lhc_graphMeasuresForParameterChange <-
           }
         }
         message("LHC Graphs Complete")
-      }
     } else {
         # Process each timepoint
         lhc_graphMeasuresForParameterChange_overTime(

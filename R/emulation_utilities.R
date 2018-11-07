@@ -249,11 +249,6 @@ emulator_predictions <- function(emulation, parameters, measures,
                                  normalise_result = FALSE) {
 
   tryCatch({
-    # October 2018 - This seems to only work with one emulation (as the docs say it should)
-    # Yet the code below does say this will work with multiple emulators, yet it doesn't
-    # So a check has been put on this to make sure one emulator is specified
-    if(length(emulation$emulators)==1)
-    {
 
       if (normalise) {
         # We need to normalise the parameters the user has sent in:
@@ -282,21 +277,23 @@ emulator_predictions <- function(emulation, parameters, measures,
       if (normalise_result)  {
         # rbind used to get the mins and maxes into the correct format
         # (compatible with all other calls to this function)
-        predictions <- denormalise_dataset(
-          predictions, rbind(emulation$pre_normed_mins[measures]),
-          rbind(emulation$pre_normed_maxes[measures] ))
+        # If we have more than one emulator, we need to do this per set of predictions
+        for(i in 1:length(emulation$emulators))
+        {
+          # Generate the header of the predictions for this emulator so these can be extracted: emulator type "_" measure
+          predictions_header<-paste0(emulation$emulators[[i]]$type,"_",measures)
+
+          predictions[,predictions_header] <- denormalise_dataset(
+            predictions[,predictions_header], rbind(emulation$pre_normed_mins[measures]),
+            rbind(emulation$pre_normed_maxes[measures]))
+        }
       }
 
       return(predictions)
-    }
-    else
-    {
-      stop()
-    }
+
   }, error = function(e)
   {
     message("Error in Generating Predictions")
-    message("Have you made sure you specify only one emulator for this prediction method?")
     message("Method Terminated")
     print(e)
   })

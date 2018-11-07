@@ -261,6 +261,7 @@ check_ranges<-function(sample_mins,sample_maxes,parameters)
     colnames(sample_maxes)<-parameters
     return(list("sample_mins"=apply(sample_mins,2,as.numeric),"sample_maxes"=apply(sample_maxes,2,as.numeric)))
   }
+
 }
 
 #' Partition latin-hypercube summary file to training, testing, and validation
@@ -326,9 +327,12 @@ partition_dataset <- function(dataset, parameters, measures, percent_train = 75,
           measures<-dataset_check$measures
         }
 
-        range_check<-check_ranges(sample_mins,sample_maxes,parameters)
-        sample_mins<-range_check$sample_mins
-        sample_maxes<-range_check$sample_maxes
+        if(is.null(names(sample_mins)) | is.null(names(sample_maxes)))
+        {
+          range_check<-check_ranges(sample_mins,sample_maxes,parameters)
+          sample_mins<-range_check$sample_mins
+          sample_maxes<-range_check$sample_maxes
+        }
 
 
         # If we normalise, we need to have the mins and maxes for parameters and
@@ -481,9 +485,10 @@ denormalise_dataset <- function(normalised_data, scaled_mins, scaled_maxes) {
   #}
 
   for (c in 1:ncol(normalised_data)) {
+
     normalised_data[, c] <- (normalised_data[, c] *
-                               (scaled_maxes[c] -
-                                  scaled_mins[c])) + scaled_mins[c]
+                               (scaled_maxes[c][[1]] -
+                                  scaled_mins[c][[1]])) + scaled_mins[c][[1]]
   }
   return(normalised_data)
 }

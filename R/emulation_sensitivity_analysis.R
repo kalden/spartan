@@ -65,6 +65,8 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
         parameters_minus_dummy <- setdiff(parameters, "dummy")
       else if("Dummy" %in% parameters)
         parameters_minus_dummy <- setdiff(parameters, "Dummy")
+      else
+        parameters_minus_dummy <- parameters
 
 
       spartan_sample <- spartan_sample[, parameters_minus_dummy]
@@ -148,6 +150,7 @@ emulate_efast_sampled_parameters <- function(filepath, surrogateModel,
 #' the vignette for analysing more than one timepoint
 #' @param timepointscale Scale of the timepoints, if being used
 #' @param write_csv_files Whether output should be written to CSV file. Used with spartanDB
+#' @param graph_results Whether plots should be produced for this analysis
 #'
 #' @export
 emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
@@ -157,7 +160,8 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                                              normalise = FALSE,
                                              timepoint = NULL,
                                              timepointscale = NULL,
-                                             write_csv_files = TRUE) {
+                                             write_csv_files = TRUE,
+                                             graph_results=TRUE) {
 
   #emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values)
 
@@ -216,15 +220,20 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
     # Analyse:
     # Method takes care of adding timepoint to the file names
     prccs<-lhc_generatePRCoEffs(FILEPATH=filepath, parameters,  measures,
-                         "Emulated_LHC_Summary.csv",
+                                LHCSUMMARYFILENAME=NULL,
                          "CorrelationCoefficients.csv",
                          c(timepoint), timepointscale, check_done=TRUE,
-                         write_csv_files=write_csv_files)
+                         write_csv_files=write_csv_files,
+                         lhc_summary_object=param_values_with_predictions)
 
-    lhc_graphMeasuresForParameterChange(
-      filepath, parameters, measures, measure_scale, "CorrelationCoefficients.csv",
-      "Emulated_LHC_Summary.csv", OUTPUT_TYPE = c("PNG"), TIMEPOINTS = c(timepoint),
-      TIMEPOINTSCALE = timepointscale, check_done=TRUE)
+    if(graph_results)
+    {
+      lhc_graphMeasuresForParameterChange(
+        filepath, parameters, measures, measure_scale, CORCOEFFSOUTPUTFILE=NULL,
+        LHCSUMMARYFILENAME=NULL, OUTPUT_TYPE = c("PNG"), TIMEPOINTS = c(timepoint),
+        TIMEPOINTSCALE = timepointscale, check_done=TRUE, corcoeffs_output_object=prccs,
+        lhc_summary_object=param_values_with_predictions)
+    }
 
     # return the PRCC values, spartan DB uses these to add to a DB
     if(!write_csv_files)
