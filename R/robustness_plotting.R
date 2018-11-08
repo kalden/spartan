@@ -221,7 +221,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
             outlier_flag = 1
           }
 
-          ggplot2::ggplot(ALLRESULTS, ggplot2::aes(x=ALLRESULTS[,1], y=ALLRESULTS[, MEASURE+1])) +
+          ggplot2::ggplot(ALLRESULTS, ggplot2::aes(x=stats::reorder(ALLRESULTS[,1],sort(as.numeric(ALLRESULTS[,1]))), y=ALLRESULTS[, MEASURE+1])) +
             ggplot2::geom_boxplot(notch=TRUE, outlier.shape = outlier_flag) + ggplot2::labs(title=GRAPHTITLE,x="Parameter Value",
                                   y = paste0("Median ", MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
             ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
