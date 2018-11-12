@@ -4,8 +4,8 @@
 \alias{efast_ttest}
 \title{Internal function used in calculating the partitions of variance in eFAST}
 \usage{
-efast_ttest(si, range_si, sti, range_sti, OUTPUTMEASURES_TO_TTEST, NUMPARAMS,
-  NUMCURVES, TTEST_CONF_INT)
+efast_ttest(si, range_si, sti, range_sti, OUTPUTMEASURES_TO_TTEST,
+  NUMPARAMS, NUMCURVES, TTEST_CONF_INT)
 }
 \description{
 Internal function used in calculating the partitions of variance in eFAST

@@ -4,8 +4,8 @@
 \alias{plotPRCCSFromTimepointFiles}
 \title{Plots Graphs for Partial Rank Correlation Coefficients Over Time}
 \usage{
-plotPRCCSFromTimepointFiles(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSFILENAME,
-  TIMEPOINTS, TIMEPOINTSCALE, DISPLAYPVALS = FALSE)
+plotPRCCSFromTimepointFiles(FILEPATH, PARAMETERS, MEASURES,
+  CORCOEFFSFILENAME, TIMEPOINTS, TIMEPOINTSCALE, DISPLAYPVALS = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can

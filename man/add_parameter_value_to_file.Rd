@@ -4,8 +4,8 @@
 \alias{add_parameter_value_to_file}
 \title{Iterates through the parameters, adding their sampled value to the netlogo experiment file}
 \usage{
-add_parameter_value_to_file(xml, PARAMETERS, ParameterInfo, LHC_DESIGN, SAMPLE,
-  PARAMVALS)
+add_parameter_value_to_file(xml, PARAMETERS, ParameterInfo, LHC_DESIGN,
+  SAMPLE, PARAMVALS)
 }
 \arguments{
 \item{xml}{Object of the XML file being constructed}

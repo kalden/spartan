@@ -4,9 +4,9 @@
 \alias{oat_process_netlogo_result}
 \title{Takes a Netlogo behaviour space file and performs a robustness analysis from that simulation data}
 \usage{
-oat_process_netlogo_result(FILEPATH, NETLOGO_BEHAVIOURSPACEFILE, PARAMETERS,
-  BASELINE, PMIN, PMAX, PINC, MEASURES, RESULTFILENAME, ATESTRESULTSFILENAME,
-  TIMESTEP)
+oat_process_netlogo_result(FILEPATH, NETLOGO_BEHAVIOURSPACEFILE,
+  PARAMETERS, BASELINE, PMIN, PMAX, PINC, MEASURES, RESULTFILENAME,
+  ATESTRESULTSFILENAME, TIMESTEP)
 }
 \arguments{
 \item{FILEPATH}{Location where the behaviour space results can be found}

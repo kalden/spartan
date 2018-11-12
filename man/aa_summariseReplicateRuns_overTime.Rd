@@ -5,8 +5,9 @@
 \title{Calculate summary responses for consistency analysis simulations at multiple timepoints}
 \usage{
 aa_summariseReplicateRuns_overTime(FILEPATH, SAMPLESIZES, MEASURES,
-  RESULTFILENAME, ALTFILENAME = NULL, OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-  SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE, TIMEPOINTS, TIMEPOINTSCALE)
+  RESULTFILENAME, ALTFILENAME = NULL, OUTPUTFILECOLSTART,
+  OUTPUTFILECOLEND, SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE, TIMEPOINTS,
+  TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}

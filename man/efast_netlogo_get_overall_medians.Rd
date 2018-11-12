@@ -4,8 +4,8 @@
 \alias{efast_netlogo_get_overall_medians}
 \title{Deprecated: Use \code{efast_netlogo_get_overall_medians}}
 \usage{
-efast_netlogo_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,
-  MEASURES, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
+efast_netlogo_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS,
+  NUMSAMPLES, MEASURES, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found, in folders

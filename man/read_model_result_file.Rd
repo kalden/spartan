@@ -4,8 +4,8 @@
 \alias{read_model_result_file}
 \title{Reads a model result file, either CSV or XML}
 \usage{
-read_model_result_file(fileaddress, resultfilename, outputfilecolstart = NULL,
-  outputfilecolend = NULL)
+read_model_result_file(fileaddress, resultfilename,
+  outputfilecolstart = NULL, outputfilecolend = NULL)
 }
 \arguments{
 \item{fileaddress}{Folder where the result file can be found}

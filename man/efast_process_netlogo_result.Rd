@@ -4,8 +4,8 @@
 \alias{efast_process_netlogo_result}
 \title{Analyses Netlogo simulation data for parameter sets generated for eFAST}
 \usage{
-efast_process_netlogo_result(FILEPATH, EFASTSAMPLE_RESULTFILENAME, PARAMETERS,
-  NUMCURVES, NUMSAMPLES, MEASURES, RESULTFILENAME, TIMESTEP)
+efast_process_netlogo_result(FILEPATH, EFASTSAMPLE_RESULTFILENAME,
+  PARAMETERS, NUMCURVES, NUMSAMPLES, MEASURES, RESULTFILENAME, TIMESTEP)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found}

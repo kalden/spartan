@@ -5,7 +5,8 @@
 \title{Initialises the Netlogo setup file for this experiment}
 \usage{
 initialise_netlogo_xml_file(EXPERIMENT, SAMPLE, EXPERIMENT_REPETITIONS,
-  RUN_METRICS_EVERYSTEP, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES)
+  RUN_METRICS_EVERYSTEP, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION,
+  MEASURES)
 }
 \arguments{
 \item{EXPERIMENT}{Test for the experiment tag of the file (e.g. LHC, eFAST, etc)}

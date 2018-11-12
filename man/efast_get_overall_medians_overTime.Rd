@@ -4,8 +4,8 @@
 \alias{efast_get_overall_medians_overTime}
 \title{Pre-process analysis settings if multiple timepoints are being considered}
 \usage{
-efast_get_overall_medians_overTime(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,
-  MEASURES, TIMEPOINTS, TIMEPOINTSCALE)
+efast_get_overall_medians_overTime(FILEPATH, NUMCURVES, PARAMETERS,
+  NUMSAMPLES, MEASURES, TIMEPOINTS, TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found, in folders

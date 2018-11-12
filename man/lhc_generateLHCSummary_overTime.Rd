@@ -5,8 +5,8 @@
 \title{Pre-process analysis settings if multiple timepoints are being considered}
 \usage{
 lhc_generateLHCSummary_overTime(FILEPATH, PARAMETERS, MEASURES,
-  LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME, SPARTAN_PARAMETER_FILE = NULL,
-  TIMEPOINTS, TIMEPOINTSCALE)
+  LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME,
+  SPARTAN_PARAMETER_FILE = NULL, TIMEPOINTS, TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can

@@ -5,7 +5,8 @@
 \title{Read in the simulation results either from a file, or R object
 The existance of these results was checked in pre-execution checks}
 \usage{
-read_simulation_results(FILEPATH, AA_SIM_RESULTS_FILE, AA_SIM_RESULTS_OBJECT)
+read_simulation_results(FILEPATH, AA_SIM_RESULTS_FILE,
+  AA_SIM_RESULTS_OBJECT)
 }
 \arguments{
 \item{FILEPATH}{Where the results can be found}

@@ -4,8 +4,9 @@
 \alias{plot_compare_sim_observed_to_model_prediction}
 \title{Internal function used to create accuracy plots of the emulation against observed data}
 \usage{
-plot_compare_sim_observed_to_model_prediction(observed, predicted, technique,
-  measure, mse, graph_file_name, timepoint = NULL, output_format)
+plot_compare_sim_observed_to_model_prediction(observed, predicted,
+  technique, measure, mse, graph_file_name, timepoint = NULL,
+  output_format)
 }
 \arguments{
 \item{observed}{Observed dataset (testing or validation)}

@@ -4,9 +4,9 @@
 \alias{emulate_efast_sampled_parameters}
 \title{Emulate simulations for a set of eFAST generated parameter values}
 \usage{
-emulate_efast_sampled_parameters(filepath, surrogateModel, parameters, measures,
-  num_curves, ensemble_set = TRUE, normalise = FALSE, timepoint = NULL,
-  csv_file_input = TRUE, spartan_sample_obj = NULL,
+emulate_efast_sampled_parameters(filepath, surrogateModel, parameters,
+  measures, num_curves, ensemble_set = TRUE, normalise = FALSE,
+  timepoint = NULL, csv_file_input = TRUE, spartan_sample_obj = NULL,
   write_csv_file_out = TRUE, normalise_result = FALSE)
 }
 \arguments{

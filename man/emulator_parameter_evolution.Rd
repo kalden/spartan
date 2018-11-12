@@ -4,8 +4,8 @@
 \alias{emulator_parameter_evolution}
 \title{Evolve parameter sets that meet a desired ensemble outcome}
 \usage{
-emulator_parameter_evolution(function_to_evaluate, nsga2_user_set_parameters,
-  nsga2_settings)
+emulator_parameter_evolution(function_to_evaluate,
+  nsga2_user_set_parameters, nsga2_settings)
 }
 \arguments{
 \item{function_to_evaluate}{A user-defined function that NSGA2 seeks to

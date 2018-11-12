@@ -4,9 +4,9 @@
 \alias{summarise_lhc_sweep_responses}
 \title{Processes an LHC sample, returning summary stats for all parameter sets}
 \usage{
-summarise_lhc_sweep_responses(filepath, numrunspersample, parameters, measures,
-  resultfilename, altfilename, num_samples, lhctable, outputcolstart,
-  outputcolend)
+summarise_lhc_sweep_responses(filepath, numrunspersample, parameters,
+  measures, resultfilename, altfilename, num_samples, lhctable,
+  outputcolstart, outputcolend)
 }
 \arguments{
 \item{filepath}{Directory where the simulation runs of single CSV file can

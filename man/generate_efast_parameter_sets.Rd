@@ -4,8 +4,8 @@
 \alias{generate_efast_parameter_sets}
 \title{Use the eFAST approach to generate parameter sets}
 \usage{
-generate_efast_parameter_sets(FILEPATH, NUMCURVES, NUMSAMPLES, PARAMETERS, PMIN,
-  PMAX)
+generate_efast_parameter_sets(FILEPATH, NUMCURVES, NUMSAMPLES, PARAMETERS,
+  PMIN, PMAX)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}

@@ -4,8 +4,8 @@
 \alias{lhc_generate_lhc_sample_netlogo}
 \title{Prepares Netlogo experiment files for a sampling-based sensitivity analysis, using latin-hypercube sampling}
 \usage{
-lhc_generate_lhc_sample_netlogo(FILEPATH, PARAMETERS, PARAMVALS, NUMSAMPLES,
-  ALGORITHM, EXPERIMENT_REPETITIONS, RUN_METRICS_EVERYSTEP,
+lhc_generate_lhc_sample_netlogo(FILEPATH, PARAMETERS, PARAMVALS,
+  NUMSAMPLES, ALGORITHM, EXPERIMENT_REPETITIONS, RUN_METRICS_EVERYSTEP,
   NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES)
 }
 \arguments{

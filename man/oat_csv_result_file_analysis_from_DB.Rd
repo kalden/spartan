@@ -4,8 +4,8 @@
 \alias{oat_csv_result_file_analysis_from_DB}
 \title{Performs a robustness analysis for simulation results stored in a database, comparing simulation behaviour at different parameter values}
 \usage{
-oat_csv_result_file_analysis_from_DB(db_results, parameters, baseline, measures,
-  PMIN, PMAX, PINC)
+oat_csv_result_file_analysis_from_DB(db_results, parameters, baseline,
+  measures, PMIN, PMAX, PINC)
 }
 \arguments{
 \item{db_results}{Set of experimental results from a mysql database}

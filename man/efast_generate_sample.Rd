@@ -4,8 +4,8 @@
 \alias{efast_generate_sample}
 \title{Generates parameter sets for variance-based eFAST Sensitivity Analysis}
 \usage{
-efast_generate_sample(FILEPATH, NUMCURVES, NUMSAMPLES, PARAMETERS, PMIN, PMAX,
-  write_csv = TRUE, return_sample = FALSE)
+efast_generate_sample(FILEPATH, NUMCURVES, NUMSAMPLES, PARAMETERS, PMIN,
+  PMAX, write_csv = TRUE, return_sample = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}

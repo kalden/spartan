@@ -5,8 +5,8 @@
 \title{Process parameter value set if results exist}
 \usage{
 process_parameter_value_if_exists(FILEPATH, NUMRUNSPERSAMPLE, MEASURES,
-  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND, PARAMETER,
-  PARAM_VAL, EXP_PARAMS)
+  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,
+  PARAMETER, PARAM_VAL, EXP_PARAMS)
 }
 \arguments{
 \item{FILEPATH}{Directory where either the simulation runs or single CSV file result can be found}

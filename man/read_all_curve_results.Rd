@@ -4,8 +4,8 @@
 \alias{read_all_curve_results}
 \title{Reads results from each curve into a multi-dimensional array}
 \usage{
-read_all_curve_results(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES, MEASURES,
-  PARAMETERS)
+read_all_curve_results(FILEPATH, GRAPHTIME, NUMCURVES, NUMSAMPLES,
+  MEASURES, PARAMETERS)
 }
 \arguments{
 \item{FILEPATH}{Filepath where simulation results can be found}

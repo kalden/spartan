@@ -4,8 +4,9 @@
 \alias{produce_accuracy_plots_single_measure}
 \title{Internal function used to create accuracy plots of the emulation against observed data}
 \usage{
-produce_accuracy_plots_single_measure(technique, measure, model_predictions,
-  observed_data, output_format = c("pdf"), timepoint = NULL)
+produce_accuracy_plots_single_measure(technique, measure,
+  model_predictions, observed_data, output_format = c("pdf"),
+  timepoint = NULL)
 }
 \arguments{
 \item{technique}{The machine learning technique used to develop the emulator}

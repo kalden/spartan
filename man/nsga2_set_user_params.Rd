@@ -4,8 +4,8 @@
 \alias{nsga2_set_user_params}
 \title{Initialise analysis specific parameters for NSGA-2}
 \usage{
-nsga2_set_user_params(built_ensemble, parameters, measures, desiredResponses,
-  sampleMins, sampleMaxes)
+nsga2_set_user_params(built_ensemble, parameters, measures,
+  desiredResponses, sampleMins, sampleMaxes)
 }
 \arguments{
 \item{built_ensemble}{Ensemble object that will be used in the NSGA-2

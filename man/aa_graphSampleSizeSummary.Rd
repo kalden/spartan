@@ -6,8 +6,8 @@
 \usage{
 aa_graphSampleSizeSummary(FILEPATH, MEASURES, MAXSAMPLESIZE, SMALL, MEDIUM,
   LARGE, GRAPHOUTPUTFILE, SAMPLESUMMARY_OBJECT = NULL,
-  SAMPLESUMMARY_FILE = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  GRAPHLABEL = NULL)
+  SAMPLESUMMARY_FILE = NULL, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL, GRAPHLABEL = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}

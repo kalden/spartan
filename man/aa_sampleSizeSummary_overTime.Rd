@@ -4,8 +4,9 @@
 \alias{aa_sampleSizeSummary_overTime}
 \title{Determines median and maximum A-Test score for each sample size over time}
 \usage{
-aa_sampleSizeSummary_overTime(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME,
-  ATESTRESULTS_FILE = NULL, ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
+aa_sampleSizeSummary_overTime(FILEPATH, SAMPLESIZES, MEASURES,
+  SUMMARYFILENAME, ATESTRESULTS_FILE = NULL,
+  ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
   TIMEPOINTSCALE = NULL)
 }
 \arguments{

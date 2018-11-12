@@ -4,8 +4,8 @@
 \alias{generate_summary_stats_for_all_param_sets}
 \title{Generate summary statistics for each value of all parameters in this analysis}
 \usage{
-generate_summary_stats_for_all_param_sets(FILEPATH, PARAMETERS, BASELINE, PMIN,
-  PMAX, PINC, PARAMVALS, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME,
+generate_summary_stats_for_all_param_sets(FILEPATH, PARAMETERS, BASELINE,
+  PMIN, PMAX, PINC, PARAMVALS, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME,
   ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND)
 }
 \arguments{

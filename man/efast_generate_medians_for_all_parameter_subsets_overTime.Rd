@@ -4,9 +4,10 @@
 \alias{efast_generate_medians_for_all_parameter_subsets_overTime}
 \title{Pre-process analysis settings if multiple timepoints are being considered}
 \usage{
-efast_generate_medians_for_all_parameter_subsets_overTime(FILEPATH, NUMCURVES,
-  PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME,
-  ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND, TIMEPOINTS, TIMEPOINTSCALE)
+efast_generate_medians_for_all_parameter_subsets_overTime(FILEPATH,
+  NUMCURVES, PARAMETERS, NUMSAMPLES, NUMRUNSPERSAMPLE, MEASURES,
+  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,
+  TIMEPOINTS, TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found, in folders

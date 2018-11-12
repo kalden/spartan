@@ -5,8 +5,8 @@
 \title{Internal function used to combine test set predictions from emulators to
 form the ensemble training set}
 \usage{
-generate_ensemble_training_set(emulator, parameters, measures, observed_data,
-  all_model_predictions)
+generate_ensemble_training_set(emulator, parameters, measures,
+  observed_data, all_model_predictions)
 }
 \arguments{
 \item{emulator}{An emulator object from which the test set data is being

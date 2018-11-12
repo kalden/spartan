@@ -5,9 +5,9 @@
 \title{Takes each parameter in turn and creates a plot showing A-Test score against parameter value.}
 \usage{
 oat_graphATestsForSampleSize(FILEPATH, PARAMETERS, MEASURES, ATESTSIGLEVEL,
-  ATESTRESULTFILENAME, BASELINE, PMIN = NULL, PMAX = NULL, PINC = NULL,
-  PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  output_types = c("pdf"))
+  ATESTRESULTFILENAME, BASELINE, PMIN = NULL, PMAX = NULL,
+  PINC = NULL, PARAMVALS = NULL, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL, output_types = c("pdf"))
 }
 \arguments{
 \item{FILEPATH}{Directory where either the simulation runs or single CSV file result can be found}

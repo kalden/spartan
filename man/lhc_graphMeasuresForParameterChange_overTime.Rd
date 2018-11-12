@@ -4,8 +4,8 @@
 \alias{lhc_graphMeasuresForParameterChange_overTime}
 \title{Wrapper for graphing LHC results for multiple timepoints}
 \usage{
-lhc_graphMeasuresForParameterChange_overTime(FILEPATH, PARAMETERS, MEASURES,
-  MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME,
+lhc_graphMeasuresForParameterChange_overTime(FILEPATH, PARAMETERS,
+  MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME,
   OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
   GRAPHTIME = NULL)
 }

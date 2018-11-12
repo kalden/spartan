@@ -4,8 +4,8 @@
 \alias{calculate_atest_score}
 \title{Calculate the A-Test score for a parameter set in comparison with baseline}
 \usage{
-calculate_atest_score(parameter_result, exp_params, baseline_result, measures,
-  parameter, value)
+calculate_atest_score(parameter_result, exp_params, baseline_result,
+  measures, parameter, value)
 }
 \arguments{
 \item{parameter_result}{Simulation results under current parameter set}

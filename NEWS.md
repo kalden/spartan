@@ -1,13 +1,19 @@
 ---
-title: '# spartan 3.0.1'
+title: '# spartan 3.0.2'
 author: "Kieran Alden"
-date: "1 March 2018"
+date: "12 November 2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# spartan 3.0.2
+Changes introduced since spartan 3.0.1
+* Plots translated to use ggplot, removing requirement for gplots package
+* Additional functions added to ease integration with forthcoming spartanDB and roboSpartan platforms
+* Additional tests and fixes to descriptions in the three vignettes
 
 # spartan 3.0.1
 

@@ -5,9 +5,9 @@
 \title{Performs a robustness analysis for supplied simulation data, comparing simulation behaviour at different parameter values}
 \usage{
 oat_csv_result_file_analysis(FILEPATH, CSV_FILE_NAME, PARAMETERS, BASELINE,
-  MEASURES, ATESTRESULTFILENAME, PMIN = NULL, PMAX = NULL, PINC = NULL,
-  PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  check_done = FALSE)
+  MEASURES, ATESTRESULTFILENAME, PMIN = NULL, PMAX = NULL,
+  PINC = NULL, PARAMVALS = NULL, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where either the simulation runs or single CSV file result can be found}

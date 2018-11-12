@@ -6,8 +6,8 @@
 \usage{
 lhc_generatePRCoEffs(FILEPATH, PARAMETERS, MEASURES, LHCSUMMARYFILENAME,
   CORCOEFFSOUTPUTFILE, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  cor_calc_method = c("s"), check_done = FALSE, write_csv_files = TRUE,
-  lhc_summary_object = NULL)
+  cor_calc_method = c("s"), check_done = FALSE,
+  write_csv_files = TRUE, lhc_summary_object = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can

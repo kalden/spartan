@@ -5,7 +5,8 @@
 \title{For a given sample size, get the median results to summarise results for all sets}
 \usage{
 get_medians_for_size_subsets(FILEPATH, NUMSUBSETSPERSAMPLESIZE, SAMPLESIZE,
-  MEASURES, RESULTFILENAME, ALTFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND)
+  MEASURES, RESULTFILENAME, ALTFILENAME, OUTPUTFILECOLSTART,
+  OUTPUTFILECOLEND)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}

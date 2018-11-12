@@ -4,7 +4,8 @@
 \alias{get_max_and_median_atest_scores}
 \title{Return the max and median A-Test score for all measures for a sample size}
 \usage{
-get_max_and_median_atest_scores(sample_processing, measures, sample_size_result)
+get_max_and_median_atest_scores(sample_processing, measures,
+  sample_size_result)
 }
 \arguments{
 \item{sample_processing}{Sample size being analysed}

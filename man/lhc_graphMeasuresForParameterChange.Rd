@@ -7,8 +7,8 @@
 lhc_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES,
   MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME,
   OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  GRAPHTIME = NULL, check_done = FALSE, corcoeffs_output_object = NULL,
-  lhc_summary_object = NULL)
+  GRAPHTIME = NULL, check_done = FALSE,
+  corcoeffs_output_object = NULL, lhc_summary_object = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can

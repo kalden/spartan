@@ -1,6 +1,6 @@
 ## Test environments
-* local Ubuntu 16.04, R 3.4.3
-* local Ubuntu 17.10 R development version (2018-05-14)
+* local Ubuntu 18.04, R 3.5.1
+* local Ubuntu 18.10 R development version (2018-11-12)
 * win-builder (devel and release)
 
 ## R CMD check results
@@ -18,4 +18,4 @@ Possibly mis-spelled words in DESCRIPTION:
   
 We are happy with the spelling of each word
 
-In addition, on a recent upload we were asked by Swetlana Herbrandt to add more examples, but we explained that this is a huge problem for given the data spartan processes. Given we have three detailed vignettes, an R journal paper, and GB's of data available for use in those vignettes and tutorials (a subset of which took us over the maximum 5MB tarball size so had to be removed), Uwe Ligges suggested that CRAN could live with fewer examples.
+In addition, on the last upload we were asked by Swetlana Herbrandt to add more examples, but we explained that this is a huge problem given the data spartan processes. Given we have three detailed vignettes, an R journal paper, and GB's of data available for use in those vignettes and tutorials (a subset of which took us over the maximum 5MB tarball size so had to be removed), Uwe Ligges suggested that CRAN could live with fewer examples.

@@ -42,7 +42,7 @@ sampleMaxes <- cbind(100,0.9,0.5,0.08,1,5)
 sampleMins <-cbind(0,0.1,0.1,0.015,0.1,0.25)
 
 ## Partition the dataset, in this case normalising the data
-partitionedData <- partition_dataset(sim_data_for_emulation, parameters, percent_train=75, percent_test=15, 
+partitionedData <- partition_dataset(sim_data_for_emulation, parameters, measures, percent_train=75, percent_test=15, 
 	percent_validation=10, normalise=TRUE, sample_mins = sampleMins, sample_maxes = sampleMaxes)
 # If you want to specify a seed to use when randomly paritioning the data, add seed=[desired seed],
 # eg seed=10
@@ -115,7 +115,7 @@ modelList <- c("SVM","RF","GLM","NNET","GP")
 # Simulation dataset, again using the provided data
 data("sim_data_for_emulation")
 # Partition the dataset (mins, maxes as declared in Technique 6)
-partitionedData <- partition_dataset(sim_data_for_emulation, parameters, percent_train=75, percent_test=15, 
+partitionedData <- partition_dataset(sim_data_for_emulation, parameters, measures, percent_train=75, percent_test=15, 
 	percent_validation=10, normalise=TRUE, sample_mins = sampleMins, sample_maxes = sampleMaxes)
 # Make the ensemble, specifying that the data above has been normalised. Parameters and measures as declared in Technique 6
 # Recall you must have created an algorithmSettings object with the neural network structures to examine

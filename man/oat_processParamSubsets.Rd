@@ -5,10 +5,10 @@
 \title{Summarises stochastic, repeated, simulations for all robustness parameter sets into a single file.}
 \usage{
 oat_processParamSubsets(FILEPATH, PARAMETERS, NUMRUNSPERSAMPLE, MEASURES,
-  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
-  CSV_FILE_NAME, BASELINE, PMIN = NULL, PMAX = NULL, PINC = NULL,
-  PARAMVALS = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  check_done = FALSE)
+  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTFILECOLSTART,
+  OUTPUTFILECOLEND, CSV_FILE_NAME, BASELINE, PMIN = NULL, PMAX = NULL,
+  PINC = NULL, PARAMVALS = NULL, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where either the simulation runs or single CSV file result can be found}

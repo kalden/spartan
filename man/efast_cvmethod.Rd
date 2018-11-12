@@ -4,8 +4,8 @@
 \alias{efast_cvmethod}
 \title{Internal function used in calculating the partitions of variance in eFAST}
 \usage{
-efast_cvmethod(si, range_si, sti, range_sti, OUTMEASURE, NUMPARAMS, NUMCURVES,
-  NUMOUTMEASURES)
+efast_cvmethod(si, range_si, sti, range_sti, OUTMEASURE, NUMPARAMS,
+  NUMCURVES, NUMOUTMEASURES)
 }
 \arguments{
 \item{si}{Amount of variance partitioned to each parameter}

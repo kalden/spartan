@@ -5,8 +5,8 @@
 \title{Determines the median and maximum A-Test score observed for each sample size}
 \usage{
 aa_sampleSizeSummary(FILEPATH, SAMPLESIZES, MEASURES, SUMMARYFILENAME,
-  ATESTRESULTS_FILE = NULL, ATESTRESULTS_OBJECT = NULL, TIMEPOINTS = NULL,
-  TIMEPOINTSCALE = NULL, check_done = FALSE)
+  ATESTRESULTS_FILE = NULL, ATESTRESULTS_OBJECT = NULL,
+  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}

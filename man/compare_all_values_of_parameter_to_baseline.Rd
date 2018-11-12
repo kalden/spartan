@@ -4,9 +4,9 @@
 \alias{compare_all_values_of_parameter_to_baseline}
 \title{For one parameter, compare responses for all values with those at baseline}
 \usage{
-compare_all_values_of_parameter_to_baseline(parameter_value_list, parameters,
-  parameter_index, baseline, result, exp_params, baseline_result, measures,
-  all_atest_scores)
+compare_all_values_of_parameter_to_baseline(parameter_value_list,
+  parameters, parameter_index, baseline, result, exp_params,
+  baseline_result, measures, all_atest_scores)
 }
 \arguments{
 \item{parameter_value_list}{List of values for this parameter}

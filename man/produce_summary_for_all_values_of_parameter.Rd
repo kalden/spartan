@@ -4,9 +4,10 @@
 \alias{produce_summary_for_all_values_of_parameter}
 \title{For one parameter, evaluate the results of all values that parameter can take}
 \usage{
-produce_summary_for_all_values_of_parameter(FILEPATH, param, param_val_list,
-  BASELINE, baseline_evaluated, PARAMETERS, EXP_PARAMS, NUMRUNSPERSAMPLE,
-  MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND)
+produce_summary_for_all_values_of_parameter(FILEPATH, param,
+  param_val_list, BASELINE, baseline_evaluated, PARAMETERS, EXP_PARAMS,
+  NUMRUNSPERSAMPLE, MEASURES, RESULTFILENAME, ALTERNATIVEFILENAME,
+  OUTPUTCOLSTART, OUTPUTCOLEND)
 }
 \arguments{
 \item{FILEPATH}{Directory where either the simulation runs or single CSV file result can be found}

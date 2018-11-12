@@ -4,8 +4,9 @@
 \alias{lhc_graphMeasuresForParameterChange_from_db}
 \title{Generates parameter/measure plot for each pairing in the analysis, from results stored in a database}
 \usage{
-lhc_graphMeasuresForParameterChange_from_db(db_results, corcoeffs, parameters,
-  measures, MEASURE_SCALE, output_directory, OUTPUT_TYPE = c("PDF"))
+lhc_graphMeasuresForParameterChange_from_db(db_results, corcoeffs,
+  parameters, measures, MEASURE_SCALE, output_directory,
+  OUTPUT_TYPE = c("PDF"))
 }
 \arguments{
 \item{db_results}{Results for a specified experiment mined from the database}

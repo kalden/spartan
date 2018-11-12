@@ -5,7 +5,8 @@
 \title{Predict simulation responses for a parameter set using an ensemble}
 \usage{
 use_ensemble_to_generate_predictions(generated_ensemble, data_to_predict,
-  parameters, measures, normalise_values = FALSE, normalise_result = FALSE)
+  parameters, measures, normalise_values = FALSE,
+  normalise_result = FALSE)
 }
 \arguments{
 \item{generated_ensemble}{Ensemble to use to make predictions}

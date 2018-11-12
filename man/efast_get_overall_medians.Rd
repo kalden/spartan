@@ -5,9 +5,9 @@
 \title{Calculates the summary stats for each parameter set (median of any
 replicates)}
 \usage{
-efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES, MEASURES,
-  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, current_time = NULL,
-  check_done = FALSE)
+efast_get_overall_medians(FILEPATH, NUMCURVES, PARAMETERS, NUMSAMPLES,
+  MEASURES, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
+  current_time = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs can be found, in folders

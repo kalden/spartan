@@ -4,8 +4,8 @@
 \alias{lhc_generate_lhc_sample}
 \title{Generates sets of simulation parameters using latin-hypercube sampling}
 \usage{
-lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX, ALGORITHM,
-  PINC = NULL, write_csv = TRUE)
+lhc_generate_lhc_sample(FILEPATH, PARAMETERS, NUMSAMPLES, PMIN, PMAX,
+  ALGORITHM, PINC = NULL, write_csv = TRUE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples should be output to}

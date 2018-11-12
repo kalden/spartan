@@ -5,8 +5,8 @@
 \title{Generate an ensemble from previously created spartan emulation objects}
 \usage{
 generate_ensemble_from_existing_emulations(existing_emulations, parameters,
-  measures, observed_data, algorithm_settings = NULL, normalise = FALSE,
-  timepoint = NULL, output_formats = c("pdf"))
+  measures, observed_data, algorithm_settings = NULL,
+  normalise = FALSE, timepoint = NULL, output_formats = c("pdf"))
 }
 \arguments{
 \item{existing_emulations}{Vector of emulator objects created by method

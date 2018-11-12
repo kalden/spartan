@@ -4,10 +4,11 @@
 \alias{aa_getATestResults}
 \title{Calculates the A-Test scores observed for all sets, for each sample size}
 \usage{
-aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE, MEASURES,
-  ATESTRESULTSFILENAME, LARGEDIFFINDICATOR, AA_SIM_RESULTS_FILE = NULL,
-  AA_SIM_RESULTS_OBJECT = NULL, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  GRAPHNAME = NULL, check_done = FALSE)
+aa_getATestResults(FILEPATH, SAMPLESIZES, NUMSUBSETSPERSAMPLESIZE,
+  MEASURES, ATESTRESULTSFILENAME, LARGEDIFFINDICATOR,
+  AA_SIM_RESULTS_FILE = NULL, AA_SIM_RESULTS_OBJECT = NULL,
+  TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL, GRAPHNAME = NULL,
+  check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}

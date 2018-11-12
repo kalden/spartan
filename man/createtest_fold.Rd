@@ -4,7 +4,8 @@
 \alias{createtest_fold}
 \title{Create test data fold for k-fold cross validation}
 \usage{
-createtest_fold(fold, number_of_folds, test_fold_start, test_fold_end, dataset)
+createtest_fold(fold, number_of_folds, test_fold_start, test_fold_end,
+  dataset)
 }
 \arguments{
 \item{fold}{Number of the fold being examined}

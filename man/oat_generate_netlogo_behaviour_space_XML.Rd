@@ -5,8 +5,8 @@
 \title{Creates a Netlogo compatible behaviour space experiment for robustness analysis}
 \usage{
 oat_generate_netlogo_behaviour_space_XML(FILEPATH, NETLOGO_SETUPFILE_NAME,
-  PARAMETERS, PARAMVALS, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION, MEASURES,
-  EXPERIMENT_REPETITIONS, RUNMETRICS_EVERYSTEP)
+  PARAMETERS, PARAMVALS, NETLOGO_SETUP_FUNCTION, NETLOGO_RUN_FUNCTION,
+  MEASURES, EXPERIMENT_REPETITIONS, RUNMETRICS_EVERYSTEP)
 }
 \arguments{
 \item{FILEPATH}{Directory where the parameter samples are to be stored}

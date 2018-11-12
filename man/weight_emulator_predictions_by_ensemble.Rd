@@ -5,8 +5,8 @@
 \title{Internal function to weight emulator predictions by that calculated for the
 ensemble}
 \usage{
-weight_emulator_predictions_by_ensemble(model_weights, all_model_predictions,
-  measures, num_generations = 8e+05)
+weight_emulator_predictions_by_ensemble(model_weights,
+  all_model_predictions, measures, num_generations = 8e+05)
 }
 \arguments{
 \item{model_weights}{Weights for all emulators in the ensemble, based on

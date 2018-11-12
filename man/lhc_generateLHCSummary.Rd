@@ -5,8 +5,9 @@
 \title{Summarises simulation behaviour for each parameter set, by median of
 distribution of replicate runs}
 \usage{
-lhc_generateLHCSummary(FILEPATH, PARAMETERS, MEASURES, LHC_ALL_SIM_RESULTS_FILE,
-  LHCSUMMARYFILENAME, SPARTAN_PARAMETER_FILE = NULL, TIMEPOINTS = NULL,
+lhc_generateLHCSummary(FILEPATH, PARAMETERS, MEASURES,
+  LHC_ALL_SIM_RESULTS_FILE, LHCSUMMARYFILENAME,
+  SPARTAN_PARAMETER_FILE = NULL, TIMEPOINTS = NULL,
   TIMEPOINTSCALE = NULL, check_done = FALSE, write_csv_file = TRUE)
 }
 \arguments{

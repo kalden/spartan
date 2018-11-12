@@ -5,8 +5,8 @@
 \title{Generate the median responses for a set of parameter values}
 \usage{
 generate_medians_for_param_set(SAMPLEFILEPATH, NUMRUNSPERSAMPLE, MEASURES,
-  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND, EXP_PARAMS,
-  PARAMETER, PARAM_VAL)
+  RESULTFILENAME, ALTERNATIVEFILENAME, OUTPUTCOLSTART, OUTPUTCOLEND,
+  EXP_PARAMS, PARAMETER, PARAM_VAL)
 }
 \arguments{
 \item{SAMPLEFILEPATH}{Path to the results currently being analysed (parameter and value)}

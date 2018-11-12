@@ -5,9 +5,9 @@
 \title{Summarise results in set folder structure into one single CSV file}
 \usage{
 aa_summariseReplicateRuns(FILEPATH, SAMPLESIZES, MEASURES, RESULTFILENAME,
-  ALTFILENAME = NULL, OUTPUTFILECOLSTART, OUTPUTFILECOLEND, SUMMARYFILENAME,
-  NUMSUBSETSPERSAMPLESIZE = 20, TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
-  check_done = FALSE)
+  ALTFILENAME = NULL, OUTPUTFILECOLSTART, OUTPUTFILECOLEND,
+  SUMMARYFILENAME, NUMSUBSETSPERSAMPLESIZE = 20, TIMEPOINTS = NULL,
+  TIMEPOINTSCALE = NULL, check_done = FALSE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the results of the simulation runs, in folders or in single CSV file format, can be found}
