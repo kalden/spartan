@@ -56,6 +56,7 @@ test_that("nsga2_set_user_params", {
 
   # Can now remove the downloaded ensemble
   file.remove(file.path(getwd(),"built_ensemble"))
+  file.remove(file.path(getwd(),"built_ensemble.zip"))
 
 })
 
