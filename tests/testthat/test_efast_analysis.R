@@ -423,7 +423,7 @@ test_that("efast_netlogo_run_Analysis", {
 test_that("efast_process_netlogo_result", {
 
   # Due to package size, netlogo_efast.zip is now online, so needs downloading first
-  download.file("www.kieranalden.info/spartan/test_data/netlogo_efast.zip","netlogo_efast.zip")
+  download.file("http://www.kieranalden.info/spartan/test_data/netlogo_efast.zip","netlogo_efast.zip")
 
   unzip(file.path(getwd(),"netlogo_efast.zip"))
   params <- rbind(cbind(75.243533999874,20.8659777539209),

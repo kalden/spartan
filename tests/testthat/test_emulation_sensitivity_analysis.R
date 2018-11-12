@@ -6,7 +6,7 @@ test_that("emulate_efast_sampled_parameters ", {
   ## This is the first test that utilises the ensemble, downloadable from online
   ## Download it here, and delete it on the final test that uses this object.
   # Saves downloading several times
-  download.file("www.kieranalden.info/spartan/test_data/built_ensemble_72.Rda", "built_ensemble")
+  download.file("http://www.kieranalden.info/spartan/test_data/built_ensemble_72.Rda", "built_ensemble")
   # Load this in
   load("built_ensemble")
 
