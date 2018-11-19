@@ -143,7 +143,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                                        PARAMVALS = NULL, TIMEPOINTS = NULL,
                                        TIMEPOINTSCALE = NULL, output_types=c("pdf"),
                                        outliers=FALSE) {
-++
+
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
 
     # RoboSpartan had issues with checking the filepath existed, so for the moment this check
