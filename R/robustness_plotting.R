@@ -75,7 +75,7 @@ oat_graphATestsForSampleSize <- function(FILEPATH, PARAMETERS, MEASURES,
         {
           # Now we can plot this
           ggplot2::ggplot(data=graph_frame, ggplot2::aes(x=graph_frame$ParameterValue, y=graph_frame$ATestScore, group=graph_frame$Measure)) +
-            ggplot2::geom_line(ggplot2::aes(color=graph_frame$Measure)) + ggplot2::geom_point(ggplot2::aes(shape=graph_frame$Measure,color=graph_frame$Measure)) +
+            ggplot2::geom_line(ggplot2::aes(linetype=graph_frame$Measure)) + ggplot2::geom_point(ggplot2::aes(shape=graph_frame$Measure)) +
             ggplot2::theme(legend.position="bottom") + ggplot2::xlab("Parameter Value")+ggplot2::ylab("A-Test Score") + ggplot2::ylim(0,1) +
             ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 65, hjust = 1, size=ggplot2::rel(0.95))) +
             ggplot2::ggtitle(paste0("A-Test Scores when adjusting parameter\n",PARAMETERS[PARAM])) + ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5, size=ggplot2::rel(0.90))) +
@@ -143,7 +143,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
                                        PARAMVALS = NULL, TIMEPOINTS = NULL,
                                        TIMEPOINTSCALE = NULL, output_types=c("pdf"),
                                        outliers=FALSE) {
-
+++
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
 
     # RoboSpartan had issues with checking the filepath existed, so for the moment this check
@@ -223,7 +223,7 @@ oat_plotResultDistribution <- function(FILEPATH, PARAMETERS, MEASURES,
 
           ggplot2::ggplot(ALLRESULTS, ggplot2::aes(x=stats::reorder(ALLRESULTS[,1],sort(as.numeric(ALLRESULTS[,1]))), y=ALLRESULTS[, MEASURE+1])) +
             ggplot2::geom_boxplot(notch=TRUE, outlier.shape = outlier_flag) + ggplot2::labs(title=GRAPHTITLE,x="Parameter Value",
-                                  y = paste0("Median ", MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
+                                  y = paste0(MEASURES[MEASURE], " (",MEASURE_SCALE[PARAM], ")")) +
             ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5)) +
             ggplot2::stat_summary(fun.y=median, geom="point", shape=23, size=2)
 

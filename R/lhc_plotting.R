@@ -440,14 +440,16 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
 
             #for (i in 1:length(PARAMETERS)) {
             for (i in 1:length(plot_parameters))
+            {
               angle <- c(angle, degree * i)
               # Now see if the correlation is positive or negative
               #if (CORCOEFFS[PARAMETERS[i], col_head] < 0)
-            if (CORCOEFFS[plot_parameters[i], col_head] < 0)
-            {
-                colours <- c(colours, "blue")
-            } else {
-                colours <- c(colours, "red")
+              if (CORCOEFFS[plot_parameters[i], col_head] < 0)
+              {
+                  colours <- c(colours, "blue")
+              } else {
+                  colours <- c(colours, "red")
+              }
             }
 
             graph_name <- paste(FILEPATH, "/polarPlot_", MEASURES[m],sep="")
