@@ -3,6 +3,8 @@ context("Test of Spartan Emulation Sensitivity Analysis")
 
 test_that("emulate_efast_sampled_parameters ", {
 
+  skip_on_cran()
+
   ## This is the first test that utilises the ensemble, downloadable from online
   ## Download it here, and delete it on the final test that uses this object.
   # Saves downloading several times
@@ -10,6 +12,7 @@ test_that("emulate_efast_sampled_parameters ", {
   # Load this in
   unzip("built_ensemble.zip")
   load("built_ensemble")
+
 
   #load("built_ensemble_72.Rda")
   dir.create(file.path(getwd(),"SA"))
@@ -35,6 +38,8 @@ test_that("emulate_efast_sampled_parameters ", {
 })
 
 test_that("emulate_lhc_sampled_parameters", {
+
+  skip_on_cran()
 
   data("emulated_lhc_values")
 

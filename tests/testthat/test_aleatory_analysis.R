@@ -6,6 +6,9 @@ test_that("read_simulation_results", {
   # Simple function that reads in the simulation results from a CSV or R object
   # The existance of the paths had been checked by pre-execution tests
   # The R object is part of the package
+
+
+
   data("tutorial_consistency_set")
   expect_equal(nrow(read_simulation_results(getwd(), AA_SIM_RESULTS_FILE=NULL,
                                                    tutorial_consistency_set)),9060)
@@ -13,6 +16,8 @@ test_that("read_simulation_results", {
                                             tutorial_consistency_set)),4)
   # Unfortunately can't test the filepath method on travis, but can locally
   skip_on_travis()
+  skip_on_cran()
+
   #expect_equal(nrow(read_simulation_results("/home/kja505/Dropbox/spartan_web_data/Technique1/AA_Spartan2/CSV_Structure/",
    #                                         AA_SIM_RESULTS_FILE = "AA_SimResponses.csv", AA_SIM_RESULTS_OBJECT = NULL)),9060)
   #expect_equal(ncol(read_simulation_results("/home/kja505/Dropbox/spartan_web_data/Technique1/AA_Spartan2/CSV_Structure/",

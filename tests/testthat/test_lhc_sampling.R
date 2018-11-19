@@ -14,6 +14,8 @@ test_that("sample_parameter_space", {
 
   # Optimal
   skip_on_travis()
+  skip_on_cran()
+
   #lhcSample <- sample_parameter_space("optimum", 500, PARAMETERS)
   #expect_equal(nrow(lhcSample),500)
   #expect_equal(ncol(lhcSample),2)

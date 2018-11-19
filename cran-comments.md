@@ -18,4 +18,7 @@ Possibly mis-spelled words in DESCRIPTION:
   
 We are happy with the spelling of each word
 
-In addition, on the last upload we were asked by Swetlana Herbrandt to add more examples, but we explained that this is a huge problem given the data spartan processes. Given we have three detailed vignettes, an R journal paper, and GB's of data available for use in those vignettes and tutorials (a subset of which took us over the maximum 5MB tarball size so had to be removed), Uwe Ligges suggested that CRAN could live with fewer examples.
+On the upload of 3.0.1 we were asked by Swetlana Herbrandt to add more examples, but we explained that this is a huge problem given the data spartan processes. Given we have three detailed vignettes, an R journal paper, and GB's of data available for use in those vignettes and tutorials (a subset of which took us over the maximum 5MB tarball size so had to be removed), Uwe Ligges suggested that CRAN could live with fewer examples.
+
+In addition, the additional issues for the *last* version released on CRAN, communicated to us via email from CRAN, have been addressed in this version.
+

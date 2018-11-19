@@ -4,6 +4,7 @@ context("Test Neural Network Utilities")
 test_that("determine_optimal_neural_network_structure", {
 
   skip_on_travis()
+  skip_on_cran()
   # Outer test of function: to ensure we get some output from the inner functions tested below
 
   data("sim_data_for_emulation")
@@ -28,6 +29,7 @@ test_that("determine_optimal_neural_network_structure", {
 test_that("kfoldCrossValidation", {
 
   skip_on_travis()
+  skip_on_cran()
 
   # Test of k-fold cross validation calculations - inner functions are tested below
 
@@ -50,6 +52,7 @@ test_that("kfoldCrossValidation", {
 test_that("analysenetwork_structures", {
 
   skip_on_travis()
+  skip_on_cran()
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data
@@ -75,6 +78,7 @@ test_that("analysenetwork_structures", {
 test_that("createAndEvaluateFolds", {
 
   skip_on_travis()
+  skip_on_cran()
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data
@@ -100,6 +104,7 @@ test_that("createAndEvaluateFolds", {
 test_that("updateErrorForStructure", {
 
   skip_on_travis()
+  skip_on_cran()
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data
@@ -129,6 +134,7 @@ test_that("updateErrorForStructure", {
 test_that("select_suitable_structure", {
 
   skip_on_travis()
+  skip_on_cran()
 
   # Test returns the expected lowest
   errors <- rbind(cbind("4","0.413503637996208","0.413503637996208","0.413503637996208"),
@@ -145,6 +151,8 @@ test_that("select_suitable_structure", {
 test_that("calculate_fold_MSE", {
 
   skip_on_travis()
+  skip_on_cran()
+
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data
@@ -179,6 +187,7 @@ test_that("calculate_fold_MSE", {
 test_that("createTrainingFold", {
 
   skip_on_travis()
+  skip_on_cran()
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data
@@ -201,6 +210,7 @@ test_that("createTrainingFold", {
 test_that("createTestFold", {
 
   skip_on_travis()
+  skip_on_cran()
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data
@@ -223,6 +233,7 @@ test_that("createTestFold", {
 test_that("create_neural_network", {
 
   skip_on_travis()
+  skip_on_cran()
 
   data("sim_data_for_emulation")
   ## Partition the dataset, in this case normalising the data

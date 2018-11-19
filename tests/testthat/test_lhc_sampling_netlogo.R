@@ -2,6 +2,9 @@ library(spartan)
 context("Test of Spartan Netlogo Latin-Hypercube Sampling")
 
 test_that("process_netlogo_parameter_range_info", {
+
+  skip_on_cran()
+
   # Test the prep function processes the parameter information correctly
   # This should return the names of the parameters of interest in this
   # analysis, not those that have a static value.
@@ -14,6 +17,8 @@ test_that("process_netlogo_parameter_range_info", {
 })
 
 test_that("lhc_generate_lhc_sample_netlogo", {
+
+  skip_on_cran()
 
   b<-lhc_generate_lhc_sample_netlogo(FILEPATH=getwd(),
                                      c("people","infectiousness","chance-recover","duration"),

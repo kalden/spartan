@@ -53,6 +53,8 @@ test_that("oat_parameter_sampling", {
 
 test_that("oat_generate_netlogo_behaviour_space_XML", {
 
+  skip_on_cran()
+
   dir.create("OAT_Netlogo")
   oat_generate_netlogo_behaviour_space_XML(
     file.path(getwd(),"OAT_Netlogo"), "virus_oat", c("infectiousness","chance-recover","duration"), c(150,"[10,90,10]","[10,90,10]","[5,40,5]"),

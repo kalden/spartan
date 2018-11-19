@@ -3,8 +3,12 @@ context("Test of Spartan Evolution Utilities")
 
 test_that("emulator_parameter_evolution", {
 
+  skip_on_cran()
+
   # Downloaded previously from website, should exist in workspace
   load("built_ensemble")
+
+
 
   #skip("Skipping")
   #load(file.path("built_ensemble_72.Rda"))
@@ -32,6 +36,8 @@ test_that("emulator_parameter_evolution", {
 })
 
 test_that("nsga2_set_user_params", {
+
+  skip_on_cran()
 
   #skip("Skipping")
   #load(file.path("built_ensemble_72.Rda"))
