@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # spartan 3.0.2
 Changes introduced since spartan 3.0.1
 * Plots translated to use ggplot, removing requirement for gplots package
-* Additional functions added to ease integration with forthcoming spartanDB and roboSpartan platforms
+* Additional functions added to ease integration with forthcoming additional packages and roboSpartan platforms
 * Additional tests and fixes to descriptions in the three vignettes
 
 # spartan 3.0.1
