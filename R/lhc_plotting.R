@@ -495,6 +495,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
               par(xpd = TRUE)
               #legend(1.5, 1, pch = as.character(c(1:length(plot_parameters))),
               #       PARAM_NAMES, cex = 0.7, pt.cex = 0.5)
+              param_legend<-paste(1:length(plot_parameters),plot_parameters)
               legend(1.5, 1, pch = "",
                      legend=param_legend, cex = 0.8, pt.cex = 0.8)
               par(xpd = FALSE)
