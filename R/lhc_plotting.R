@@ -464,6 +464,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
                 png(filename = paste(graph_name,".png",sep = ""), width = 800)
 
               # Sets the size of the labels on the outside of the polar plot
+
               par(cex.axis = 1.5)
 
               # readjust the parameter list to align with the correct angles
@@ -480,20 +481,22 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
                           lwd = 4, line.col = colours,
                           labels = seq(1, length(plot_parameters), by = 1),
                           radial.lim = c(0, 1), #range of grid circle
-                          main = paste("Partial Rank Correlation Coefficient
-                                       Values for ",
-                                       MEASURES[m], sep = ""),
+                          main = paste("Partial Rank Correlation Coefficient Values for ", MEASURES[m], sep = ""),
                           show.grid.labels = 2,
                           #put the concentric circle labels going down
                           show.radial.grid = TRUE,
-                          cex.lab = 0.7
+                          cex.lab = 0.7,
+                          clockwise=TRUE,
+                          mar=c(2.1,1.1,4.1,2.1)
               )
 
-              legend("topleft", 1, c("Positive", "Negative"), lty = 1, lwd = 1:2,
-                     col = c("red", "blue"), cex = 0.9, pt.cex = 1)
+              legend(-1.7,1, c("Positive", "Negative"), lty = 1, lwd = 1:2,
+                     col = c("red", "blue"), cex = 1.1, pt.cex = 1)
               par(xpd = TRUE)
-              legend(1, 1, pch = as.character(c(1:length(plot_parameters))),
-                     PARAM_NAMES, cex = 0.9, pt.cex = 1)
+              #legend(1.5, 1, pch = as.character(c(1:length(plot_parameters))),
+              #       PARAM_NAMES, cex = 0.7, pt.cex = 0.5)
+              legend(1.5, 1, pch = "",
+                     legend=param_legend, cex = 0.8, pt.cex = 0.8)
               par(xpd = FALSE)
               dev.off()
             }

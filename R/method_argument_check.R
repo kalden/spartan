@@ -743,6 +743,7 @@ check_text_list <-function(arguments, argument_name)
     },
     error=function(cond) {
 
+      print(cond)
       message(paste("Error in declaration of ",argument_name,". Terminated",sep=""))
       return(FALSE)
     })
