@@ -8,3 +8,7 @@ Codecov: <a href="https://codecov.io/gh/kalden/spartan">
 <img src='https://cranlogs.r-pkg.org/badges/grand-total/spartan?color=brightgreen' />
 
 Simulation Parameter Analysis R Toolkit ApplicatioN: Spartan
+
+See www.york.ac.uk/ycil/software/spartan for a full description of this software
+
+Note if using this repository that the main branch holds Spartan 3.0, the most up to date release. The next version, spartan4, will see significant changes to the package, and thus should not be used until a release candidate is ready and the impact of these changes is documented
