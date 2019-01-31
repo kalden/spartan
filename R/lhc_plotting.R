@@ -5,10 +5,17 @@
 #' Eases identification of any non-linear effects.
 #'
 #' @inheritParams lhc_generateLHCSummary
+#' @param parameters Array containing the names of the parameters of which
+#' parameter samples will be generated
+#' @param measures Array containing the names of the output measures which are
+#' used to analyse the simulation
 #' @param MEASURE_SCALE Scale in which each of the output responses is
 #' measured. Used to label plots
-#' @param CORCOEFFSOUTPUTFILE File produced by spartan containing the Partial
+#' @param corcoeffs_outputfile File produced by spartan containing the Partial
 #' Rank Correlation Coefficients for each parameter/measure pairing
+#' @param lhcsummary_filename Name of the LHC Summary file to be generated.
+#' Contains each parameter set alongside the result gained when the simulation
+#' was run under that criteria.
 #' @param OUTPUT_TYPE Type of graph to plot. Can be PDF, PNG, TIFF, BMP, etc,
 #'  all formats supported by ggplot2
 #' @param GRAPHTIME The timepoint being processed, if any. NULL if not.
@@ -21,72 +28,122 @@
 #' @export
 #'
 lhc_graphMeasuresForParameterChange <-
-  function(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE,
-           LHCSUMMARYFILENAME, OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL,
+  function(FILEPATH, parameters, measures, MEASURE_SCALE, corcoeffs_outputfile,
+           lhcsummary_filename, OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL,
            TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE,
-           corcoeffs_output_object=NULL, lhc_summary_object=NULL) {
+           corcoeffs_outputobject=NULL, lhc_summary_object=NULL) {
 
+  # Spartan 4 method - removes all for loops and uses tidyverse to produce plots
+  if(is.null(TIMEPOINTS)) {
+    # get the simulation response data
+    lhcresult <- get_lhc_summary_data(FILEPATH, lhcsummary_filename, lhcsummary_object)
+    # Get data into format where each parameter value is paired with responses
+    graph_data<-lapply(lhcresult[PARAMETERS], function(x,y){bind_cols(as_data_frame(x),as_data_frame(y))}, lhcresult[MEASURES])
 
-  input_check <- list("arguments"=as.list(match.call()),"names"=names(match.call())[-1])
-  # Run if all checks pass:
-  if(check_input_args(input_check$names, input_check$arguments)) {
+    # get the correlation coefficients for including on the plot
+    cor_coefficients <- get_correlation_stat_data(FILEPATH,corcoeffs_outputfile, corcoeffs_outputobject)
 
-  if (is.null(TIMEPOINTS)) {
+    # Now we can make the plot pairings
+    walk(measures,make_graphs,graph_data, parameters, cor_coefficients)
 
-    if(!is.null(CORCOEFFSOUTPUTFILE))
-    {
-      corcoeffs <- read_from_csv(file.path(FILEPATH, CORCOEFFSOUTPUTFILE))
-      lhcresult <- read_from_csv(file.path(FILEPATH, LHCSUMMARYFILENAME))
-    }
-    else if(!is.null(corcoeffs_output_object))
-    {
-      corcoeffs <- corcoeffs_output_object
-      lhcresult <- lhc_summary_object
-    }
-
-
-        message ("Generating output graphs for LHC Parameter Analysis")
-
-        # CREATE A GRAPH FOR EACH PARAMETER, FOR EACH MEASURE
-        for (p in 1:length(PARAMETERS)) {
-          for (m in 1:length(MEASURES)) {
-
-            # Get the PRCC value for this pairing
-            corr_result <- corcoeffs[
-              p, paste(MEASURES[m], "_Estimate", sep = "")]
-
-            # In some instances, the correlation coefficient has been reported as NA
-            # especially in cases where the output result is the same for all parameter
-            # values. This needs detecting and no graph plotted if that occurs
-
-            if(!is.na(corr_result))
-            {
-              # Make filename, titles, and labels
-              titles <- make_graph_title(FILEPATH, PARAMETERS[p], GRAPHTIME, MEASURES[m],
-                             MEASURE_SCALE[m],corr_result, TIMEPOINTSCALE)
-
-              # Filter the data to plot
-              data_to_plot <- data.frame(lhcresult[, PARAMETERS[p]],
-                                       lhcresult[, MEASURES[m]])
-
-              # Create graphs
-              output_ggplot_graph(titles$file, OUTPUT_TYPE,
-                                make_lhc_plot(data_to_plot, titles))
-            } else {
-              message(paste0("For Parameter ",PARAMETERS[p], " Measure ",MEASURES[m], " Pairing, Correlation Coefficient was reported as NA. Excluded from plotting."))
-            }
-          }
-        }
-        message("LHC Graphs Complete")
-    } else {
-        # Process each timepoint
-        lhc_graphMeasuresForParameterChange_overTime(
-          FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE,
-                   LHCSUMMARYFILENAME, OUTPUT_TYPE, TIMEPOINTS,
-                   TIMEPOINTSCALE, GRAPHTIME)
-    }
+  } else  {
+    # Needs to be implemented
+    lhc_graphMeasuresForParameterChange_overTime(
+      FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE,
+      LHCSUMMARYFILENAME, OUTPUT_TYPE, TIMEPOINTS,
+      TIMEPOINTSCALE, GRAPHTIME)
+    message("Timepoints not yet implemented in Spartan 4")
   }
+}
+
+#' Function used by walk to create plots for all measure and response pairs
+#' @param measure Simulation measure being examined
+#' @param data_to_plot Data to plot for all parameters for this measure
+#' @param coefficients Calculated coefficient values for this analysis
+iterate_results_for_plotting <- function(measure, data_to_plot, parameters, coefficients)
+{
+  message(paste0("Producing plots for response ",measure))
+  pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=pull(coefficients,paste0(measure,"_Estimate"))),make_lhc_plot, measure)
+}
+
+#' Retrieve the simulation summary data to plot
+#' @param FILEPATH Root path of the analysis being performed (this may be deleted)
+#' @param lhcsummary_filename Path to the the file containing this data, or NULL
+#' @param lhcsummary_object Name of the R object containing this data, or NULL
+#' @return Data for processing in the plots
+get_lhc_summary_data<-function(FILEPATH, lhcsummary_filename, lhcsummary_object) {
+  if(!is.null(lhcsummary_filename))
+    return(read_from_csv(file.path(FILEPATH, lhcsummary_filename)))
+  else if(!is.null(lhcsummary_object))
+    return(lhc_summary_object)
+}
+
+#' Retrieve the correlation stats data to plot
+#'
+#' @param FILEPATH Root path of the analysis being performed (this may be deleted)
+#' @param corcoeffs_outputfile Path to the the file containing this data, or NULL
+#' @param corcoeffs_outputobject Name of the R object containing this data, or NULL
+#' @return Data for processing in the plots
+get_correlation_stat_data<-function(FILEPATH, corcoeffs_outputfile, corcoeffs_outputobject) {
+
+  if(!is.null(corcoeffs_outputfile))
+    return(read_from_csv(file.path(FILEPATH,corcoeffs_outputfile)))
+  else if(!is.null(corcoeffs_outputobject))
+    return(corcoeffs_outputobject)
+}
+
+#' Uses ggplot2 to create a plot for the LHC analysis, for one parameter-measure pair
+#'
+#' @param param_data List of parameter value against simulation responses
+#' @param parameter Name of the parameter being plotted
+#' @param coefficient Coefficient value for this parameter measure pairing
+#' @param graph_format Output formats to produce. Defaults to PDF
+make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_format=c("PDF")) {
+
+  # Check coefficient isn't NA
+  if(!is.na(coefficient)) {
+    output_graph <- ggplot(param_data,
+                           aes(x = value,
+                               y = as.vector(param_data[[measure]]))) +
+      geom_point(size = 0.5) +
+      scale_y_continuous(limits = c(
+        floor(min(as.numeric(param_data[[measure]]))), ceiling(max(as.numeric(param_data[[measure]]))))) +
+      labs(x = "Parameter Value", y = "Simulation Response",
+           title = paste0("LHC Analysis for Parameter: ",parameter),
+           subtitle = paste("Measure: ",measure, "\nCorrelation Coefficient: ", toString(signif(coefficient, 3)))) +
+      theme(axis.title = element_text(size = 7),
+            axis.text = element_text(size = 7),
+            plot.title = element_text(size = 9, hjust = 0.5),
+            plot.subtitle = element_text(size = 8, hjust = 0.5))
+
+    # Save the plot in the desired formats
+    walk(as.list(graph_format),save_graph_in_desired_formats,paste(parameter,measure,sep="_"),output_graph)
+
+  } else {
+    message(paste0("For Parameter ",parameter, " Measure ",measure, " Pairing, Correlation Coefficient was reported as NA. Excluded from plotting."))
   }
+}
+
+#' Saves a ggplot graph in the desired format. Used by walk functions in spartan
+#'
+#' @param output_type Type of graph to be produced
+#' @param graph_file File name to give the graph
+#' @param output_graph ggplot2 graph object
+save_graph_in_desired_formats <-function(output_type, GRAPHFILE, output_graph) {
+
+  if (output_type == "PDF") {
+    ggsave(paste0(GRAPHFILE, ".pdf"), plot = output_graph, width = 4, height = 4)
+  } else if (output_type == "PNG") {
+    ggsave(paste0(GRAPHFILE, ".png"),
+           plot = output_graph, width = 4, height = 4)
+  } else if (output_type == "TIFF") {
+    ggsave(paste0(GRAPHFILE, ".tiff"),
+           plot = output_graph, width = 4, height = 4)
+  } else if (output_type == "BMP") {
+    ggsave(paste0(GRAPHFILE, ".bmp"),
+           plot = output_graph, width = 4, height = 4)
+  }
+}
 
 #' Generates parameter/measure plot for each pairing in the analysis, from results stored in a database
 #'
@@ -165,6 +222,7 @@ lhc_graphMeasuresForParameterChange_overTime <-
       }
     }
 
+## NO LONGER USED IN SPARTAN 4, BUT KEPT SO TIMEPOINTS CAN BE EXAMINED
 #' Make graph title, sub title, and file name
 #' @param filepath Directory to output graph to
 #' @param parameter Current parameter being processed
@@ -174,48 +232,49 @@ lhc_graphMeasuresForParameterChange_overTime <-
 #' @param corr_stat The PRCC for this parameter-measure pair
 #' @param timepointscale Scale of timepoints, if multiple
 #' @return List containing file, title, and subtitle, and axes labels
-make_graph_title <- function(filepath, parameter, graph_time, measure,
-                             measure_scale, corr_stat, timepointscale) {
-  graph_title <- paste("LHC Analysis for Parameter: ",parameter, sep = "")
-  y_label <- paste("Median Value Across Runs (", measure_scale,
-                   ")", sep = "")
-  x_label <- "Parameter Value"
+#make_graph_title <- function(filepath, parameter, graph_time, measure,
+#                             measure_scale, corr_stat, timepointscale) {
+#  graph_title <- paste("LHC Analysis for Parameter: ",parameter, sep = "")
+#  y_label <- paste("Median Value Across Runs (", measure_scale,
+#                   ")", sep = "")
+#  x_label <- "Parameter Value"
 
-  if (is.null(graph_time)) {
-    graph_file <- file.path(filepath,paste(parameter,measure,sep="_"))
-    sub_title <- paste("Measure: ",measure,"\nCorrelation Coefficient: ",
-                      toString(signif(corr_stat, 3)), sep = "")
-  } else {
-    graph_file <- file.path(filepath,paste(parameter, measure, graph_time,
+#  if (is.null(graph_time)) {
+#    graph_file <- file.path(filepath,paste(parameter,measure,sep="_"))
+#    sub_title <- paste("Measure: ",measure,"\nCorrelation Coefficient: ",
+#                      toString(signif(corr_stat, 3)), sep = "")
+#  } else {
+#    graph_file <- file.path(filepath,paste(parameter, measure, graph_time,
                                            sep="_"))
-    sub_title <- paste(
-      "Measure: ",measure, ". Timepoint: ", graph_time, " ", timepointscale,
-      "\nCorrelation Coefficient: ", toString(signif(corr_stat, 3)), sep = "")
-  }
-  return(list("title"=graph_title,"file"=graph_file,"sub_title"=sub_title,
-         "xlabel"=x_label,"ylabel"=y_label))
-}
+#    sub_title <- paste(
+#      "Measure: ",measure, ". Timepoint: ", graph_time, " ", timepointscale,
+#      "\nCorrelation Coefficient: ", toString(signif(corr_stat, 3)), sep = "")
+#  }
+#  return(list("title"=graph_title,"file"=graph_file,"sub_title"=sub_title,
+#         "xlabel"=x_label,"ylabel"=y_label))
+#}
 
+## REPLACED IN SPARTAN4
 #' Make the LHC output plot
 #' @param data_to_plot Parameter and measure pair data
 #' @param titles Object containing graph title and subtitle
 #' @return Created graph object
-make_lhc_plot <- function(data_to_plot, titles) {
-  output_graph <- ggplot(data_to_plot,
-                         aes(x = data_to_plot[, 1],
-                             y = data_to_plot[, 2])) +
-    geom_point(size = 0.5) +
-    scale_y_continuous(limits = c(
-      floor(min(as.numeric(data_to_plot[,2]))), ceiling(max(as.numeric(data_to_plot[, 2]))))) +
-    labs(x = titles$xlabel, y = titles$ylabel,
-         title = titles$title, subtitle = titles$sub_title) +
-    theme(axis.title = element_text(size = 7),
-          axis.text = element_text(size = 7),
-          plot.title = element_text(size = 9, hjust = 0.5),
-          plot.subtitle = element_text(size = 8, hjust = 0.5))
-
-  return(output_graph)
-}
+#make_lhc_plot <- function(data_to_plot, titles) {
+#  output_graph <- ggplot(data_to_plot,
+#                         aes(x = data_to_plot[, 1],
+#                             y = data_to_plot[, 2])) +
+#    geom_point(size = 0.5) +
+#    scale_y_continuous(limits = c(
+#      floor(min(as.numeric(data_to_plot[,2]))), ceiling(max(as.numeric(data_to_plot[, 2]))))) +
+#    labs(x = titles$xlabel, y = titles$ylabel,
+#         title = titles$title, subtitle = titles$sub_title) +
+#    theme(axis.title = element_text(size = 7),
+#          axis.text = element_text(size = 7),
+#          plot.title = element_text(size = 9, hjust = 0.5),
+#          plot.subtitle = element_text(size = 8, hjust = 0.5))
+#
+#  return(output_graph)
+#}
 
 #' Deprecated. Use \code{lhc_graphMeasuresForParameterChange} instead
 #'
@@ -260,9 +319,6 @@ lhc_plotCoEfficients <- function(FILEPATH, CORCOEFFSOUTPUTFILE, MEASURES,
 
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
     if (file.exists(FILEPATH)) {
-
-      # READ IN THE COEFFICIENTS FILE
-      COEFFS <- read_from_csv(file.path(FILEPATH,CORCOEFFSOUTPUTFILE))
 
       # COLUMN 1 HAS PARAMETER NAMES, THEN FOLLOWS FOR EACH MEASURE -
       # THE PRCC AND THE P VALUE
@@ -486,7 +542,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
                           #put the concentric circle labels going down
                           show.radial.grid = TRUE,
                           cex.lab = 0.7,
-                          clockwise=TRUE,
+                          clockwise=FALSE,
                           mar=c(2.1,1.1,4.1,2.1)
               )
 
@@ -495,7 +551,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
               par(xpd = TRUE)
               #legend(1.5, 1, pch = as.character(c(1:length(plot_parameters))),
               #       PARAM_NAMES, cex = 0.7, pt.cex = 0.5)
-              param_legend<-paste(1:length(plot_parameters),plot_parameters)
+              param_legend<-paste(1:length(PARAM_NAMES),PARAM_NAMES)
               legend(1.5, 1, pch = "",
                      legend=param_legend, cex = 0.8, pt.cex = 0.8)
               par(xpd = FALSE)

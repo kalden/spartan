@@ -574,6 +574,7 @@ check_file_exists <- function(filepath) {
   }
 }
 
+## NOT USED FOR LHC IN SPARTAN4 - CHECK OTHER ANALYSES
 #' Output a ggplot graph in the requested formats
 #' @param GRAPHFILE Path and name of the file to output
 #' @param OUTPUT_TYPE List of the output types to produce
