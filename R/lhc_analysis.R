@@ -413,30 +413,39 @@ lhc_generatePRCoEffs <- function(
     if (is.null(TIMEPOINTS)) {
 
       if(!is.null(LHCSUMMARYFILENAME))
-      {
         lhc_result_file <- read_from_csv(file.path(FILEPATH,LHCSUMMARYFILENAME))
-      }
       else if(!is.null(lhc_summary_object))
-      {
         lhc_result_file<-lhc_summary_object
-      }
 
       message("Generating Partial Rank Correlation Coefficients (lhc_generatePRCoEffs)")
-
-      COEFFRESULTS <- calculate_prccs_all_parameters(PARAMETERS, lhc_result_file,
-                                                     MEASURES, cor_calc_method)
+      coeff_results<-data.frame(map(PARAMETERS, all_prccs_for_parameter, lhc_result_file, MEASURES, cor_calc_method=c("s")) %>% setNames(PARAMETERS))
 
       if(write_csv_files)
       {
-        write_data_to_csv(COEFFRESULTS,file.path(FILEPATH,CORCOEFFSOUTPUTFILE),row_names=TRUE)
+        write_data_to_csv(coeff_results,row_names=TRUE)
         message(paste("File of PRCCs output to ", file.path(FILEPATH,CORCOEFFSOUTPUTFILE),
                       sep=""))
-      }
-      else
-      {
+      } else {
         message("Calculated PRCCs returned as R Object")
         return(COEFFRESULTS)
       }
+
+
+
+      #COEFFRESULTS <- calculate_prccs_all_parameters(PARAMETERS, lhc_result_file,
+      #                                               MEASURES, cor_calc_method)
+
+      #if(write_csv_files)
+      #{
+      #  write_data_to_csv(COEFFRESULTS,file.path(FILEPATH,CORCOEFFSOUTPUTFILE),row_names=TRUE)
+      #  message(paste("File of PRCCs output to ", file.path(FILEPATH,CORCOEFFSOUTPUTFILE),
+      #                sep=""))
+      #}
+      #else
+      #{
+      #  message("Calculated PRCCs returned as R Object")
+      #  return(COEFFRESULTS)
+      #}
 
     } else {
       lhc_generatePRCoEffs_overTime(
@@ -502,55 +511,57 @@ lhc_generatePRCoEffs_overTime <- function(FILEPATH, PARAMETERS, MEASURES,
 
 }
 
+# NO LONGER USED IN SPARTAN4
 #' Calculate PRCC values for all parameter-measure pairs
-#' @param PARAMETERS Simulation parameters
-#' @param LHCRESULTFILE Summary statistics for all LHC parameter sets
-#' @param MEASURES Simulation output responses
+#' @param parameters Simulation parameters
+#' @param lhc_result_file Summary statistics for all LHC parameter sets
+#' @param measures Simulation output responses
 #' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
 #' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
 #' @return Correlation coefficients for all pairings
-calculate_prccs_all_parameters <- function(PARAMETERS, LHCRESULTFILE, MEASURES,
-                                           cor_calc_method=c("s"))
-{
+#calculate_prccs_all_parameters <- function(parameters, lhc_result_file, measures,
+#                                           cor_calc_method=c("s"))
+#{
+#  return(data.frame(map(PARAMETERS, all_prccs_for_parameter, lhc_result_file, MEASURES) %>% setNames(PARAMETERS)))
+#}
 
-  COEFFRESULTS <- NULL
-  # Now calculate coefficients for all parameters
-  for (k in 1:length(PARAMETERS)) {
+#' Calculates PRCC values for all measures for a given parameter
+#'
+#' @param parameter Name of simulation parameter
+#' @param lhc_results Summary of simulation results for all parameter conditions, with parameter values
+#' @param measures Simulation output responses
+#' @return PRCC values for all measures for this parameter
+all_prccs_for_parameter<-function(parameter,lhc_results, measures, cor_calc_method = c("s")) {
 
-    # Get coefficient set
-    COEFFDATA <- lhc_constructcoeff_dataset(LHCRESULTFILE, PARAMETERS[k],
-                                            PARAMETERS)
-    # Retrieve parameter result
-    COEFFPARAMCOL <- as.numeric(LHCRESULTFILE[, PARAMETERS[k]])
+  # Get coefficient set
+  coeff_data <- select(lhc_results,-one_of(parameter),-one_of(measures))
 
-    # Calculate coefficients
-    COEFFRESULTS <- rbind(COEFFRESULTS, calculate_prcc_for_all_measures(
-      MEASURES, COEFFPARAMCOL, COEFFDATA, LHCRESULTFILE, cor_calc_method))
-  }
+  # Retrieve parameter values
+  coeff_param_col <- select(lhc_results, parameter)
 
-  colnames(COEFFRESULTS) <- generate_prcc_results_header(MEASURES)
-  rownames(COEFFRESULTS) <- PARAMETERS
+  # Responses under those values
+  responses<-as.list(select(lhc_results, measures))
 
-  return(COEFFRESULTS)
+  return(unlist(map(responses, pcor.test2, coeff_param_col, coeff_data, calc_method=cor_calc_method)))
 }
 
+## NO LONGER NEEDED IN SPARTAN4
 #' Generates the CSV file header for the prcc results file
 #' @param measures The simulation output responses
 #' @return Header object for CSV file
-generate_prcc_results_header <- function(measures) {
-
-
+#generate_prcc_results_header <- function(measures) {
   # NAME THE COLUMNS FOR EASE OF REFERENCE LATER
-  COEFFRESULTSHEAD <- NULL
-  for (l in 1:length(measures)) {
-    COEFFRESULTSHEAD <- cbind(COEFFRESULTSHEAD,
-                              (paste(measures[l], "_Estimate", sep = "")),
-                              (paste(measures[l], "_PValue", sep = "")))
-  }
+#  COEFFRESULTSHEAD <- NULL
+ # for (l in 1:length(measures)) {
+  #  COEFFRESULTSHEAD <- cbind(COEFFRESULTSHEAD,
+   #                           (paste(measures[l], "_Estimate", sep = "")),
+    #                          (paste(measures[l], "_PValue", sep = "")))
+  #}
 
-  return(COEFFRESULTSHEAD)
-}
+  #return(COEFFRESULTSHEAD)
+#}
 
+# NO LONGER NEEDED IN SPARTAN4
 #' For all measures, calculate the prcc for each parameter
 #' @param MEASURES Simulation output responses
 #' @param COEFFPARAMCOL Results for the current simulation parameter
@@ -561,30 +572,30 @@ generate_prcc_results_header <- function(measures) {
 #' @param prcc_method Method to calculate the partial correlation coefficient, either
 #' variance-covariance matrix ("mat") or recursive formula ("rec"). Default mat
 #' @return Updated set of parameter correlation coefficient results
-calculate_prcc_for_all_measures <- function(MEASURES, COEFFPARAMCOL, COEFFDATA,
-                                            LHCRESULTFILE, cor_calc_method=c("s"),
-                                            prcc_method="mat")
-{
-  PARAM_RESULTS <- NULL
-  for (l in 1:length(MEASURES)) {
+#calculate_prcc_for_all_measures <- function(MEASURES, COEFFPARAMCOL, COEFFDATA,
+#                                            LHCRESULTFILE, cor_calc_method=c("s"),
+#                                            prcc_method="mat")
+#{
+#  PARAM_RESULTS <- NULL
+#  for (l in 1:length(MEASURES)) {
     #print(MEASURES[l])
     #print(LHCRESULTFILE[,MEASURES[l]])
-    COEFFMEASURERESULT <- as.numeric(LHCRESULTFILE[, MEASURES[l]])
-    PARAMCOEFF <- pcor.test(COEFFPARAMCOL, COEFFMEASURERESULT,
-                          COEFFDATA, calc_method=cor_calc_method, use=prcc_method)
+#    COEFFMEASURERESULT <- as.numeric(LHCRESULTFILE[, MEASURES[l]])
+#    PARAMCOEFF <- pcor.test(COEFFPARAMCOL, COEFFMEASURERESULT,
+  #                        COEFFDATA, calc_method=cor_calc_method, use=prcc_method)
     #print(PARAMCOEFF)
-    if(!is.null(PARAMCOEFF))
-    {
+#    if(!is.null(PARAMCOEFF))
+#    {
       #print(PARAMCOEFF$estimate)
       #print(PARAMCOEFF$p.value)
-      PARAM_RESULTS <- cbind(PARAM_RESULTS, PARAMCOEFF$estimate,
-                            PARAMCOEFF$p.value)
+#      PARAM_RESULTS <- cbind(PARAM_RESULTS, PARAMCOEFF$estimate,
+#                            PARAMCOEFF$p.value)
       #print(PARAM_RESULTS)
-    }
-    else {
-      message("Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
-      return(NULL)
-    }
-  }
-  return(PARAM_RESULTS)
-}
+#    }
+#    else {
+#      message("Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
+#      return(NULL)
+#    }
+#  }
+#  return(PARAM_RESULTS)
+#}

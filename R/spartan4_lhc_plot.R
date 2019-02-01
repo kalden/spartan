@@ -46,16 +46,36 @@ save_graph_in_desired_formats <-function(output_type, GRAPHFILE, output_graph) {
 
 }
 
-graph_data<-lapply(lhcresult[PARAMETERS], function(x,y){bind_cols(as_data_frame(x),as_data_frame(y))}, lhcresult[MEASURES])
+#graph_data<-lapply(lhcresult[PARAMETERS], function(x,y){bind_cols(as_data_frame(x),as_data_frame(y))}, lhcresult[MEASURES])
 
 # Need to read in the coefficients:
-load("/home/kja505/Dropbox/spartan_3.0/spartan/tests/testthat/test_cor_coeffs.Rda")
-test_cor_coeffs <- test_cor_coeffs %>% column_to_rownames(var="X") %>% as_data_frame()
+#load("/home/kja505/Dropbox/spartan_3.0/spartan/tests/testthat/test_cor_coeffs.Rda")
+#test_cor_coeffs <- test_cor_coeffs %>% column_to_rownames(var="X") %>% as_data_frame()
 
-walk(MEASURES,make_graphs,graph_data,PARAMETERS, test_cor_coeffs)
+#walk(MEASURES,make_graphs,graph_data,PARAMETERS, test_cor_coeffs)
 
 make_graphs<-function(measure,data_to_plot,PARAMETERS, coefficients)
 {
   message(paste0("Producing plots for response ",measure))
-  pwalk(list(param_data=data_to_plot, parameter=PARAMETERS, coefficient=pull(coefficients,paste0(measure,"_Estimate"))),make_lhc_plot, measure)
+  pwalk(list(param_data=data_to_plot, parameter=PARAMETERS, coefficient=coefficients[paste0(measure,".estimate")]),make_lhc_plot, measure)
+}
+
+
+prccs_for_parameter<-function(parameter,lhc_result_file, MEASURES, cor_calc_method) {
+  #print(parameter)
+  # Get coefficient set
+  ## Replaced by call to select
+  #COEFFDATA <- lhc_constructcoeff_dataset(LHCRESULTFILE, PARAMETERS[k], PARAMETERS)
+  coeff_data <- select(lhc_result_file,-one_of(parameter),-one_of(MEASURES))
+  #print(head(coeff_data))
+  # Retrieve parameter result
+  # Replaced by call to select
+  #COEFFPARAMCOL <- as.numeric(LHCRESULTFILE[, PARAMETERS[k]])
+  coeff_param_col <- select(lhc_result_file, parameter)
+  #print(head(coeff_param_col))
+
+  responses<-as.list(select(lhc_result_file,MEASURES))
+  #print(head(responses))
+
+  unlist(map(responses, pcor.test2, coeff_param_col, coeff_data, calc_method=cor_calc_method))
 }

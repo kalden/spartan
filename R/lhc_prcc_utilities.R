@@ -218,6 +218,101 @@ lhc_generate_netlogo_PRCoEffs <- function(FILEPATH, PARAMETERS, MEASURES,
   message("Now deprecated. Use lhc_generatePRCoEffs instead")
 }
 
+pcor.test2 <- function(y, x, z, use = "mat", calc_method ="p", na.rm = TRUE) {
+  # The partial correlation coefficient between x and y given z
+  #
+  # pcor.test is free and comes with ABSOLUTELY NO WARRANTY.
+  #
+  # x and y should be vectors
+  #
+  # z can be either a vector or a matrix
+  #
+  # use: There are two methods to calculate the partial correlation coefficient
+  #	 One is by using variance-covariance matrix ("mat") and the other is by
+  # using recursive formula ("rec").
+  #	 Default is "mat".
+  #
+  # method: There are three ways to calculate the correlation coefficient,
+  #	which are Pearson's ("p"), Spearman's ("s"), and Kendall's ("k") methods.
+  # 	    The last two methods which are Spearman's and Kendall's coefficient
+  # are based on the non-parametric analysis.
+  #	    Default is "p".
+  #
+  # na.rm: If na.rm is T, then all the missing samples are deleted from the
+  # whole dataset, which is (x,y,z).
+  #        If not, the missing samples will be removed just when the
+  # correlation coefficient is calculated.
+  #	   However, the number of samples for the p-value is the number of
+  # samples after removing
+  #	   all the missing samples from the whole dataset.
+  #	   Default is "T".
+
+  x <- c(x)
+  y <- c(y)
+  z <- as.data.frame(z, check.names = FALSE)
+
+  #print(head(x))
+  #print(head(y))
+  #print(head(z))
+
+
+  useOk <- TRUE
+  methodOk <- TRUE
+
+  # print the method
+  if (gregexpr("p", calc_method)[[1]][1] == 1){
+    p.method <- "Pearson"
+  } else if (gregexpr("s", calc_method)[[1]][1] == 1){
+    p.method <- "Spearman"
+  }else if (gregexpr("k", calc_method)[[1]][1] == 1){
+    p.method <- "Kendall"
+  }else{
+    message("\'method\' should be \"pearson\" or \"spearman\" or \"kendall\"!\n")
+    methodOk <- FALSE
+  }
+
+  if(methodOk)
+  {
+    if (use == "mat") {
+      p.use <- "Var-Cov matrix"
+      pcor <- pcor.mat(x, y, z, cor_method = calc_method, na.rm = na.rm)
+    } else if (use == "rec") {
+      p.use <- "Recursive formula"
+      pcor <- pcor.rec(x, y, z, cor_method = calc_method, na.rm = na.rm)
+    } else {
+      message("\'use\' should be either \"rec\" or \"mat\"!\n")
+      useOk <- FALSE
+    }
+  }
+
+  if(useOk && methodOk)
+  {
+    # sample number
+    n <- dim(na.omit(data.frame(x, y, z, check.names = FALSE)))[1]
+
+    # given variables' number
+    gn <- dim(z)[2]
+
+    if (p.method == "Kendall"){
+      statistic <- pcor / sqrt(2 * (2 * (n - gn) + 5) / (9 * (n - gn) *
+                                                           (n - 1 - gn)))
+      p.value <- 2 * pnorm(-abs(statistic))
+
+    } else {
+      val_to_sqrt_l <- n - 2 - gn
+      val_to_sqrt_r <- 1 - pcor ^ 2
+      statistic <- pcor * sqrt(val_to_sqrt_l / val_to_sqrt_r)
+      p.value <- 2 * pnorm(-abs(statistic))
+    }
+
+    #data.frame(estimate = pcor, p.value = p.value, statistic = statistic,
+    #           n = n, gn = gn, Method = p.method, Use = p.use,
+    #           check.names = FALSE)
+    data.frame(estimate = pcor, p.value = p.value)
+  }
+}
+
+
 
 #' Internal function used to calculate the Partial Rank Correlation Coefficient
 #' @keywords internal

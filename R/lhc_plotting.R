@@ -44,7 +44,7 @@ lhc_graphMeasuresForParameterChange <-
     cor_coefficients <- get_correlation_stat_data(FILEPATH,corcoeffs_outputfile, corcoeffs_outputobject)
 
     # Now we can make the plot pairings
-    walk(measures,make_graphs,graph_data, parameters, cor_coefficients)
+    walk(measures,iterate_results_for_plotting, graph_data, parameters, cor_coefficients)
 
   } else  {
     # Needs to be implemented
@@ -63,7 +63,7 @@ lhc_graphMeasuresForParameterChange <-
 iterate_results_for_plotting <- function(measure, data_to_plot, parameters, coefficients)
 {
   message(paste0("Producing plots for response ",measure))
-  pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=pull(coefficients,paste0(measure,"_Estimate"))),make_lhc_plot, measure)
+  pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=coefficients[paste0(measure,".estimate"),]),make_lhc_plot, measure)
 }
 
 #' Retrieve the simulation summary data to plot
@@ -245,7 +245,7 @@ lhc_graphMeasuresForParameterChange_overTime <-
 #                      toString(signif(corr_stat, 3)), sep = "")
 #  } else {
 #    graph_file <- file.path(filepath,paste(parameter, measure, graph_time,
-                                           sep="_"))
+#                                           sep="_"))
 #    sub_title <- paste(
 #      "Measure: ",measure, ". Timepoint: ", graph_time, " ", timepointscale,
 #      "\nCorrelation Coefficient: ", toString(signif(corr_stat, 3)), sep = "")
