@@ -20,7 +20,12 @@ Imports: lhs,
     ggplot2,
     neuralnet,
     psych,
-    mco
+    mco,
+    magrittr,
+    dplyr,
+    tibble,
+    purrr,
+    readr
 Depends: randomForest,
     e1071,
     R (>= 2.10.0)

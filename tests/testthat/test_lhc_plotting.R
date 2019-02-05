@@ -98,51 +98,37 @@ test_that("lhc_graphMeasuresForParameterChange_overTime", {
   file.remove("LHC_Results_36.csv")
   file.remove("Test_Cor_Coeffs_12.csv")
   file.remove("Test_Cor_Coeffs_36.csv")
-  file.remove("thresholdBindProbability_Velocity_12.pdf")
-  file.remove("chemoThreshold_Velocity_12.pdf")
-  file.remove("chemoUpperLinearAdjust_Velocity_12.pdf")
-  file.remove("chemoLowerLinearAdjust_Velocity_12.pdf")
-  file.remove("maxVCAMeffectProbabilityCutoff_Velocity_12.pdf")
-  file.remove("vcamSlope_Velocity_12.pdf")
-  file.remove("thresholdBindProbability_Displacement_12.pdf")
-  file.remove("chemoThreshold_Displacement_12.pdf")
-  file.remove("chemoUpperLinearAdjust_Displacement_12.pdf")
-  file.remove("chemoLowerLinearAdjust_Displacement_12.pdf")
-  file.remove("maxVCAMeffectProbabilityCutoff_Displacement_12.pdf")
-  file.remove("vcamSlope_Displacement_12.pdf")
+  file.remove("thresholdBindProbability_Velocity12.pdf")
+  file.remove("chemoThreshold_Velocity12.pdf")
+  file.remove("chemoUpperLinearAdjust_Velocity12.pdf")
+  file.remove("chemoLowerLinearAdjust_Velocity12.pdf")
+  file.remove("maxVCAMeffectProbabilityCutoff_Velocity12.pdf")
+  file.remove("vcamSlope_Velocity12.pdf")
+  file.remove("thresholdBindProbability_Displacement12.pdf")
+  file.remove("chemoThreshold_Displacement12.pdf")
+  file.remove("chemoUpperLinearAdjust_Displacement12.pdf")
+  file.remove("chemoLowerLinearAdjust_Displacement12.pdf")
+  file.remove("maxVCAMeffectProbabilityCutoff_Displacement12.pdf")
+  file.remove("vcamSlope_Displacement12.pdf")
 
-  file.remove("thresholdBindProbability_Velocity_36.pdf")
-  file.remove("chemoThreshold_Velocity_36.pdf")
-  file.remove("chemoUpperLinearAdjust_Velocity_36.pdf")
-  file.remove("chemoLowerLinearAdjust_Velocity_36.pdf")
-  file.remove("maxVCAMeffectProbabilityCutoff_Velocity_36.pdf")
-  file.remove("vcamSlope_Velocity_36.pdf")
-  file.remove("thresholdBindProbability_Displacement_36.pdf")
-  file.remove("chemoThreshold_Displacement_36.pdf")
-  file.remove("chemoUpperLinearAdjust_Displacement_36.pdf")
-  file.remove("chemoLowerLinearAdjust_Displacement_36.pdf")
-  file.remove("maxVCAMeffectProbabilityCutoff_Displacement_36.pdf")
-  file.remove("vcamSlope_Displacement_36.pdf")
+  file.remove("thresholdBindProbability_Velocity36.pdf")
+  file.remove("chemoThreshold_Velocity36.pdf")
+  file.remove("chemoUpperLinearAdjust_Velocity36.pdf")
+  file.remove("chemoLowerLinearAdjust_Velocity36.pdf")
+  file.remove("maxVCAMeffectProbabilityCutoff_Velocity36.pdf")
+  file.remove("vcamSlope_Velocity36.pdf")
+  file.remove("thresholdBindProbability_Displacement36.pdf")
+  file.remove("chemoThreshold_Displacement36.pdf")
+  file.remove("chemoUpperLinearAdjust_Displacement36.pdf")
+  file.remove("chemoLowerLinearAdjust_Displacement36.pdf")
+  file.remove("maxVCAMeffectProbabilityCutoff_Displacement36.pdf")
+  file.remove("vcamSlope_Displacement36.pdf")
 
 
-})
-
-test_that("make_graph_title", {
-
-  graph_list <- make_graph_title(getwd(), "A", NULL, "Velocity",
-                               "microns/min", 0.9, NULL)
-
-  expect_true(length(graph_list)==5)
-  expect_true(graph_list$title=="LHC Analysis for Parameter: A")
-  expect_true(graph_list$file==file.path(getwd(),"A_Velocity"))
-  expect_true(graph_list$sub_title=="Measure: Velocity\nCorrelation Coefficient: 0.9")
-  expect_true(graph_list$xlabel == "Parameter Value")
-  expect_true(graph_list$ylabel == "Median Value Across Runs (microns/min)")
 })
 
 test_that("lhc_netlogo_graphMeasuresForParameterChange", {
   expect_message(lhc_netlogo_graphMeasuresForParameterChange(getwd(), c("A","B"),c("R","W"),c("m","m"),"Co_File.csv","lhc_File.csv",NULL,NULL),"Deprecated. Use the lhc_graphMeasuresForParameterChange method instead")
-
 })
 
 test_that("plotPRCCSFromTimepointFiles", {
@@ -249,44 +235,3 @@ test_that("lhc_polarplot", {
   file.remove("Test_Cor_Coeffs_36.csv")
 
 })
-
-test_that("lhc_plotCoEfficients", {
-
-  dir.create("graph_area")
-  load(file.path("test_cor_coeffs.Rda"))
-  write.csv(test_cor_coeffs,file="graph_area/Test_Cor_Coeffs.csv",row.names=F,quote=F)
-
-  lhc_plotCoEfficients(paste(getwd(),"/graph_area",sep=""), "Test_Cor_Coeffs.csv", c("Velocity","Displacement"),
-                       "ALL")
-
-  expect_true(file.exists("graph_area/PRCC_AllMeasures.pdf"))
-
-  lhc_plotCoEfficients(paste(getwd(),"/graph_area",sep=""), "Test_Cor_Coeffs.csv", c("Velocity","Displacement"),
-                       "INDIVIDUAL")
-
-  expect_true(file.exists("graph_area/PRCC_Measure_Displacement.pdf"))
-  expect_true(file.exists("graph_area/PRCC_Measure_Velocity.pdf"))
-
-  # Over time:
-  load(file.path("test_cor_coeffs.Rda"))
-  load(file.path("test_cor_coeffs_36.Rda"))
-  write.csv(test_cor_coeffs,file="graph_area/Test_Cor_Coeffs_12.csv",row.names=F,quote=F)
-  write.csv(test_cor_coeffs_36,file="graph_area/Test_Cor_Coeffs_36.csv",row.names=F,quote=F)
-
-  lhc_plotCoEfficients(paste(getwd(),"/graph_area",sep=""), "Test_Cor_Coeffs.csv", c("Velocity","Displacement"),
-                       "ALL",TIMEPOINTS=c(12,36),TIMEPOINTSCALE="Hours")
-
-  lhc_plotCoEfficients(paste(getwd(),"/graph_area",sep=""), "Test_Cor_Coeffs.csv", c("Velocity","Displacement"),
-                       "INDIVIDUAL",TIMEPOINTS=c(12,36),TIMEPOINTSCALE="Hours")
-
-  expect_true(file.exists("graph_area/PRCC_AllMeasures_12.pdf"))
-  expect_true(file.exists("graph_area/PRCC_AllMeasures_36.pdf"))
-  expect_true(file.exists("graph_area/PRCC_Measure_Displacement_12.pdf"))
-  expect_true(file.exists("graph_area/PRCC_Measure_Displacement_36.pdf"))
-  expect_true(file.exists("graph_area/PRCC_Measure_Velocity_12.pdf"))
-  expect_true(file.exists("graph_area/PRCC_Measure_Velocity_36.pdf"))
-
-  unlink("graph_area",recursive = TRUE)
-
-})
-

@@ -4,21 +4,23 @@
 \alias{lhc_polarplot}
 \title{Creates a polar plot for each response, showing PRCC for each parameter}
 \usage{
-lhc_polarplot(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
+lhc_polarplot(FILEPATH, parameters, measures,
+  corcoeffs_outputfile = NULL, corcoeffs_outputobject = NULL,
   TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
 be found}
 
-\item{PARAMETERS}{Array containing the names of the parameters of which
+\item{parameters}{Array containing the names of the parameters of which
 parameter samples will be generated}
 
-\item{MEASURES}{Array containing the names of the output measures which are
+\item{measures}{Array containing the names of the output measures which are
 used to analyse the simulation}
 
-\item{CORCOEFFSOUTPUTFILE}{File produced by spartan containing the Partial
-Rank Correlation Coefficients for each parameter/measure pairing}
+\item{corcoeffs_outputfile}{If in a CSV file, the calculated PRCC values}
+
+\item{corcoeffs_outputobject}{If in an R object, the calculated PRCC values}
 
 \item{TIMEPOINTS}{Implemented so this method can be used when analysing
 multiple simulation timepoints. If only analysing one timepoint, this should

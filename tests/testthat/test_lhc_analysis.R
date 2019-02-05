@@ -119,73 +119,12 @@ test_that("lhc_process_sample_run_subsets_overTime", {
   file.remove(file.path(getwd(),"LHC_Summary_File_36.csv"))
 })
 
-test_that("calculate_prcc_for_all_measures", {
-
-  load(file.path("Coeff_data_for_test.Rda"))
-  load(file.path("LHC_Summary.Rda"))
-  PARAMETERS<- c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
-                 "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope")
-  COEFFPARAMCOL <- LHCRESULTFILE[, PARAMETERS[1]]
-  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE)
-
-  # Check structure:
-  expect_true(ncol(prccs)==4)
-  expect_true(nrow(prccs)==1)
-  # In this case we know what the result should be, so we can check:
-  expect_equal(toString(round(prccs,digits=5)),"-0.61257, 0, -0.496, 0")
-
-  # Can now test other methods of prcc calculation
-  # recursive:
-  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("p"),
-                                              prcc_method="rec")
-  expect_true(ncol(prccs)==4)
-  expect_true(nrow(prccs)==1)
-  # In this case we know what the result should be, so we can check:
-  expect_equal(toString(round(prccs,digits=5)),"-0.55122, 0, -0.44966, 0")
-  # Error:
-  expect_message(calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("p"),
-                                                 prcc_method="error"), "Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
-
-  # Spearmans:
-  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("p"),
-                                           prcc_method="mat")
-  expect_true(ncol(prccs)==4)
-  expect_true(nrow(prccs)==1)
-  # In this case we know what the result should be, so we can check:
-  expect_equal(toString(round(prccs,digits=5)),"-0.55122, 0, -0.44966, 0")
-
-  prccs <- calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("k"),
-                                           prcc_method="mat")
-
-  expect_true(ncol(prccs)==4)
-  expect_true(nrow(prccs)==1)
-  # In this case we know what the result should be, so we can check:
-  expect_equal(toString(round(prccs,digits=5)),"-0.23913, 0, -0.21073, 0")
-
-  # Error
-  expect_message(calculate_prcc_for_all_measures(c("Velocity","Displacement"), COEFFPARAMCOL, coeff_data_for_test, LHCRESULTFILE, cor_calc_method=c("e"),
-                                                 prcc_method="mat"), "Correlation Calculation method needs to be either s,p,or k, and prcc calculation method either rec or mat")
-
-
-})
-
-test_that("calculate_prccs_all_parameters", {
+test_that("all_prccs_for_parameter", {
 
   load(file.path("LHC_Summary.Rda"))
-  PARAMETERS<- c("thresholdBindProbability", "chemoThreshold", "chemoUpperLinearAdjust",
-                 "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope")
-  results <- calculate_prccs_all_parameters(PARAMETERS, LHCRESULTFILE, c("Velocity","Displacement"))
-
-  # Check structure of results
-  expect_true(ncol(results)==4)
-  expect_true(nrow(results)==6)
-  expect_false(any(is.na(results)))
-
-  # We can check the data to known results
-  expect_equal(toString(round(results[,1],digits=5)),"-0.61257, -0.23544, -0.03522, -0.38037, -0.96561, -0.10538")
-  expect_equal(toString(round(results[,2],digits=5)),"0, 0, 0.43627, 0, 0, 0.01923")
-  expect_equal(toString(round(results[,3],digits=5)),"-0.496, -0.67588, 0.01668, -0.79009, -0.82014, -0.06463")
-  expect_equal(toString(round(results[,4],digits=5)),"0, 0, 0.71256, 0, 0, 0.1525")
+  coeffs<-all_prccs_for_parameter("thresholdBindProbability",LHCRESULTFILE, c("Velocity","Displacement"), cor_calc_method = c("s"))
+  expect_equal(names(coeffs),c("Velocity.estimate","Velocity.p.value","Displacement.estimate","Displacement.p.value"))
+  expect_false(any(is.na(coeffs)))
 })
 
 test_that("lhc_generatePRCoEffs_overTime", {
@@ -210,15 +149,15 @@ test_that("lhc_generatePRCoEffs_overTime", {
   resultIn<- read.csv(file.path("Prcc_Out_12.csv"),header=T,sep=",")
 
   # Check structure of results
-  expect_true(ncol(resultIn)==5)
-  expect_true(nrow(resultIn)==6)
+  expect_true(ncol(resultIn)==7)
+  expect_true(nrow(resultIn)==4)
   expect_false(any(is.na(resultIn)))
 
   resultIn<- read.csv(file.path("Prcc_Out_36.csv"),header=T,sep=",")
 
   # Check structure of results
-  expect_true(ncol(resultIn)==5)
-  expect_true(nrow(resultIn)==6)
+  expect_true(ncol(resultIn)==7)
+  expect_true(nrow(resultIn)==4)
   expect_false(any(is.na(resultIn)))
 
   file.remove(file.path("LHC_Results_12.csv"))
@@ -233,7 +172,7 @@ test_that("lhc_generatePRCoEffs", {
   # Setup:
   load(file.path("LHC_Summary.Rda"))
   # Write to file so can be read in
-  write.csv(LHCRESULTFILE,file="LHC_Results.csv",row.names=T,quote=F)
+  write.csv(LHCRESULTFILE,file="LHC_Results.csv",row.names=F,quote=F)
 
   # All internal functions have been checked - we now just need to check output
   lhc_generatePRCoEffs(
@@ -244,15 +183,17 @@ test_that("lhc_generatePRCoEffs", {
   resultIn<- read.csv("Prcc_Out.csv",header=T,sep=",")
 
   # Check structure of results
-  expect_true(ncol(resultIn)==5)
-  expect_true(nrow(resultIn)==6)
+  expect_true(ncol(resultIn)==7)
+  expect_true(nrow(resultIn)==4)
   expect_false(any(is.na(resultIn)))
 
   # We can check the data to known results
-  expect_equal(toString(round(resultIn[,2],digits=5)),"-0.61257, -0.23544, -0.03522, -0.38037, -0.96561, -0.10538")
-  expect_equal(toString(round(resultIn[,3],digits=5)),"0, 0, 0.43627, 0, 0, 0.01923")
-  expect_equal(toString(round(resultIn[,4],digits=5)),"-0.496, -0.67588, 0.01668, -0.79009, -0.82014, -0.06463")
-  expect_equal(toString(round(resultIn[,5],digits=5)),"0, 0, 0.71256, 0, 0, 0.1525")
+  expect_equal(toString(round(resultIn[,2],digits=5)),"-0.6126, 0, -0.49569, 0")
+  expect_equal(toString(round(resultIn[,3],digits=5)),"-0.23425, 0, -0.67524, 0")
+  expect_equal(toString(round(resultIn[,4],digits=5)),"-0.03562, 0.43154, 0.0166, 0.71404")
+  expect_equal(toString(round(resultIn[,5],digits=5)),"-0.38062, 0, -0.79004, 0")
+  expect_equal(toString(round(resultIn[,6],digits=5)),"-0.9656, 0, -0.82007, 0")
+  expect_equal(toString(round(resultIn[,7],digits=5)),"-0.10482, 0.02002, -0.06451, 0.15369")
 
   file.remove(file.path(getwd(),"LHC_Results.csv"))
   file.remove(file.path(getwd(),"Prcc_Out.csv"))

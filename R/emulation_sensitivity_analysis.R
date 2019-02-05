@@ -163,7 +163,7 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                                              write_csv_files = TRUE,
                                              graph_results=TRUE) {
 
-  #emulate_lhc_sampled_parameters(filepath, built_ensemble, parameters, measures, measure_scale, dataset = emulated_lhc_values)
+
 
   if(!is.null(param_file) | !is.null(dataset)) {
     if(!is.null(param_file)) {
@@ -229,8 +229,8 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
     if(graph_results)
     {
       lhc_graphMeasuresForParameterChange(
-        filepath, parameters, measures, measure_scale, CORCOEFFSOUTPUTFILE=NULL,
-        LHCSUMMARYFILENAME=NULL, OUTPUT_TYPE = c("PNG"), TIMEPOINTS = c(timepoint),
+        filepath, parameters, measures, measure_scale, corcoeffs_outputfile=NULL,
+        lhcsummary_filename=NULL, OUTPUT_TYPE = c("PNG"), TIMEPOINTS = c(timepoint),
         TIMEPOINTSCALE = timepointscale, check_done=TRUE, corcoeffs_output_object=prccs,
         lhc_summary_object=param_values_with_predictions)
     }

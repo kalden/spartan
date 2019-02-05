@@ -2,18 +2,24 @@
 % Please edit documentation in R/lhc_plotting.R
 \name{make_lhc_plot}
 \alias{make_lhc_plot}
-\title{Make the LHC output plot}
+\title{Uses ggplot2 to create a plot for the LHC analysis, for one parameter-measure pair}
 \usage{
-make_lhc_plot(data_to_plot, titles)
+make_lhc_plot(param_data, parameter, coefficient, measure, graph_time,
+  graph_format = c("PDF"))
 }
 \arguments{
-\item{data_to_plot}{Parameter and measure pair data}
+\item{param_data}{List of parameter value against simulation responses}
 
-\item{titles}{Object containing graph title and subtitle}
-}
-\value{
-Created graph object
+\item{parameter}{Name of the parameter being plotted}
+
+\item{coefficient}{Coefficient value for this parameter measure pairing}
+
+\item{measure}{Name of the measure being plotted}
+
+\item{graph_time}{If plotting multiple timepoints, the timepoint being plotted}
+
+\item{graph_format}{Output formats to produce. Defaults to PDF}
 }
 \description{
-Make the LHC output plot
+Uses ggplot2 to create a plot for the LHC analysis, for one parameter-measure pair
 }

@@ -398,6 +398,9 @@ calculate_medians_for_all_measures <- function(sim_params, param_result,
 #' @param lhc_summary_object If not specified in a CSV file, results can be specified in an
 #' R object. In this case LHCSUMMARYFILENAME will be NULL
 #' @return If no CSV file output, PRCC values returned as an R object
+#'
+#' @importFrom magrittr %>%
+#' @importFrom purrr map
 #' @export
 #'
 lhc_generatePRCoEffs <- function(
@@ -413,7 +416,7 @@ lhc_generatePRCoEffs <- function(
     if (is.null(TIMEPOINTS)) {
 
       if(!is.null(LHCSUMMARYFILENAME))
-        lhc_result_file <- read_from_csv(file.path(FILEPATH,LHCSUMMARYFILENAME))
+        lhc_result_file <- suppressMessages(read_csv(file.path(FILEPATH,LHCSUMMARYFILENAME)))
       else if(!is.null(lhc_summary_object))
         lhc_result_file<-lhc_summary_object
 
@@ -422,12 +425,12 @@ lhc_generatePRCoEffs <- function(
 
       if(write_csv_files)
       {
-        write_data_to_csv(coeff_results,row_names=TRUE)
+        write_data_to_csv(coeff_results, CORCOEFFSOUTPUTFILE, row_names=TRUE)
         message(paste("File of PRCCs output to ", file.path(FILEPATH,CORCOEFFSOUTPUTFILE),
                       sep=""))
       } else {
         message("Calculated PRCCs returned as R Object")
-        return(COEFFRESULTS)
+        return(coeff_results)
       }
 
 
@@ -475,16 +478,13 @@ lhc_generatePRCoEffs_db_link <- function(
 
   message("Generating Partial Rank Correlation Coefficients (lhc_generatePRCoEffs)")
 
-  COEFFRESULTS <- calculate_prccs_all_parameters(parameters, db_results,
-                                                 measures, cor_calc_method)
-
-  return(COEFFRESULTS)
-
+  return(data.frame(map(parameters, all_prccs_for_parameter, db_results, measures, cor_calc_method) %>% setNames(parameters)))
 }
 
 #' Pre-process analysis settings if multiple timepoints are being considered
 #'
 #' @inheritParams lhc_generatePRCoEffs
+#' @importFrom readr read_csv
 lhc_generatePRCoEffs_overTime <- function(FILEPATH, PARAMETERS, MEASURES,
                                  LHCSUMMARYFILENAME, CORCOEFFSOUTPUTFILE,
                                  TIMEPOINTS, TIMEPOINTSCALE) {
@@ -512,13 +512,13 @@ lhc_generatePRCoEffs_overTime <- function(FILEPATH, PARAMETERS, MEASURES,
 }
 
 # NO LONGER USED IN SPARTAN4
-#' Calculate PRCC values for all parameter-measure pairs
-#' @param parameters Simulation parameters
-#' @param lhc_result_file Summary statistics for all LHC parameter sets
-#' @param measures Simulation output responses
-#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
-#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
-#' @return Correlation coefficients for all pairings
+# Calculate PRCC values for all parameter-measure pairs
+# @param parameters Simulation parameters
+# @param lhc_result_file Summary statistics for all LHC parameter sets
+# @param measures Simulation output responses
+# @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+# ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
+# @return Correlation coefficients for all pairings
 #calculate_prccs_all_parameters <- function(parameters, lhc_result_file, measures,
 #                                           cor_calc_method=c("s"))
 #{
@@ -530,25 +530,27 @@ lhc_generatePRCoEffs_overTime <- function(FILEPATH, PARAMETERS, MEASURES,
 #' @param parameter Name of simulation parameter
 #' @param lhc_results Summary of simulation results for all parameter conditions, with parameter values
 #' @param measures Simulation output responses
+#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
 #' @return PRCC values for all measures for this parameter
 all_prccs_for_parameter<-function(parameter,lhc_results, measures, cor_calc_method = c("s")) {
 
   # Get coefficient set
-  coeff_data <- select(lhc_results,-one_of(parameter),-one_of(measures))
+  coeff_data <- dplyr::select(lhc_results,-dplyr::one_of(parameter),-dplyr::one_of(measures))
 
   # Retrieve parameter values
-  coeff_param_col <- select(lhc_results, parameter)
+  coeff_param_col <- dplyr::select(lhc_results, parameter)
 
   # Responses under those values
-  responses<-as.list(select(lhc_results, measures))
+  responses<-as.list(dplyr::select(lhc_results, measures))
 
-  return(unlist(map(responses, pcor.test2, coeff_param_col, coeff_data, calc_method=cor_calc_method)))
+  return(unlist(purrr::map(responses, pcor.test2, coeff_param_col, coeff_data, calc_method=cor_calc_method)))
 }
 
 ## NO LONGER NEEDED IN SPARTAN4
-#' Generates the CSV file header for the prcc results file
-#' @param measures The simulation output responses
-#' @return Header object for CSV file
+# Generates the CSV file header for the prcc results file
+# @param measures The simulation output responses
+# @return Header object for CSV file
 #generate_prcc_results_header <- function(measures) {
   # NAME THE COLUMNS FOR EASE OF REFERENCE LATER
 #  COEFFRESULTSHEAD <- NULL
@@ -562,16 +564,16 @@ all_prccs_for_parameter<-function(parameter,lhc_results, measures, cor_calc_meth
 #}
 
 # NO LONGER NEEDED IN SPARTAN4
-#' For all measures, calculate the prcc for each parameter
-#' @param MEASURES Simulation output responses
-#' @param COEFFPARAMCOL Results for the current simulation parameter
-#' @param COEFFDATA Coefficient data object being created
-#' @param LHCRESULTFILE Complete simulation results for all parameter sets
-#' @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
-#' ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
-#' @param prcc_method Method to calculate the partial correlation coefficient, either
-#' variance-covariance matrix ("mat") or recursive formula ("rec"). Default mat
-#' @return Updated set of parameter correlation coefficient results
+# For all measures, calculate the prcc for each parameter
+# @param MEASURES Simulation output responses
+# @param COEFFPARAMCOL Results for the current simulation parameter
+# @param COEFFDATA Coefficient data object being created
+# @param LHCRESULTFILE Complete simulation results for all parameter sets
+# @param cor_calc_method Way to calculate the correlation coefficient: Pearson's
+# ("p"), Spearman's ("s"), and Kendall's ("k"). Default is p
+# @param prcc_method Method to calculate the partial correlation coefficient, either
+# variance-covariance matrix ("mat") or recursive formula ("rec"). Default mat
+# @return Updated set of parameter correlation coefficient results
 #calculate_prcc_for_all_measures <- function(MEASURES, COEFFPARAMCOL, COEFFDATA,
 #                                            LHCRESULTFILE, cor_calc_method=c("s"),
 #                                            prcc_method="mat")

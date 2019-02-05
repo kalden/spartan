@@ -2,29 +2,30 @@
 % Please edit documentation in R/lhc_plotting.R
 \name{lhc_netlogo_graphMeasuresForParameterChange}
 \alias{lhc_netlogo_graphMeasuresForParameterChange}
-\title{Deprecated. Use \code{lhc_graphMeasuresForParameterChange} instead}
+\title{Make the LHC output plot
+Deprecated. Use \code{lhc_graphMeasuresForParameterChange} instead}
 \usage{
-lhc_netlogo_graphMeasuresForParameterChange(FILEPATH, PARAMETERS, MEASURES,
-  MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME, TIMEPOINTS,
+lhc_netlogo_graphMeasuresForParameterChange(FILEPATH, parameters, measures,
+  MEASURE_SCALE, corcoeffs_outputfile, lhcsummary_filename, TIMEPOINTS,
   TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
 be found}
 
-\item{PARAMETERS}{Array containing the names of the parameters of which
+\item{parameters}{Array containing the names of the parameters of which
 parameter samples will be generated}
 
-\item{MEASURES}{Array containing the names of the output measures which are
+\item{measures}{Array containing the names of the output measures which are
 used to analyse the simulation}
 
 \item{MEASURE_SCALE}{Scale in which each of the output responses is
 measured. Used to label plots}
 
-\item{CORCOEFFSOUTPUTFILE}{File produced by spartan containing the Partial
+\item{corcoeffs_outputfile}{File produced by spartan containing the Partial
 Rank Correlation Coefficients for each parameter/measure pairing}
 
-\item{LHCSUMMARYFILENAME}{Name of the LHC Summary file to be generated.
+\item{lhcsummary_filename}{Name of the LHC Summary file to be generated.
 Contains each parameter set alongside the result gained when the simulation
 was run under that criteria.}
 
@@ -38,5 +39,6 @@ multiple simulation timepoints. Sets the scale of the timepoints being
 analysed, e.g. "Hours"}
 }
 \description{
+Make the LHC output plot
 Deprecated. Use \code{lhc_graphMeasuresForParameterChange} instead
 }

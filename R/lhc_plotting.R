@@ -25,45 +25,50 @@
 #' @param lhc_summary_object If not specified in a CSV file, results can be specified in an
 #' R object. In this case LHCSUMMARYFILENAME will be NULL
 #'
+#' @importFrom purrr walk
+#' @importFrom dplyr as_data_frame
 #' @export
 #'
 lhc_graphMeasuresForParameterChange <-
   function(FILEPATH, parameters, measures, MEASURE_SCALE, corcoeffs_outputfile,
            lhcsummary_filename, OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL,
            TIMEPOINTSCALE = NULL, GRAPHTIME = NULL, check_done=FALSE,
-           corcoeffs_outputobject=NULL, lhc_summary_object=NULL) {
+           corcoeffs_output_object=NULL, lhc_summary_object=NULL) {
 
   # Spartan 4 method - removes all for loops and uses tidyverse to produce plots
   if(is.null(TIMEPOINTS)) {
     # get the simulation response data
-    lhcresult <- get_lhc_summary_data(FILEPATH, lhcsummary_filename, lhcsummary_object)
+    lhcresult <- get_lhc_summary_data(FILEPATH, lhcsummary_filename, lhc_summary_object)
     # Get data into format where each parameter value is paired with responses
-    graph_data<-lapply(lhcresult[PARAMETERS], function(x,y){bind_cols(as_data_frame(x),as_data_frame(y))}, lhcresult[MEASURES])
+    graph_data<-lapply(lhcresult[parameters], function(x,y){dplyr::bind_cols(as_data_frame(x),as_data_frame(y))}, lhcresult[measures])
 
     # get the correlation coefficients for including on the plot
-    cor_coefficients <- get_correlation_stat_data(FILEPATH,corcoeffs_outputfile, corcoeffs_outputobject)
+    cor_coefficients <- get_correlation_stat_data(FILEPATH,corcoeffs_outputfile, corcoeffs_output_object)
 
     # Now we can make the plot pairings
-    walk(measures,iterate_results_for_plotting, graph_data, parameters, cor_coefficients)
+    walk(measures,iterate_results_for_plotting, graph_data, parameters, cor_coefficients, output_types = OUTPUT_TYPE, GRAPHTIME)
 
   } else  {
-    # Needs to be implemented
+
     lhc_graphMeasuresForParameterChange_overTime(
-      FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE,
-      LHCSUMMARYFILENAME, OUTPUT_TYPE, TIMEPOINTS,
+      FILEPATH, parameters, measures, MEASURE_SCALE, corcoeffs_outputfile,
+      lhcsummary_filename, OUTPUT_TYPE, TIMEPOINTS,
       TIMEPOINTSCALE, GRAPHTIME)
-    message("Timepoints not yet implemented in Spartan 4")
+
   }
 }
 
 #' Function used by walk to create plots for all measure and response pairs
 #' @param measure Simulation measure being examined
 #' @param data_to_plot Data to plot for all parameters for this measure
+#' @param parameters Simulation parameters being analysed
 #' @param coefficients Calculated coefficient values for this analysis
-iterate_results_for_plotting <- function(measure, data_to_plot, parameters, coefficients)
+#' @param output_types File types of graphs to produce
+#' @param graph_time If multiple timepoints, the timepoint being plotted
+iterate_results_for_plotting <- function(measure, data_to_plot, parameters, coefficients, output_types, graph_time)
 {
   message(paste0("Producing plots for response ",measure))
-  pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=coefficients[paste0(measure,".estimate"),]),make_lhc_plot, measure)
+  purrr::pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=coefficients[paste0(measure,".estimate"),]),make_lhc_plot, measure, graph_time, graph_format=output_types)
 }
 
 #' Retrieve the simulation summary data to plot
@@ -75,7 +80,7 @@ get_lhc_summary_data<-function(FILEPATH, lhcsummary_filename, lhcsummary_object)
   if(!is.null(lhcsummary_filename))
     return(read_from_csv(file.path(FILEPATH, lhcsummary_filename)))
   else if(!is.null(lhcsummary_object))
-    return(lhc_summary_object)
+    return(lhcsummary_object)
 }
 
 #' Retrieve the correlation stats data to plot
@@ -84,10 +89,11 @@ get_lhc_summary_data<-function(FILEPATH, lhcsummary_filename, lhcsummary_object)
 #' @param corcoeffs_outputfile Path to the the file containing this data, or NULL
 #' @param corcoeffs_outputobject Name of the R object containing this data, or NULL
 #' @return Data for processing in the plots
+#' @importFrom tibble column_to_rownames
 get_correlation_stat_data<-function(FILEPATH, corcoeffs_outputfile, corcoeffs_outputobject) {
 
   if(!is.null(corcoeffs_outputfile))
-    return(read_from_csv(file.path(FILEPATH,corcoeffs_outputfile)))
+    return(column_to_rownames(read_from_csv(file.path(FILEPATH,corcoeffs_outputfile)), var = "X1"))
   else if(!is.null(corcoeffs_outputobject))
     return(corcoeffs_outputobject)
 }
@@ -97,27 +103,38 @@ get_correlation_stat_data<-function(FILEPATH, corcoeffs_outputfile, corcoeffs_ou
 #' @param param_data List of parameter value against simulation responses
 #' @param parameter Name of the parameter being plotted
 #' @param coefficient Coefficient value for this parameter measure pairing
+#' @param measure Name of the measure being plotted
+#' @param graph_time If plotting multiple timepoints, the timepoint being plotted
 #' @param graph_format Output formats to produce. Defaults to PDF
-make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_format=c("PDF")) {
+#'
+#' @importFrom purrr walk
+#' @importFrom ggplot2 aes_
+#'
+make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_time, graph_format=c("PDF")) {
 
   # Check coefficient isn't NA
   if(!is.na(coefficient)) {
+
+    timepoint_append_string <- ""
+    if(!is.null(graph_time))
+      timepoint_append_string <- paste0("\nTimepoint: ",graph_time)
+
     output_graph <- ggplot(param_data,
-                           aes(x = value,
+                           aes_(x = ~ value,
                                y = as.vector(param_data[[measure]]))) +
       geom_point(size = 0.5) +
       scale_y_continuous(limits = c(
         floor(min(as.numeric(param_data[[measure]]))), ceiling(max(as.numeric(param_data[[measure]]))))) +
       labs(x = "Parameter Value", y = "Simulation Response",
            title = paste0("LHC Analysis for Parameter: ",parameter),
-           subtitle = paste("Measure: ",measure, "\nCorrelation Coefficient: ", toString(signif(coefficient, 3)))) +
+           subtitle = paste("Measure: ",measure, "\nCorrelation Coefficient: ", toString(signif(coefficient, 3)),timepoint_append_string)) +
       theme(axis.title = element_text(size = 7),
             axis.text = element_text(size = 7),
             plot.title = element_text(size = 9, hjust = 0.5),
             plot.subtitle = element_text(size = 8, hjust = 0.5))
 
     # Save the plot in the desired formats
-    walk(as.list(graph_format),save_graph_in_desired_formats,paste(parameter,measure,sep="_"),output_graph)
+    walk(as.list(graph_format),save_graph_in_desired_formats,paste0(parameter,"_",measure,graph_time),output_graph)
 
   } else {
     message(paste0("For Parameter ",parameter, " Measure ",measure, " Pairing, Correlation Coefficient was reported as NA. Excluded from plotting."))
@@ -129,18 +146,18 @@ make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_for
 #' @param output_type Type of graph to be produced
 #' @param graph_file File name to give the graph
 #' @param output_graph ggplot2 graph object
-save_graph_in_desired_formats <-function(output_type, GRAPHFILE, output_graph) {
+save_graph_in_desired_formats <-function(output_type, graph_file, output_graph) {
 
   if (output_type == "PDF") {
-    ggsave(paste0(GRAPHFILE, ".pdf"), plot = output_graph, width = 4, height = 4)
+    ggsave(paste0(graph_file, ".pdf"), plot = output_graph, width = 4, height = 4)
   } else if (output_type == "PNG") {
-    ggsave(paste0(GRAPHFILE, ".png"),
+    ggsave(paste0(graph_file, ".png"),
            plot = output_graph, width = 4, height = 4)
   } else if (output_type == "TIFF") {
-    ggsave(paste0(GRAPHFILE, ".tiff"),
+    ggsave(paste0(graph_file, ".tiff"),
            plot = output_graph, width = 4, height = 4)
   } else if (output_type == "BMP") {
-    ggsave(paste0(GRAPHFILE, ".bmp"),
+    ggsave(paste0(graph_file, ".bmp"),
            plot = output_graph, width = 4, height = 4)
   }
 }
@@ -198,8 +215,8 @@ lhc_graphMeasuresForParameterChange_from_db <-
 #' Wrapper for graphing LHC results for multiple timepoints
 #' @inheritParams lhc_graphMeasuresForParameterChange
 lhc_graphMeasuresForParameterChange_overTime <-
-    function(FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE,
-             LHCSUMMARYFILENAME, OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL,
+    function(FILEPATH, parameters, measures, MEASURE_SCALE, corcoeffs_outputfile,
+             lhcsummary_filename, OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL,
              TIMEPOINTSCALE = NULL, GRAPHTIME = NULL) {
 
       for (n in 1:length(TIMEPOINTS)) {
@@ -207,15 +224,15 @@ lhc_graphMeasuresForParameterChange_overTime <-
         message(paste("Processing Timepoint: ", current_time, sep = ""))
 
         corcoeffs_output_full <- append_time_to_argument(
-          CORCOEFFSOUTPUTFILE, current_time,
-          check_file_extension(CORCOEFFSOUTPUTFILE))
+          corcoeffs_outputfile, current_time,
+          check_file_extension(corcoeffs_outputfile))
 
         lhcsummary_full <- append_time_to_argument(
-          LHCSUMMARYFILENAME, current_time,
-          check_file_extension(LHCSUMMARYFILENAME))
+          lhcsummary_filename, current_time,
+          check_file_extension(lhcsummary_filename))
 
         lhc_graphMeasuresForParameterChange(
-          FILEPATH, PARAMETERS, MEASURES, MEASURE_SCALE, corcoeffs_output_full,
+          FILEPATH, parameters, measures, MEASURE_SCALE, corcoeffs_output_full,
           lhcsummary_full, TIMEPOINTS = NULL, TIMEPOINTSCALE = TIMEPOINTSCALE,
           GRAPHTIME = current_time, check_done = TRUE)
 
@@ -223,15 +240,15 @@ lhc_graphMeasuresForParameterChange_overTime <-
     }
 
 ## NO LONGER USED IN SPARTAN 4, BUT KEPT SO TIMEPOINTS CAN BE EXAMINED
-#' Make graph title, sub title, and file name
-#' @param filepath Directory to output graph to
-#' @param parameter Current parameter being processed
-#' @param graph_time Timepoint, if multiple timepoints
-#' @param measure Current measure being processed
-#' @param measure_scale Scale of the measure being processed
-#' @param corr_stat The PRCC for this parameter-measure pair
-#' @param timepointscale Scale of timepoints, if multiple
-#' @return List containing file, title, and subtitle, and axes labels
+# Make graph title, sub title, and file name
+# @param filepath Directory to output graph to
+# @param parameter Current parameter being processed
+# @param graph_time Timepoint, if multiple timepoints
+# @param measure Current measure being processed
+# @param measure_scale Scale of the measure being processed
+# @param corr_stat The PRCC for this parameter-measure pair
+# @param timepointscale Scale of timepoints, if multiple
+# @return List containing file, title, and subtitle, and axes labels
 #make_graph_title <- function(filepath, parameter, graph_time, measure,
 #                             measure_scale, corr_stat, timepointscale) {
 #  graph_title <- paste("LHC Analysis for Parameter: ",parameter, sep = "")
@@ -256,9 +273,9 @@ lhc_graphMeasuresForParameterChange_overTime <-
 
 ## REPLACED IN SPARTAN4
 #' Make the LHC output plot
-#' @param data_to_plot Parameter and measure pair data
-#' @param titles Object containing graph title and subtitle
-#' @return Created graph object
+# @param data_to_plot Parameter and measure pair data
+# @param titles Object containing graph title and subtitle
+# @return Created graph object
 #make_lhc_plot <- function(data_to_plot, titles) {
 #  output_graph <- ggplot(data_to_plot,
 #                         aes(x = data_to_plot[, 1],
@@ -279,156 +296,15 @@ lhc_graphMeasuresForParameterChange_overTime <-
 #' Deprecated. Use \code{lhc_graphMeasuresForParameterChange} instead
 #'
 #' @inheritParams lhc_graphMeasuresForParameterChange
-lhc_netlogo_graphMeasuresForParameterChange <- function(FILEPATH, PARAMETERS,
-                                                        MEASURES,
+lhc_netlogo_graphMeasuresForParameterChange <- function(FILEPATH, parameters,
+                                                        measures,
                                                         MEASURE_SCALE,
-                                                        CORCOEFFSOUTPUTFILE,
-                                                        LHCSUMMARYFILENAME,
+                                                        corcoeffs_outputfile,
+                                                        lhcsummary_filename,
                                                         TIMEPOINTS,
                                                         TIMEPOINTSCALE) {
 
   message("Deprecated. Use the lhc_graphMeasuresForParameterChange method instead")
-}
-
-
-#' Plots the PRCC coefficients against each other for ease of comparison
-#'
-#' Plots the Partial Rank Correlation Coefficients for either all measures
-#' or for one individual measure, for all simulation parameters.
-#'
-#' @param FILEPATH Location of the LHC result set
-#' @param CORCOEFFSOUTPUTFILE Name of the CSV file in FILEPATH containing
-#' the Partial Rank Correlation Coefficients
-#' @param MEASURES Names of the simulation responses
-#' @param PRINTOPT Used in plotting Partial Rank Correlation Coefficients,
-#' should be either "ALL" or "INDIVIDUAL"
-#' @param TIMEPOINTS Implemented so this method can be used when analysing
-#' multiple simulation timepoints. If only analysing one timepoint, this
-#' should be set to NULL. If not, this should be an array of timepoints,
-#' e.g. c(12,36,48,60)
-#' @param TIMEPOINTSCALE Implemented so this method can be used when
-#' analysing multiple simulation timepoints. Sets the scale of the timepoints
-#' being analysed, e.g. "Hours"
-#'
-#' @export
-#'
-#' @importFrom graphics barplot
-lhc_plotCoEfficients <- function(FILEPATH, CORCOEFFSOUTPUTFILE, MEASURES,
-                                 PRINTOPT, TIMEPOINTS = NULL,
-                                 TIMEPOINTSCALE = NULL) {
-
-  if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
-    if (file.exists(FILEPATH)) {
-
-      # COLUMN 1 HAS PARAMETER NAMES, THEN FOLLOWS FOR EACH MEASURE -
-      # THE PRCC AND THE P VALUE
-      # WE'RE GOING TO GRAPH ALL THE PRCC'S ON ONE GRAPH
-
-      if (PRINTOPT == "INDIVIDUAL") {
-        # INDIVIDUAL PLOTS FOR EACH MEASURE
-        message("Producing Partial Rank Correlation Coefficient Plots for each measure")
-
-        for (i in 1:length(MEASURES)) {
-          if (is.null(TIMEPOINTS)) {
-            GRAPHFILE <- paste(FILEPATH, "/PRCC_Measure_", MEASURES[i], ".pdf",
-                               sep = "")
-            GRAPHTITLE <- paste("PRCC Values for Measure: ", MEASURES[i],
-                                sep = "")
-          } else {
-            GRAPHFILE <- paste(FILEPATH, "/PRCC_Measure_", MEASURES[i], "_",
-                               TIMEPOINTS, ".pdf", sep = "")
-            GRAPHTITLE <- paste("PRCC Values for Measure: ", MEASURES[i],
-                                "\nTimepoint: ", TIMEPOINTS, sep = "")
-          }
-
-          pdf(GRAPHFILE, width = 9, height = 5)
-          par(xpd = NA, mar = c(2, 4, 2, 17))
-
-          # Generate the heading of the CSV file - the measure plus _Estimate
-          M <- paste(MEASURES[i], "_Estimate", sep = "")
-          # We can now use this to get the column out the dataset
-
-          barplot(COEFFS[, M], ylim = c(-1, 1), col = "black",
-                  main = GRAPHTITLE,
-                  ylab = "Partial Rank Correlation Coefficient",
-                  names.arg = seq(1, nrow(COEFFS), by = 1))
-
-          thelabels <- paste(1:nrow(COEFFS), " ", COEFFS[, 1], sep = "")
-          par(xpd = TRUE)
-          legend_size <- nrow(COEFFS) + 1.5
-          legend(legend_size, 1.0, legend = thelabels, pch = "",
-                 cex = 0.6, ncol = 1)
-          par(xpd = FALSE)
-          dev.off()
-        }
-
-      } else if (PRINTOPT == "ALL") {
-        message("Producing Partial Rank Correlation Coefficient Summary Plot of All Measures")
-
-        # ALL PRCCS FOR ALL MEASURES, ON ONE PLOT
-        # Make the data frame for the plot
-        # FIRST OF ALL WE NEED TO REMOVE THE P VALUES SO WE CAN AUTOMATE THIS
-
-        if (is.null(TIMEPOINTS)) {
-          GRAPHFILE <- paste(FILEPATH, "/PRCC_AllMeasures.pdf", sep = "")
-          GRAPHTITLE <- "PRCC Values for All Measures"
-        } else {
-          GRAPHFILE <- paste(FILEPATH, "/PRCC_AllMeasures_", TIMEPOINTS,
-                             ".pdf", sep = "")
-          GRAPHTITLE <- paste("PRCC Values for All Measures\nTimepoint: ",
-                              TIMEPOINTS, sep = "")
-        }
-
-        pdf(GRAPHFILE, width = 10, height = 5)
-
-        par(xpd = NA, mar = c(2, 4, 2, 9))
-
-        PRCCS <- NULL
-        for (p in seq(2, ncol(COEFFS), by = 2)) {
-          PRCCS <- cbind(PRCCS, COEFFS[, p])
-        }
-
-        # NOW MAKE THE DATA FRAME
-        d <- data.frame(row.names = levels(COEFFS[, 1]), PRCCS,
-                        check.names = FALSE)
-        colnames(d) <- MEASURES
-        d <- do.call(rbind, d)
-        barplot(d, beside = TRUE, ylim = c(-1, 1.4),
-                legend.text = rownames(d),
-                args.legend = list(x = "topright", bty = "n"),
-                names.arg = seq(1, nrow(COEFFS), by = 1),
-                main = GRAPHTITLE,
-                ylab = "Partial Rank Correlation Coefficient")
-
-        thelabels <- paste(1:nrow(COEFFS), " ", COEFFS[, 1], sep = "")
-        par(xpd = TRUE)
-        legend_size <- nrow(COEFFS)*3
-        #legend(legend_size, 1.0, legend = thelabels, pch = "",
-        #       cex = 0.7, ncol = 1)
-        legend("topright", inset=c(-0.2,0), 1.0, legend = thelabels, pch = "",
-               cex = 0.7, ncol = 1)
-
-        par(xpd = FALSE)
-        dev.off()
-      }
-    }
-  } else {
-    # PROCESS EACH TIMEPOINT, AMENDING THE FILENAMES, RECALLING THIS FUNCTION
-    for (n in 1:length(TIMEPOINTS)) {
-
-      current_time <- TIMEPOINTS[n]
-      message(paste("Processing Timepoint ", current_time, sep = ""))
-
-      CORCOEFFSOUTPUTFILE_FORMAT <- check_file_extension(CORCOEFFSOUTPUTFILE)
-      CORCOEFFSOUTPUTFILE_FULL <- paste(substr(CORCOEFFSOUTPUTFILE, 0,
-                                               nchar(CORCOEFFSOUTPUTFILE) - 4),
-                                        "_", current_time, ".",
-                                        CORCOEFFSOUTPUTFILE_FORMAT, sep = "")
-
-      lhc_plotCoEfficients(FILEPATH, CORCOEFFSOUTPUTFILE_FULL, MEASURES,
-                           PRINTOPT, current_time, NULL)
-    }
-  }
 }
 
 #' Creates a polar plot for each response, showing PRCC for each parameter
@@ -437,25 +313,29 @@ lhc_plotCoEfficients <- function(FILEPATH, CORCOEFFSOUTPUTFILE, MEASURES,
 #' correlation coefficients as a polar plot, to ease comparison of these values.
 #'
 #' @inheritParams lhc_graphMeasuresForParameterChange
-#'
+#' @param corcoeffs_outputfile If in a CSV file, the calculated PRCC values
+#' @param corcoeffs_outputobject If in an R object, the calculated PRCC values
 #' @export
 #'
 #' @import plotrix
-lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
-                          TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL) {
+lhc_polarplot <- function(FILEPATH, parameters, measures, corcoeffs_outputfile=NULL,
+                          corcoeffs_outputobject = NULL, TIMEPOINTS = NULL,
+                          TIMEPOINTSCALE = NULL) {
+
   # Produce a polar plot that shows all the PRCCs for the PARAMETERS
   # in a latin-hypercube analysis
   if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
     # Check the FILEPATH exists
     if (file.exists(FILEPATH)) {
       # Check the coefficient file exists
-      if (file.exists(paste(FILEPATH, "/", CORCOEFFSOUTPUTFILE, sep = ""))) {
 
         # Read in the file
-        CORCOEFFS <- read.csv(paste(FILEPATH, "/", CORCOEFFSOUTPUTFILE,
-                                    sep = ""),
-                              header = TRUE, check.names = FALSE,
-                              row.names = 1)
+        CORCOEFFS <- get_correlation_stat_data(FILEPATH, corcoeffs_outputfile, corcoeffs_outputobject)
+
+        #CORCOEFFS <- read.csv(paste(FILEPATH, "/", CORCOEFFSOUTPUTFILE,
+        #                            sep = ""),
+        #                      header = TRUE, check.names = FALSE,
+        #                      row.names = 1)
 
 
 
@@ -467,16 +347,17 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
         output_forms <- c("png", "pdf")
 
         # Now create a plot for all simulation MEASURES
-        for (m in 1:length(MEASURES)) {
+        for (m in 1:length(measures)) {
 
           # Need to exclude any parameters that are NA prior to plotting
-          na_corrs <- which(is.na(CORCOEFFS[,paste0(MEASURES[m],"_Estimate")]))
+          #na_corrs <- which(is.na(CORCOEFFS[,paste0(MEASURES[m],"_Estimate")]))
+          na_corrs <- which(is.na(CORCOEFFS[paste0(measures[m],".estimate"),]))
 
-          plot_parameters<-PARAMETERS
+          plot_parameters<-parameters
           if(length(na_corrs)>0)
           {
-            plot_parameters<-PARAMETERS[!(PARAMETERS %in% PARAMETERS[na_corrs])]
-            message(paste0("For Measure ",MEASURES[m],", Parameter(s) ",toString(PARAMETERS[na_corrs])," reported correlation coefficients of NA. Excluded from Plot. Check calculation"))
+            plot_parameters<-parameters[!(parameters %in% parameters[na_corrs])]
+            message(paste0("For Measure ",measures[m],", Parameter(s) ",toString(parameters[na_corrs])," reported correlation coefficients of NA. Excluded from Plot. Check calculation"))
           }
 
           # Check there are still parameters left to plot after those removed!
@@ -489,18 +370,13 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
             # plot, as well as the colours (blue negative, red positive)
             angle <- c()
             colours <- c()
-            # Make the header for this measure
-            col_head <- paste(MEASURES[m], "_Estimate",
-                             sep = "")
 
-
-            #for (i in 1:length(PARAMETERS)) {
             for (i in 1:length(plot_parameters))
             {
               angle <- c(angle, degree * i)
               # Now see if the correlation is positive or negative
-              #if (CORCOEFFS[PARAMETERS[i], col_head] < 0)
-              if (CORCOEFFS[plot_parameters[i], col_head] < 0)
+
+              if (CORCOEFFS[paste0(measures[m],".estimate"),plot_parameters[i]] < 0)
               {
                   colours <- c(colours, "blue")
               } else {
@@ -508,7 +384,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
               }
             }
 
-            graph_name <- paste(FILEPATH, "/polarPlot_", MEASURES[m],sep="")
+            graph_name <- paste(FILEPATH, "/polarPlot_", measures[m],sep="")
             if(!is.null(TIMEPOINTS))
               graph_name<-paste(graph_name,"_",TIMEPOINTS,sep="")
 
@@ -524,20 +400,18 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
               par(cex.axis = 1.5)
 
               # readjust the parameter list to align with the correct angles
-              #PARAM_NAMES <- c(PARAMETERS[length(PARAMETERS)],
-              #                 PARAMETERS[1:length(PARAMETERS) - 1])
               PARAM_NAMES <- c(plot_parameters[length(plot_parameters)],
                                plot_parameters[1:length(plot_parameters) - 1])
 
 
               # Note we use absolute values as plot goes from 0 to 1, it is the
               # colour which shows if it is positive or negative
-              radial.plot(abs(CORCOEFFS[plot_parameters, col_head]),
+              radial.plot(abs(CORCOEFFS[paste0(measures[m],".estimate"),plot_parameters]),
                           angle, rp.type = "r",
                           lwd = 4, line.col = colours,
                           labels = seq(1, length(plot_parameters), by = 1),
                           radial.lim = c(0, 1), #range of grid circle
-                          main = paste("Partial Rank Correlation Coefficient Values for ", MEASURES[m], sep = ""),
+                          main = paste("Partial Rank Correlation Coefficient Values for ", measures[m], sep = ""),
                           show.grid.labels = 2,
                           #put the concentric circle labels going down
                           show.radial.grid = TRUE,
@@ -559,7 +433,6 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
             }
           }
         }
-      }
     }
   } else {
     # PROCESS EACH TIMEPOINT, AMENDING FILENAMES AND RECALLING THIS FUNCTION
@@ -567,13 +440,13 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
       current_time <- TIMEPOINTS[n]
       message(paste("Processing Timepoint: ", current_time, sep = ""))
 
-      CORCOEFFSOUTPUTFILE_FORMAT <- check_file_extension(CORCOEFFSOUTPUTFILE)
-      CORCOEFFSOUTPUTFILE_FULL <- paste(substr(CORCOEFFSOUTPUTFILE, 0,
-                                               nchar(CORCOEFFSOUTPUTFILE) - 4),
+      CORCOEFFSOUTPUTFILE_FORMAT <- check_file_extension(corcoeffs_outputfile)
+      CORCOEFFSOUTPUTFILE_FULL <- paste(substr(corcoeffs_outputfile, 0,
+                                               nchar(corcoeffs_outputfile) - 4),
                                         "_", current_time, ".",
                                         CORCOEFFSOUTPUTFILE_FORMAT, sep = "")
 
-      lhc_polarplot(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE_FULL,
+      lhc_polarplot(FILEPATH, parameters, measures, CORCOEFFSOUTPUTFILE_FULL,
                     TIMEPOINTS = current_time,
                     TIMEPOINTSCALE = TIMEPOINTSCALE)
     }
@@ -594,7 +467,7 @@ lhc_polarplot <- function(FILEPATH, PARAMETERS, MEASURES, CORCOEFFSOUTPUTFILE,
 #'
 #' @export
 #' @importFrom grDevices png
-plotPRCCSFromTimepointFiles <- function(FILEPATH, PARAMETERS, MEASURES,
+plotPRCCSFromTimepointFiles <- function(FILEPATH, parameters, measures,
                                       CORCOEFFSFILENAME, TIMEPOINTS,
                                       TIMEPOINTSCALE, DISPLAYPVALS = FALSE) {
   message("Plotting Graphs for Partial Rank Correlation Coefficients Over Time")
@@ -602,7 +475,7 @@ plotPRCCSFromTimepointFiles <- function(FILEPATH, PARAMETERS, MEASURES,
   if (requireNamespace("plotrix", quietly = TRUE)) {
 
     # One plot for each parameter
-    for (PARAM in 1:length(PARAMETERS)) {
+    for (PARAM in 1:length(parameters)) {
       # PRCCS for this parameter
       FULLPARAMRESULTS <- NULL
       # P-Values for this parameter
@@ -637,15 +510,15 @@ plotPRCCSFromTimepointFiles <- function(FILEPATH, PARAMETERS, MEASURES,
 
       # Set the row and column names of the P-Values data frame
       rownames(PARAMPVALS) <- TIMEPOINTS
-      colnames(PARAMPVALS) <- MEASURES
+      colnames(PARAMPVALS) <- measures
 
       # Now to make the plot
-      GRAPHFILE <- file.path(FILEPATH, paste(PARAMETERS[PARAM], "_OverTime.pdf",sep=""))
+      GRAPHFILE <- file.path(FILEPATH, paste(parameters[PARAM], "_OverTime.pdf",sep=""))
       pdf(GRAPHFILE, width = 7, height = 7)
 
       # Title, with parameter name
       GRAPHTITLE <- paste("Partial Rank Correlation Coefficients Over Simulation
-                        Time\nParameter: ", PARAMETERS[PARAM], sep = "")
+                        Time\nParameter: ", parameters[PARAM], sep = "")
 
       # Plot the first measure
       plot(FULLPARAMRESULTS[, 1], FULLPARAMRESULTS[, 2], type = "o",
@@ -693,8 +566,8 @@ plotPRCCSFromTimepointFiles <- function(FILEPATH, PARAMETERS, MEASURES,
       }
 
       # Graph legend
-      legend("topleft", inset = .025, title = "Measures", MEASURES,
-             pch = 1:length(MEASURES))
+      legend("topleft", inset = .025, title = "Measures", measures,
+             pch = 1:length(measures))
 
       # Output graph
       dev.off()
@@ -704,3 +577,147 @@ plotPRCCSFromTimepointFiles <- function(FILEPATH, PARAMETERS, MEASURES,
                 sep = ""))
   }
 }
+
+
+# TO BE REMOVED FROM SPARTAN4 - NEEDS A REWRITE
+# Plots the PRCC coefficients against each other for ease of comparison
+#
+# Plots the Partial Rank Correlation Coefficients for either all measures
+# or for one individual measure, for all simulation parameters.
+#
+# @param FILEPATH Location of the LHC result set
+# @param CORCOEFFSOUTPUTFILE Name of the CSV file in FILEPATH containing
+# the Partial Rank Correlation Coefficients
+# @param MEASURES Names of the simulation responses
+# @param PRINTOPT Used in plotting Partial Rank Correlation Coefficients,
+# should be either "ALL" or "INDIVIDUAL"
+# @param TIMEPOINTS Implemented so this method can be used when analysing
+# multiple simulation timepoints. If only analysing one timepoint, this
+# should be set to NULL. If not, this should be an array of timepoints,
+# e.g. c(12,36,48,60)
+# @param TIMEPOINTSCALE Implemented so this method can be used when
+# analysing multiple simulation timepoints. Sets the scale of the timepoints
+# being analysed, e.g. "Hours"
+#
+# @export
+#
+# @importFrom graphics barplot
+#lhc_plotCoEfficients <- function(FILEPATH, corcoeffs_outputfile, MEASURES,
+#                                 PRINTOPT, TIMEPOINTS = NULL,
+#                                 TIMEPOINTSCALE = NULL) {
+
+#  if (is.null(TIMEPOINTS) || length(TIMEPOINTS) == 1) {
+#    if (file.exists(FILEPATH)) {
+
+# COLUMN 1 HAS PARAMETER NAMES, THEN FOLLOWS FOR EACH MEASURE -
+# THE PRCC AND THE P VALUE
+# WE'RE GOING TO GRAPH ALL THE PRCC'S ON ONE GRAPH
+
+#      CORCOEFFS <- get_correlation_stat_data(FILEPATH, corcoeffs_outputfile, NULL)
+
+#      if (PRINTOPT == "INDIVIDUAL") {
+# INDIVIDUAL PLOTS FOR EACH MEASURE
+#        message("Producing Partial Rank Correlation Coefficient Plots for each measure")
+
+#        for (i in 1:length(MEASURES)) {
+#          if (is.null(TIMEPOINTS)) {
+#            GRAPHFILE <- paste(FILEPATH, "/PRCC_Measure_", MEASURES[i], ".pdf",
+#                               sep = "")
+#            GRAPHTITLE <- paste("PRCC Values for Measure: ", MEASURES[i],
+#                                sep = "")
+#          } else {
+#            GRAPHFILE <- paste(FILEPATH, "/PRCC_Measure_", MEASURES[i], "_",
+#                               TIMEPOINTS, ".pdf", sep = "")
+#            GRAPHTITLE <- paste("PRCC Values for Measure: ", MEASURES[i],
+#                                "\nTimepoint: ", TIMEPOINTS, sep = "")
+#          }
+
+#          pdf(GRAPHFILE, width = 9, height = 5)
+#          par(xpd = NA, mar = c(2, 4, 2, 17))
+
+# Generate the heading of the CSV file - the measure plus _Estimate
+#          M <- paste(MEASURES[i], "_Estimate", sep = "")
+# We can now use this to get the column out the dataset
+
+#          barplot(COEFFS[, M], ylim = c(-1, 1), col = "black",
+#                  main = GRAPHTITLE,
+#                  ylab = "Partial Rank Correlation Coefficient",
+#                  names.arg = seq(1, nrow(COEFFS), by = 1))
+
+#          thelabels <- paste(1:nrow(COEFFS), " ", COEFFS[, 1], sep = "")
+#          par(xpd = TRUE)
+#          legend_size <- nrow(COEFFS) + 1.5
+#          legend(legend_size, 1.0, legend = thelabels, pch = "",
+#                 cex = 0.6, ncol = 1)
+#          par(xpd = FALSE)
+#          dev.off()
+#        }
+
+#      } else if (PRINTOPT == "ALL") {
+#        message("Producing Partial Rank Correlation Coefficient Summary Plot of All Measures")
+
+# ALL PRCCS FOR ALL MEASURES, ON ONE PLOT
+# Make the data frame for the plot
+# FIRST OF ALL WE NEED TO REMOVE THE P VALUES SO WE CAN AUTOMATE THIS
+
+#       if (is.null(TIMEPOINTS)) {
+#          GRAPHFILE <- paste(FILEPATH, "/PRCC_AllMeasures.pdf", sep = "")
+#          GRAPHTITLE <- "PRCC Values for All Measures"
+#        } else {
+#          GRAPHFILE <- paste(FILEPATH, "/PRCC_AllMeasures_", TIMEPOINTS,
+#                             ".pdf", sep = "")
+#          GRAPHTITLE <- paste("PRCC Values for All Measures\nTimepoint: ",
+#                              TIMEPOINTS, sep = "")
+#        }
+
+#        pdf(GRAPHFILE, width = 10, height = 5)
+
+#        par(xpd = NA, mar = c(2, 4, 2, 9))
+
+#        PRCCS <- NULL
+#        for (p in seq(2, ncol(COEFFS), by = 2)) {
+#          PRCCS <- cbind(PRCCS, COEFFS[, p])
+#        }
+
+# NOW MAKE THE DATA FRAME
+#        d <- data.frame(row.names = levels(COEFFS[, 1]), PRCCS,
+#                        check.names = FALSE)
+#        colnames(d) <- MEASURES
+#        d <- do.call(rbind, d)
+#        barplot(d, beside = TRUE, ylim = c(-1, 1.4),
+#                legend.text = rownames(d),
+#                args.legend = list(x = "topright", bty = "n"),
+#                names.arg = seq(1, nrow(COEFFS), by = 1),
+#                main = GRAPHTITLE,
+#                ylab = "Partial Rank Correlation Coefficient")
+
+#        thelabels <- paste(1:nrow(COEFFS), " ", COEFFS[, 1], sep = "")
+#        par(xpd = TRUE)
+#        legend_size <- nrow(COEFFS)*3
+#legend(legend_size, 1.0, legend = thelabels, pch = "",
+#       cex = 0.7, ncol = 1)
+#        legend("topright", inset=c(-0.2,0), 1.0, legend = thelabels, pch = "",
+#               cex = 0.7, ncol = 1)
+
+#        par(xpd = FALSE)
+#        dev.off()
+#      }
+#    }
+#  } else {
+# PROCESS EACH TIMEPOINT, AMENDING THE FILENAMES, RECALLING THIS FUNCTION
+#    for (n in 1:length(TIMEPOINTS)) {
+
+#      current_time <- TIMEPOINTS[n]
+#      message(paste("Processing Timepoint ", current_time, sep = ""))
+
+#      CORCOEFFSOUTPUTFILE_FORMAT <- check_file_extension(CORCOEFFSOUTPUTFILE)
+#      CORCOEFFSOUTPUTFILE_FULL <- paste(substr(CORCOEFFSOUTPUTFILE, 0,
+#                                               nchar(CORCOEFFSOUTPUTFILE) - 4),
+#                                        "_", current_time, ".",
+#                                        CORCOEFFSOUTPUTFILE_FORMAT, sep = "")
+
+#      lhc_plotCoEfficients(FILEPATH, CORCOEFFSOUTPUTFILE_FULL, MEASURES,
+#                           PRINTOPT, current_time, NULL)
+#    }
+#  }
+#}

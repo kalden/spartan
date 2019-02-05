@@ -4,8 +4,8 @@
 \alias{lhc_graphMeasuresForParameterChange_overTime}
 \title{Wrapper for graphing LHC results for multiple timepoints}
 \usage{
-lhc_graphMeasuresForParameterChange_overTime(FILEPATH, PARAMETERS,
-  MEASURES, MEASURE_SCALE, CORCOEFFSOUTPUTFILE, LHCSUMMARYFILENAME,
+lhc_graphMeasuresForParameterChange_overTime(FILEPATH, parameters,
+  measures, MEASURE_SCALE, corcoeffs_outputfile, lhcsummary_filename,
   OUTPUT_TYPE = c("PDF"), TIMEPOINTS = NULL, TIMEPOINTSCALE = NULL,
   GRAPHTIME = NULL)
 }
@@ -13,19 +13,19 @@ lhc_graphMeasuresForParameterChange_overTime(FILEPATH, PARAMETERS,
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
 be found}
 
-\item{PARAMETERS}{Array containing the names of the parameters of which
+\item{parameters}{Array containing the names of the parameters of which
 parameter samples will be generated}
 
-\item{MEASURES}{Array containing the names of the output measures which are
+\item{measures}{Array containing the names of the output measures which are
 used to analyse the simulation}
 
 \item{MEASURE_SCALE}{Scale in which each of the output responses is
 measured. Used to label plots}
 
-\item{CORCOEFFSOUTPUTFILE}{File produced by spartan containing the Partial
+\item{corcoeffs_outputfile}{File produced by spartan containing the Partial
 Rank Correlation Coefficients for each parameter/measure pairing}
 
-\item{LHCSUMMARYFILENAME}{Name of the LHC Summary file to be generated.
+\item{lhcsummary_filename}{Name of the LHC Summary file to be generated.
 Contains each parameter set alongside the result gained when the simulation
 was run under that criteria.}
 

@@ -5,7 +5,7 @@
 \title{Initialise machine-learning algorithms settings for emulation creation}
 \usage{
 emulation_algorithm_settings(num_trees = 500,
-  num_of_generations = 8e+05, num_of_folds = 10,
+  num_of_generations = 800000, num_of_folds = 10,
   network_structures = NULL, save_emulators = TRUE,
   save_ensemble = TRUE, plot_test_accuracy = TRUE)
 }

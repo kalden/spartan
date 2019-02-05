@@ -112,6 +112,7 @@ pcor.rec <- function(x, y, z, cor_method = "p", na.rm = TRUE) {
 #' @param MEASURES Simulation output measures being analysed, in a vector
 #'
 #' @export
+#' @importFrom tibble column_to_rownames
 lhc_calculatePRCCForMultipleTimepoints <- function(FILEPATH,
                                                    CORCOEFFSOUTPUTFILE,
                                                    TIMEPOINTS, MEASURES) {
@@ -145,27 +146,12 @@ lhc_calculatePRCCForMultipleTimepoints <- function(FILEPATH,
                                            CORCOEFFSOUTPUTFILE_FULL,
                                            sep = ""), header = T)
 
-        if (t == 1) {
-          # Copy over the parameter name in this instance and  the result
-          PRCCS_OVER_TIME <- COEFFS_TIMEPOINT["X"]
-          PRCCS_OVER_TIME <- cbind(PRCCS_OVER_TIME,
-                                   COEFFS_TIMEPOINT[PRCC_LABEL])
-          PVALS_OVER_TIME <- COEFFS_TIMEPOINT["X"]
-          PVALS_OVER_TIME <- cbind(PVALS_OVER_TIME,
-                                   COEFFS_TIMEPOINT[PVAL_LABEL])
-        } else {
-          PRCCS_OVER_TIME <- cbind(PRCCS_OVER_TIME,
-                                   COEFFS_TIMEPOINT[PRCC_LABEL])
-          PVALS_OVER_TIME <- cbind(PVALS_OVER_TIME,
-                                   COEFFS_TIMEPOINT[PVAL_LABEL])
-        }
+        # Added with spartan4: first column should be rownames
+        COEFFS_TIMEPOINT<-column_to_rownames(COEFFS_TIMEPOINT,var="X")
 
-        PRCC_HEADERS <- cbind(PRCC_HEADERS, paste(PRCC_LABEL, "_",
-                                                  TIMEPOINTPROCESSING,
-                                                  sep = ""))
-        PVALS_HEADERS <- cbind(PVALS_HEADERS, paste(PVAL_LABEL, "_",
-                                                    TIMEPOINTPROCESSING,
-                                                    sep = ""))
+        PRCCS_OVER_TIME <- dplyr::bind_rows(PRCCS_OVER_TIME, dplyr::bind_cols(tibble::as_data_frame(TIMEPOINTS[t]),tibble::as_data_frame(MEASURES[m]), COEFFS_TIMEPOINT[paste(MEASURES[m],"estimate",sep="."),]))
+        PVALS_OVER_TIME <- dplyr::bind_rows(PVALS_OVER_TIME, dplyr::bind_cols(tibble::as_data_frame(TIMEPOINTS[t]),tibble::as_data_frame(MEASURES[m]), COEFFS_TIMEPOINT[paste(MEASURES[m],"p.value",sep="."),]))
+
       } else {
         message(paste("Correlation Coefficients file for Timepoint ",
                     TIMEPOINTPROCESSING, " does not exist", sep = ""))
@@ -175,8 +161,8 @@ lhc_calculatePRCCForMultipleTimepoints <- function(FILEPATH,
     # Write the summary to file, if not empty
     if (!is.null(PRCCS_OVER_TIME)){
       # ADD HEADERS TO THE PRCC RESULTS
-      colnames(PRCCS_OVER_TIME) <- PRCC_HEADERS
-      colnames(PVALS_OVER_TIME) <- PVALS_HEADERS
+      colnames(PRCCS_OVER_TIME) <- c("Timepoint","Measure",colnames(PRCCS_OVER_TIME[3:ncol(PRCCS_OVER_TIME)]))
+      colnames(PVALS_OVER_TIME) <- c("Timepoint","Measure",colnames(PRCCS_OVER_TIME[3:ncol(PRCCS_OVER_TIME)]))
 
       RESULTSFILE <- paste(FILEPATH, "/All_Timepoint_PRCCS_", MEASURE, ".csv",
                            sep = "")
