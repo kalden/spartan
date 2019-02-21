@@ -113,7 +113,7 @@ ploteFASTSiFromTimepointFiles <- function(FILEPATH, PARAMETERS, MEASURES,
                      by = as.numeric(max(TIMEPOINTS)) / length(TIMEPOINTS)))
     legend("topleft", inset = .0, title = "Parameter",
            PARAMETERS[1:length(PARAMETERS) - 1],
-           pch = 1:length(PARAMETERS) - 1, cex = 0.75)
+           pch = 2:length(PARAMETERS) - 1, cex = 0.75)
 
     dev.off()
   }
