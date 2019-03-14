@@ -5,7 +5,7 @@
 \title{Uses ggplot2 to create a plot for the LHC analysis, for one parameter-measure pair}
 \usage{
 make_lhc_plot(param_data, parameter, coefficient, measure, graph_time,
-  graph_format = c("PDF"))
+  graph_format = c("PDF"), filepath)
 }
 \arguments{
 \item{param_data}{List of parameter value against simulation responses}
@@ -19,6 +19,8 @@ make_lhc_plot(param_data, parameter, coefficient, measure, graph_time,
 \item{graph_time}{If plotting multiple timepoints, the timepoint being plotted}
 
 \item{graph_format}{Output formats to produce. Defaults to PDF}
+
+\item{filepath}{The directory where the graphs are to be stored}
 }
 \description{
 Uses ggplot2 to create a plot for the LHC analysis, for one parameter-measure pair

@@ -416,7 +416,7 @@ lhc_generatePRCoEffs <- function(
     if (is.null(TIMEPOINTS)) {
 
       if(!is.null(LHCSUMMARYFILENAME))
-        lhc_result_file <- suppressMessages(read_csv(file.path(FILEPATH,LHCSUMMARYFILENAME)))
+        lhc_result_file <- suppressWarnings(readr::read_csv(file.path(FILEPATH,LHCSUMMARYFILENAME), col_types = readr::cols()))
       else if(!is.null(lhc_summary_object))
         lhc_result_file<-lhc_summary_object
 

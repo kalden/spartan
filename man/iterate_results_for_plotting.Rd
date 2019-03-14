@@ -5,7 +5,7 @@
 \title{Function used by walk to create plots for all measure and response pairs}
 \usage{
 iterate_results_for_plotting(measure, data_to_plot, parameters,
-  coefficients, output_types, graph_time)
+  coefficients, output_types, graph_time, filepath)
 }
 \arguments{
 \item{measure}{Simulation measure being examined}
@@ -19,6 +19,8 @@ iterate_results_for_plotting(measure, data_to_plot, parameters,
 \item{output_types}{File types of graphs to produce}
 
 \item{graph_time}{If multiple timepoints, the timepoint being plotted}
+
+\item{filepath}{The directory where the graphs are to be saved to}
 }
 \description{
 Function used by walk to create plots for all measure and response pairs

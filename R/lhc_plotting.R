@@ -46,7 +46,7 @@ lhc_graphMeasuresForParameterChange <-
     cor_coefficients <- get_correlation_stat_data(FILEPATH,corcoeffs_outputfile, corcoeffs_output_object)
 
     # Now we can make the plot pairings
-    walk(measures,iterate_results_for_plotting, graph_data, parameters, cor_coefficients, output_types = OUTPUT_TYPE, GRAPHTIME)
+    walk(measures,iterate_results_for_plotting, graph_data, parameters, cor_coefficients, output_types = OUTPUT_TYPE, GRAPHTIME, FILEPATH)
 
   } else  {
 
@@ -65,10 +65,11 @@ lhc_graphMeasuresForParameterChange <-
 #' @param coefficients Calculated coefficient values for this analysis
 #' @param output_types File types of graphs to produce
 #' @param graph_time If multiple timepoints, the timepoint being plotted
-iterate_results_for_plotting <- function(measure, data_to_plot, parameters, coefficients, output_types, graph_time)
+#' @param filepath The directory where the graphs are to be saved to
+iterate_results_for_plotting <- function(measure, data_to_plot, parameters, coefficients, output_types, graph_time, filepath)
 {
   message(paste0("Producing plots for response ",measure))
-  purrr::pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=coefficients[paste0(measure,".estimate"),]),make_lhc_plot, measure, graph_time, graph_format=output_types)
+  purrr::pwalk(list(param_data=data_to_plot, parameter= parameters, coefficient=coefficients[paste0(measure,".estimate"),]),make_lhc_plot, measure, graph_time, graph_format=output_types, filepath)
 }
 
 #' Retrieve the simulation summary data to plot
@@ -106,11 +107,12 @@ get_correlation_stat_data<-function(FILEPATH, corcoeffs_outputfile, corcoeffs_ou
 #' @param measure Name of the measure being plotted
 #' @param graph_time If plotting multiple timepoints, the timepoint being plotted
 #' @param graph_format Output formats to produce. Defaults to PDF
+#' @param filepath The directory where the graphs are to be stored
 #'
 #' @importFrom purrr walk
 #' @importFrom ggplot2 aes_
 #'
-make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_time, graph_format=c("PDF")) {
+make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_time, graph_format=c("PDF"), filepath) {
 
   # Check coefficient isn't NA
   if(!is.na(coefficient)) {
@@ -134,7 +136,7 @@ make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_tim
             plot.subtitle = element_text(size = 8, hjust = 0.5))
 
     # Save the plot in the desired formats
-    walk(as.list(graph_format),save_graph_in_desired_formats,paste0(parameter,"_",measure,graph_time),output_graph)
+    walk(as.list(graph_format),save_graph_in_desired_formats,paste0(parameter,"_",measure,graph_time),output_graph, filepath)
 
   } else {
     message(paste0("For Parameter ",parameter, " Measure ",measure, " Pairing, Correlation Coefficient was reported as NA. Excluded from plotting."))
@@ -146,18 +148,19 @@ make_lhc_plot <- function(param_data, parameter, coefficient, measure, graph_tim
 #' @param output_type Type of graph to be produced
 #' @param graph_file File name to give the graph
 #' @param output_graph ggplot2 graph object
-save_graph_in_desired_formats <-function(output_type, graph_file, output_graph) {
+#' @param filepath The directory where the graphs are to be stored
+save_graph_in_desired_formats <-function(output_type, graph_file, output_graph, filepath) {
 
   if (output_type == "PDF") {
-    ggsave(paste0(graph_file, ".pdf"), plot = output_graph, width = 4, height = 4)
+    ggsave(file.path(filepath,paste0(graph_file, ".pdf")), plot = output_graph, width = 4, height = 4)
   } else if (output_type == "PNG") {
-    ggsave(paste0(graph_file, ".png"),
+    ggsave(file.path(filepath,paste0(graph_file, ".png")),
            plot = output_graph, width = 4, height = 4)
   } else if (output_type == "TIFF") {
-    ggsave(paste0(graph_file, ".tiff"),
+    ggsave(file.path(filepath,paste0(graph_file, ".tiff")),
            plot = output_graph, width = 4, height = 4)
   } else if (output_type == "BMP") {
-    ggsave(paste0(graph_file, ".bmp"),
+    ggsave(file.path(filepath,paste0(graph_file, ".bmp")),
            plot = output_graph, width = 4, height = 4)
   }
 }
@@ -249,27 +252,27 @@ lhc_graphMeasuresForParameterChange_overTime <-
 # @param corr_stat The PRCC for this parameter-measure pair
 # @param timepointscale Scale of timepoints, if multiple
 # @return List containing file, title, and subtitle, and axes labels
-#make_graph_title <- function(filepath, parameter, graph_time, measure,
-#                             measure_scale, corr_stat, timepointscale) {
-#  graph_title <- paste("LHC Analysis for Parameter: ",parameter, sep = "")
-#  y_label <- paste("Median Value Across Runs (", measure_scale,
-#                   ")", sep = "")
-#  x_label <- "Parameter Value"
+make_graph_title <- function(filepath, parameter, graph_time, measure,
+                             measure_scale, corr_stat, timepointscale) {
+  graph_title <- paste("LHC Analysis for Parameter: ",parameter, sep = "")
+  y_label <- paste("Median Value Across Runs (", measure_scale,
+                   ")", sep = "")
+  x_label <- "Parameter Value"
 
-#  if (is.null(graph_time)) {
-#    graph_file <- file.path(filepath,paste(parameter,measure,sep="_"))
-#    sub_title <- paste("Measure: ",measure,"\nCorrelation Coefficient: ",
-#                      toString(signif(corr_stat, 3)), sep = "")
-#  } else {
-#    graph_file <- file.path(filepath,paste(parameter, measure, graph_time,
-#                                           sep="_"))
-#    sub_title <- paste(
-#      "Measure: ",measure, ". Timepoint: ", graph_time, " ", timepointscale,
-#      "\nCorrelation Coefficient: ", toString(signif(corr_stat, 3)), sep = "")
-#  }
-#  return(list("title"=graph_title,"file"=graph_file,"sub_title"=sub_title,
-#         "xlabel"=x_label,"ylabel"=y_label))
-#}
+  if (is.null(graph_time)) {
+    graph_file <- file.path(filepath,paste(parameter,measure,sep="_"))
+    sub_title <- paste("Measure: ",measure,"\nCorrelation Coefficient: ",
+                      toString(signif(corr_stat, 3)), sep = "")
+  } else {
+    graph_file <- file.path(filepath,paste(parameter, measure, graph_time,
+                                           sep="_"))
+    sub_title <- paste(
+      "Measure: ",measure, ". Timepoint: ", graph_time, " ", timepointscale,
+      "\nCorrelation Coefficient: ", toString(signif(corr_stat, 3)), sep = "")
+  }
+  return(list("title"=graph_title,"file"=graph_file,"sub_title"=sub_title,
+         "xlabel"=x_label,"ylabel"=y_label))
+}
 
 ## REPLACED IN SPARTAN4
 #' Make the LHC output plot
@@ -462,24 +465,20 @@ lhc_polarplot <- function(FILEPATH, parameters, measures, corcoeffs_outputfile=N
 #' @inheritParams lhc_graphMeasuresForParameterChange
 #' @param CORCOEFFSFILENAME Name of the CSV file containining the correlation
 #' coefficients
-#' @param DISPLAYPVALS Boolean stating whether PRCC p-values should be printed
-#' on the graph
 #'
 #' @export
 #' @importFrom grDevices png
 plotPRCCSFromTimepointFiles <- function(FILEPATH, parameters, measures,
                                       CORCOEFFSFILENAME, TIMEPOINTS,
-                                      TIMEPOINTSCALE, DISPLAYPVALS = FALSE) {
+                                      TIMEPOINTSCALE) {
   message("Plotting Graphs for Partial Rank Correlation Coefficients Over Time")
-
-  if (requireNamespace("plotrix", quietly = TRUE)) {
 
     # One plot for each parameter
     for (PARAM in 1:length(parameters)) {
       # PRCCS for this parameter
       FULLPARAMRESULTS <- NULL
-      # P-Values for this parameter
-      PARAMPVALS <- data.frame()
+      # measures excluded as NA
+      measures_excluded<-NULL
 
       # Now to gather the data for each hour from the relevant result files
       for (i in 1:length(TIMEPOINTS)) {
@@ -497,85 +496,48 @@ plotPRCCSFromTimepointFiles <- function(FILEPATH, parameters, measures,
         # Read in the coefficients
         LHCResults <- read_from_csv(file.path(FILEPATH,CORCOEFFSOUTPUTFILE_FULL))
 
-        # Get the PRCCS
-        results <- c(hour, LHCResults[PARAM, 2], LHCResults[PARAM, 4])
-        # Get the P-Values
-        pvals.d <- data.frame(LHCResults[PARAM, 3], LHCResults[PARAM, 5])
+        results<-NULL
+
+        for(m in 1:length(measures)) {
+          # Get the PRCCS
+          results <- rbind(results,cbind(hour, measures[m],LHCResults[PARAM, paste0(measures[m],"_Estimate")]))
+
+          # Exclude measure if NA or Inf
+          if((is.na(LHCResults[PARAM, paste0(measures[m],"_Estimate")]) | LHCResults[PARAM, paste0(measures[m],"_Estimate")]==Inf)  & !measures[m] %in% measures_excluded) {
+            measures_excluded <- c(measures_excluded,measures[m])
+          }
+
+        }
+
 
         # Append the PRCCS for this timepoint to those of all timepoints
         FULLPARAMRESULTS <- rbind(FULLPARAMRESULTS, results)
-        # Append the P-Values for this timepoint to those of all timepoints
-        PARAMPVALS <- rbind(PARAMPVALS, pvals.d)
       }
 
-      # Set the row and column names of the P-Values data frame
-      rownames(PARAMPVALS) <- TIMEPOINTS
-      colnames(PARAMPVALS) <- measures
+      colnames(FULLPARAMRESULTS)<-c("hour","measure","prcc")
+      FULLPARAMRESULTS<-as_data_frame(FULLPARAMRESULTS)
+      FULLPARAMRESULTS$prcc<-as.numeric(FULLPARAMRESULTS$prcc)
+      FULLPARAMRESULTS$hour<-as.factor(FULLPARAMRESULTS$hour)
+      FULLPARAMRESULTS$measure<-as.factor(FULLPARAMRESULTS$measure)
 
-      # Now to make the plot
-      GRAPHFILE <- file.path(FILEPATH, paste(parameters[PARAM], "_OverTime.pdf",sep=""))
-      pdf(GRAPHFILE, width = 7, height = 7)
+      prcc_time_plot<-ggplot(filter(FULLPARAMRESULTS, !FULLPARAMRESULTS$measure %in% measures_excluded),aes(x=FULLPARAMRESULTS$hour,y=FULLPARAMRESULTS$prcc,group=FULLPARAMRESULTS$measure)) +
+        ggplot2::geom_line(aes(linetype=FULLPARAMRESULTS$measure,col=FULLPARAMRESULTS$measure)) +
+        scale_y_continuous(limits=c(-1,1),name="Partial Rank Correlation Coefficient") +
+        labs(title = "PRCC Values Over Simulation Time",
+             subtitle = paste0("Parameter: ",parameters[PARAM]),
+             x =paste0("Timepoint (",TIMEPOINTSCALE,")")) +
+        theme(plot.title = element_text(size=9,hjust=0.5),plot.subtitle = element_text(size=8,hjust=0.5),
+              axis.text.x = element_text(size=8),axis.text.y = element_text(size=8), axis.title=element_text(size=8), legend.title=element_text(size=8),
+              legend.text = element_text(size=6))
 
-      # Title, with parameter name
-      GRAPHTITLE <- paste("Partial Rank Correlation Coefficients Over Simulation
-                        Time\nParameter: ", parameters[PARAM], sep = "")
+            if(length(measures_excluded)>0)
+        message(paste0("For parameter ",parameters[PARAM], "the following measures had a PRCC value of NA or Inf, and were excluded from the plot: ",measures_excluded))
 
-      # Plot the first measure
-      plot(FULLPARAMRESULTS[, 1], FULLPARAMRESULTS[, 2], type = "o",
-           main = GRAPHTITLE, lty = 1, xlab = "", ylim = c(-1, 1),
-           ylab = "Partial Rank Correlation Coefficient",
-           xaxt = "n", yaxt = "n", bty = "n")
+      #ggsave(filename=paste0(FILEPATH,parameters[PARAM],"_PRCC_OverTime.pdf"),plot=prcc_time_plot,device="pdf")
 
-      # Now add the rest
-      lines(FULLPARAMRESULTS[, 1], FULLPARAMRESULTS[, 3], type = "o",
-            lty = 5, pch = 2)
-
-      axis(2, at = seq(-1, 1, by = 0.25))
-      axis(1, pos = 0, at = seq(as.numeric(min(TIMEPOINTS)),
-                                as.numeric(max(TIMEPOINTS)),
-                                by = (as.numeric(max(TIMEPOINTS)) /
-                                        length(TIMEPOINTS))),
-           tck = 0.015, labels = FALSE)
-      # Add the axis at 0
-      abline(h = 0)
-      # Add the labels to the axis
-      for (h in 1:length(TIMEPOINTS)) {
-        text(as.numeric(TIMEPOINTS[h]), 0.08, TIMEPOINTS[h])
-      }
-
-      max_time <- max(TIMEPOINTS)
-      num_max_time <- as.numeric(max_time)
-      min_time <- min(TIMEPOINTS)
-      num_min_time <- as.numeric(min_time)
-      total_time <- num_max_time + num_min_time
-
-      # Add the X axis label
-      text(total_time / 2, 0.18, TIMEPOINTSCALE)
-
-      # P-Values Table, if the user wants this displayed
-      if (DISPLAYPVALS == TRUE) {
-        xaxis_loc <- (((as.numeric(max(TIMEPOINTS)) -
-                        as.numeric(min(TIMEPOINTS))) / 100) * 71) +
-          as.numeric(min(TIMEPOINTS))
-        plotrix::addtable2plot(xaxis_loc, 0.7, signif(PARAMPVALS, digits = 3),
-                               cex = 0.7,
-                               display.rownames = TRUE,
-                               title = "p-Values",
-                               display.colnames = TRUE, bty = "o",
-                               hlines = TRUE)
-      }
-
-      # Graph legend
-      legend("topleft", inset = .025, title = "Measures", measures,
-             pch = 1:length(measures))
-
-      # Output graph
-      dev.off()
-
-    }
+  }
     message(paste("Complete. Check for output in the directory ", FILEPATH,
                 sep = ""))
-  }
 }
 
 

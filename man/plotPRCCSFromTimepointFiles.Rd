@@ -5,7 +5,7 @@
 \title{Plots Graphs for Partial Rank Correlation Coefficients Over Time}
 \usage{
 plotPRCCSFromTimepointFiles(FILEPATH, parameters, measures,
-  CORCOEFFSFILENAME, TIMEPOINTS, TIMEPOINTSCALE, DISPLAYPVALS = FALSE)
+  CORCOEFFSFILENAME, TIMEPOINTS, TIMEPOINTSCALE)
 }
 \arguments{
 \item{FILEPATH}{Directory where the simulation runs of single CSV file can
@@ -28,9 +28,6 @@ e.g. c(12,36,48,60)}
 \item{TIMEPOINTSCALE}{Implemented so this method can be used when analysing
 multiple simulation timepoints. Sets the scale of the timepoints being
 analysed, e.g. "Hours"}
-
-\item{DISPLAYPVALS}{Boolean stating whether PRCC p-values should be printed
-on the graph}
 }
 \description{
 Produces plots to show how the impact of a parameter changes over time,

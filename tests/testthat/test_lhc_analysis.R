@@ -180,7 +180,7 @@ test_that("lhc_generatePRCoEffs", {
                "chemoLowerLinearAdjust", "maxVCAMeffectProbabilityCutoff", "vcamSlope"), c("Velocity","Displacement"), "LHC_Results.csv", "Prcc_Out.csv")
 
   # Read in file and check structure
-  resultIn<- read.csv("Prcc_Out.csv",header=T,sep=",")
+  resultIn<- suppressWarnings(read_csv("Prcc_Out.csv",col_types=readr::cols()))
 
   # Check structure of results
   expect_true(ncol(resultIn)==7)
@@ -188,12 +188,12 @@ test_that("lhc_generatePRCoEffs", {
   expect_false(any(is.na(resultIn)))
 
   # We can check the data to known results
-  expect_equal(toString(round(resultIn[,2],digits=5)),"-0.6126, 0, -0.49569, 0")
-  expect_equal(toString(round(resultIn[,3],digits=5)),"-0.23425, 0, -0.67524, 0")
-  expect_equal(toString(round(resultIn[,4],digits=5)),"-0.03562, 0.43154, 0.0166, 0.71404")
-  expect_equal(toString(round(resultIn[,5],digits=5)),"-0.38062, 0, -0.79004, 0")
-  expect_equal(toString(round(resultIn[,6],digits=5)),"-0.9656, 0, -0.82007, 0")
-  expect_equal(toString(round(resultIn[,7],digits=5)),"-0.10482, 0.02002, -0.06451, 0.15369")
+  expect_equal(toString(round(resultIn[,2],digits=5)),"c(-0.61257, 0, -0.496, 0)")
+  expect_equal(toString(round(resultIn[,3],digits=5)),"c(-0.23544, 0, -0.67588, 0)")
+  expect_equal(toString(round(resultIn[,4],digits=5)),"c(-0.03522, 0.43627, 0.01668, 0.71256)")
+  expect_equal(toString(round(resultIn[,5],digits=5)),"c(-0.38037, 0, -0.79009, 0)")
+  expect_equal(toString(round(resultIn[,6],digits=5)),"c(-0.96561, 0, -0.82014, 0)")
+  expect_equal(toString(round(resultIn[,7],digits=5)),"c(-0.10538, 0.01923, -0.06463, 0.1525)")
 
   file.remove(file.path(getwd(),"LHC_Results.csv"))
   file.remove(file.path(getwd(),"Prcc_Out.csv"))

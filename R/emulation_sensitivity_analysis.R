@@ -163,8 +163,6 @@ emulate_lhc_sampled_parameters  <-  function(filepath, surrogateModel,
                                              write_csv_files = TRUE,
                                              graph_results=TRUE) {
 
-
-
   if(!is.null(param_file) | !is.null(dataset)) {
     if(!is.null(param_file)) {
       # Read in the parameter value file generated in sampling

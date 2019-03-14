@@ -4,7 +4,8 @@
 \alias{save_graph_in_desired_formats}
 \title{Saves a ggplot graph in the desired format. Used by walk functions in spartan}
 \usage{
-save_graph_in_desired_formats(output_type, graph_file, output_graph)
+save_graph_in_desired_formats(output_type, graph_file, output_graph,
+  filepath)
 }
 \arguments{
 \item{output_type}{Type of graph to be produced}
@@ -12,6 +13,8 @@ save_graph_in_desired_formats(output_type, graph_file, output_graph)
 \item{graph_file}{File name to give the graph}
 
 \item{output_graph}{ggplot2 graph object}
+
+\item{filepath}{The directory where the graphs are to be stored}
 }
 \description{
 Saves a ggplot graph in the desired format. Used by walk functions in spartan

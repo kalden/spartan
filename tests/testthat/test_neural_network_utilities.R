@@ -248,7 +248,7 @@ test_that("create_neural_network", {
                                      NULL, partitionedData, 4,
                                      800000)
 
-  expect_true(length(model_fit)==13)
+  expect_true(length(model_fit)==14)
   expect_true(nrow(model_fit$net.result[[1]])==375)
   expect_true(ncol(model_fit$net.result[[1]])==3)
 
